@@ -3,14 +3,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
-interface WorkExpModalProps {
+interface ProjectModalProps {
   onClose: () => void;
 }
 
-export function WorkExpModal({ onClose }: WorkExpModalProps) {
-  const [workDetails, setWorkDetails] = useState({
-    position: "",
-    company: "",
+export function ProjectModal({ onClose }: ProjectModalProps) {
+  const [projectDetails, setProjectDetails] = useState({
+    projectName: "",
     dateFrom: "",
     dateTo: "",
     info1: "",
@@ -22,14 +21,14 @@ export function WorkExpModal({ onClose }: WorkExpModalProps) {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setWorkDetails((prevDetails) => ({
+    setProjectDetails((prevDetails) => ({
       ...prevDetails,
       [name]: value,
     }));
   };
 
   const handleSave = () => {
-    console.log("Saving work details:", workDetails);
+    console.log("Saving project details:", projectDetails);
     // You would typically send this data to an API or parent component here
     onClose(); // Close the modal after saving
   };
@@ -37,29 +36,22 @@ export function WorkExpModal({ onClose }: WorkExpModalProps) {
   return (
     <div className="flex flex-col gap-4 max-w-md p-8 bg-zinc-800 border-zinc-500 border-2 rounded-lg">
       <Input
-        placeholder="position"
-        name="position"
-        value={workDetails.position}
+        placeholder="project name"
+        name="projectName"
+        value={projectDetails.projectName}
         onChange={handleChange}
       />
-      <Input
-        placeholder="company"
-        name="company"
-        value={workDetails.company}
-        onChange={handleChange}
-      />
-
       <div className="flex flex-row gap-2">
         <Input
           placeholder="date from"
           name="dateFrom"
-          value={workDetails.dateFrom}
+          value={projectDetails.dateFrom}
           onChange={handleChange}
         />
         <Input
           placeholder="date to"
           name="dateTo"
-          value={workDetails.dateTo}
+          value={projectDetails.dateTo}
           onChange={handleChange}
         />
       </div>
@@ -67,21 +59,21 @@ export function WorkExpModal({ onClose }: WorkExpModalProps) {
         placeholder="info 1"
         className="w-full"
         name="info1"
-        value={workDetails.info1}
+        value={projectDetails.info1}
         onChange={handleChange}
       />
       <Textarea
         placeholder="info 2"
         className="w-full"
         name="info2"
-        value={workDetails.info2}
+        value={projectDetails.info2}
         onChange={handleChange}
       />
       <Input
         placeholder="url"
         type="url"
         name="url"
-        value={workDetails.url}
+        value={projectDetails.url}
         onChange={handleChange}
       />
       <Button type="button" onClick={handleSave}>

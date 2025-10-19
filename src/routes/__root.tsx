@@ -1,6 +1,11 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanStackDevtools } from "@tanstack/react-devtools";
+import {
+  HeadContent,
+  Link,
+  Scripts,
+  createRootRoute,
+} from "@tanstack/react-router";
+// import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+// import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Briefcase } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -48,12 +53,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               {/* dev note: keeping the items simple text links with pipes between */}
               <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm sm:text-base">
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/about-me"
                     className="hover:text-white text-zinc-300 transition-colors"
                   >
                     about me
-                  </a>
+                  </Link>
                 </li>
                 <li className="text-zinc-500">|</li>
                 <li>
@@ -104,18 +109,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <div className="h-6" />
         </div>
 
-        {/* dev note: keep devtools only in dev to save perf */}
-        {import.meta.env.DEV ? (
-          <TanStackDevtools
-            config={{ position: "bottom-right", defaultOpen: false }}
-            plugins={[
-              {
-                name: "Tanstack Router",
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
-        ) : null}
+        {/* TanStack devtools temporarily disabled due to module export mismatch */}
 
         <Scripts />
       </body>
