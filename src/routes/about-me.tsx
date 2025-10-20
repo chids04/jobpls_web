@@ -80,6 +80,32 @@ function RouteComponent() {
     setModal(true);
   };
 
+  // prevents scrolling main content when modal is open
+  useEffect(() => {
+    if (!isModal) return;
+
+    const y = window.scrollY;
+    const original = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    };
+
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${y}px`;
+    document.body.style.width = "100%";
+
+    return () => {
+      document.body.style.overflow = original.overflow;
+      document.body.style.position = original.position;
+      document.body.style.top = original.top;
+      document.body.style.width = original.width;
+      window.scrollTo(0, y);
+    };
+  }, [isModal]);
+
   let modal;
   if (isModal) {
     switch (modalType) {

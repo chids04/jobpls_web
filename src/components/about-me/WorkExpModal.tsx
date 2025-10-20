@@ -11,6 +11,7 @@ export type WorkExpForm = {
   dateFrom: string; // MM/YYYY
   dateTo: string; // MM/YYYY or empty when ongoing
   description: string;
+  description2: string;
   ongoing: boolean;
 };
 
@@ -73,6 +74,7 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
     dateFrom: initial?.dateFrom ?? "",
     dateTo: initial?.dateTo ?? "",
     description: initial?.description ?? "",
+    description2: initial?.description2 ?? "",
     ongoing: initial?.ongoing ?? false,
   });
 
@@ -241,6 +243,17 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
           className="w-full"
           name="description"
           value={form.description}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-zinc-300">description 2</label>
+        <Textarea
+          placeholder="description"
+          className="w-full"
+          name="description2"
+          value={form.description2}
           onChange={handleChange}
         />
       </div>
