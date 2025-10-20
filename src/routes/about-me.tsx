@@ -1,343 +1,165 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { ProjectModal } from "@/components/about-me/ProjectModal";
-import type { ProjectForm } from "@/components/about-me/ProjectModal";
-import {
-  WorkExpModal,
-  type WorkExpForm,
-} from "@/components/about-me/WorkExpModal";
-
 import { useEffect, useState } from "react";
-
-// using ProjectForm type from ProjectModal
+import TemplatesList from "@/components/about-me/TemplatesList";
+import TemplateForm from "@/components/about-me/TemplateForm";
+import {
+  LS_KEY_TEMPLATES,
+  type AboutMeTemplate,
+} from "@/components/about-me/types";
 
 export const Route = createFileRoute("/about-me")({
   component: RouteComponent,
 });
 
-// enums for diff types of enums
-enum ModalType {
-  WorkExperience,
-  Project,
-}
-
+// route component that renders templates list or the template form
 function RouteComponent() {
-  const [name, setName] = useState("");
-  const [summary, setSummary] = useState("");
-  const [email, setEmail] = useState("");
-  const [isModal, setModal] = useState(false);
-  const [modalType, setModalType] = useState<ModalType>(ModalType.Project);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [projects, setProjects] = useState<ProjectForm[]>([]);
-  const [workExperiences, setWorkExperiences] = useState<WorkExpForm[]>([]);
-  const [skillsText, setSkillsText] = useState("");
-  const [skills, setSkills] = useState<string[]>([]);
+  // templates state
+  const [templates, setTemplates] = useState<AboutMeTemplate[]>([]);
 
+  // view state: list vs form
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(
+    null,
+  );
+  const [formInitial, setFormInitial] = useState<AboutMeTemplate | null>(null);
+
+  // load templates from local storage
   useEffect(() => {
     try {
-      const name = localStorage.getItem("aboutMe.name");
-      const summary = localStorage.getItem("aboutMe.summary");
-      const email = localStorage.getItem("aboutMe.email");
-      const proj = localStorage.getItem("aboutMe.projects");
-      const exp = localStorage.getItem("aboutMe.workExperiences");
-      const skl = localStorage.getItem("aboutMe.skills");
-      if (proj) setProjects(JSON.parse(proj));
-      if (name) setName(name);
-      if (summary) setSummary(summary);
-      if (email) setEmail(email);
-      if (exp) setWorkExperiences(JSON.parse(exp));
-      if (skl) {
-        const parsed = JSON.parse(skl) as string[];
-        setSkills(parsed);
-        setSkillsText(parsed.join(", "));
+      const raw = localStorage.getItem(LS_KEY_TEMPLATES);
+      if (raw) {
+        const parsed = JSON.parse(raw) as AboutMeTemplate[];
+        if (Array.isArray(parsed)) {
+          setTemplates(parsed);
+        }
       }
     } catch (e) {
-      console.error("Failed to load from localStorage", e);
+      console.error("failed to load templates from localStorage", e);
     }
   }, []);
 
+  // persist templates to local storage
   useEffect(() => {
     try {
-      localStorage.setItem("aboutMe.name", name);
-      localStorage.setItem("aboutMe.email", email);
-      localStorage.setItem("aboutMe.summary", summary);
-      localStorage.setItem("aboutMe.projects", JSON.stringify(projects));
-      localStorage.setItem(
-        "aboutMe.workExperiences",
-        JSON.stringify(workExperiences),
-      );
-      localStorage.setItem("aboutMe.skills", JSON.stringify(skills));
+      localStorage.setItem(LS_KEY_TEMPLATES, JSON.stringify(templates));
     } catch (e) {
-      console.error("Failed to save to localStorage", e);
+      console.error("failed to save templates to localStorage", e);
     }
-  }, [projects, workExperiences, skills, name, email, summary]);
+  }, [templates]);
 
-  const handleModal = (type: ModalType, index: number | null) => {
-    setEditingIndex(index);
-    setModalType(type);
-    setModal(true);
+  // start creating a new template
+  const handleCreate = () => {
+    setEditingTemplateId(null);
+    setFormInitial(null);
+    setIsCreating(true);
   };
 
-  // prevents scrolling main content when modal is open
-  useEffect(() => {
-    if (!isModal) return;
+  // start editing an existing template
+  const handleEdit = (template: AboutMeTemplate) => {
+    setEditingTemplateId(template.id);
+    setFormInitial(template);
+    setIsCreating(true);
+  };
 
-    const y = window.scrollY;
-    const original = {
-      overflow: document.body.style.overflow,
-      position: document.body.style.position,
-      top: document.body.style.top,
-      width: document.body.style.width,
-    };
+  // delete a template with confirmation
+  const handleDelete = (id: string) => {
+    const t = templates.find((x) => x.id === id);
+    const confirmText = t
+      ? `Delete template "${t.templateName}"? This cannot be undone.`
+      : "Delete this template? This cannot be undone.";
+    if (!confirm(confirmText)) return;
+    setTemplates((prev) => prev.filter((tpl) => tpl.id !== id));
+  };
 
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${y}px`;
-    document.body.style.width = "100%";
+  // duplicate a template (already has a unique name and id from list component)
+  const handleDuplicate = (duplicate: AboutMeTemplate) => {
+    setTemplates((prev) => [duplicate, ...prev]);
+  };
 
-    return () => {
-      document.body.style.overflow = original.overflow;
-      document.body.style.position = original.position;
-      document.body.style.top = original.top;
-      document.body.style.width = original.width;
-      window.scrollTo(0, y);
-    };
-  }, [isModal]);
+  // cancel creation or editing, go back to list
+  const handleCancel = () => {
+    setIsCreating(false);
+    setEditingTemplateId(null);
+    setFormInitial(null);
+  };
 
-  let modal;
-  if (isModal) {
-    switch (modalType) {
-      case ModalType.Project:
-        modal = (
-          <ProjectModal
-            onClose={() => {
-              setModal(false);
-              setEditingIndex(null);
-            }}
-            onSave={(proj) => {
-              setProjects((prev) => {
-                if (editingIndex !== null) {
-                  const copy = [...prev];
-                  copy[editingIndex] = proj;
-                  return copy;
-                }
-                return [...prev, proj];
-              });
-            }}
-            initial={editingIndex !== null ? projects[editingIndex] : undefined}
-          />
-        );
-        break;
+  // save handler for create/update
+  const handleSave = (values: {
+    templateName: string;
+    name: string;
+    email: string;
+    summary: string;
+    skills: string[];
+    projects: AboutMeTemplate["projects"];
+    workExperiences: AboutMeTemplate["workExperiences"];
+  }) => {
+    const now = new Date().toISOString();
 
-      case ModalType.WorkExperience:
-        modal = (
-          <WorkExpModal
-            onClose={() => {
-              setModal(false);
-              setEditingIndex(null);
-            }}
-            onSave={(exp) => {
-              setWorkExperiences((prev) => {
-                if (editingIndex !== null) {
-                  const copy = [...prev];
-                  copy[editingIndex] = exp;
-                  return copy;
-                }
-                return [...prev, exp];
-              });
-            }}
-            initial={
-              editingIndex !== null ? workExperiences[editingIndex] : undefined
-            }
-          />
-        );
-        break;
+    if (editingTemplateId) {
+      // update existing template
+      setTemplates((prev) =>
+        prev.map((t) =>
+          t.id === editingTemplateId
+            ? {
+                ...t,
+                templateName: values.templateName,
+                name: values.name,
+                email: values.email,
+                summary: values.summary,
+                skills: values.skills,
+                projects: values.projects,
+                workExperiences: values.workExperiences,
+                updatedAt: now,
+              }
+            : t,
+        ),
+      );
+      setIsCreating(false);
+      setEditingTemplateId(null);
+      setFormInitial(null);
+      return;
     }
+
+    // create new template
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const template: AboutMeTemplate = {
+      id,
+      templateName: values.templateName,
+      name: values.name,
+      email: values.email,
+      summary: values.summary,
+      skills: values.skills,
+      projects: values.projects,
+      workExperiences: values.workExperiences,
+      createdAt: now,
+      updatedAt: now,
+    };
+    setTemplates((prev) => [template, ...prev]);
+    setIsCreating(false);
+    setEditingTemplateId(null);
+    setFormInitial(null);
+  };
+
+  // render list view
+  if (!isCreating) {
+    return (
+      <TemplatesList
+        templates={templates}
+        onCreate={handleCreate}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onDuplicate={handleDuplicate}
+      />
+    );
   }
 
+  // render form view
   return (
-    <div className="flex flex-col gap-5 max-w-3xl mx-auto px-4 items-center">
-      {/*about  me container*/}
-      <div className="flex flex-col">
-        <h3>name</h3>
-        <Input
-          placeholder="enter your name"
-          className="max-w-3xs"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-
-      <div className="flex flex-col max-w-md w-full">
-        <h3>email</h3>
-        <Input
-          type="email"
-          placeholder="enter your email"
-          className="max-w-md"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-
-      <div className="flex flex-col w-full gap-1">
-        <h3>about me</h3>
-        <Textarea
-          className="w-full"
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-        />
-      </div>
-
-      <div className="flex flex-col w-full gap-1">
-        <h3>skills</h3>
-        <div className="flex flex-row gap-2 w-full">
-          <Textarea
-            className="w-full"
-            placeholder="e.g. React, TypeScript, Tailwind"
-            value={skillsText}
-            onChange={(e) => setSkillsText(e.target.value)}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              const list = skillsText
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean);
-              setSkills(list);
-              setSkillsText(list.join(", "));
-            }}
-          >
-            save
-          </Button>
-        </div>
-        <p className="text-xs text-zinc-400">
-          Enter skills as a comma-separated list.
-        </p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {skills.map((skill, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-sm"
-            >
-              <span>{skill}</span>
-              <Button
-                type="button"
-                size="sm"
-                variant="destructive"
-                onClick={() => setSkills(skills.filter((_, idx) => idx !== i))}
-              >
-                delete
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2 w-full">
-        <div className="flex items-center gap-2">
-          <h3 className="flex-1">work experience</h3>
-          <Button
-            type="button"
-            variant="outline"
-            className="text-black"
-            onClick={() => handleModal(ModalType.WorkExperience, null)}
-          >
-            Add
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {workExperiences.map((exp, i) => (
-            <div
-              key={i}
-              className="rounded border border-zinc-700 bg-zinc-800 px-3 py-2"
-            >
-              <div className="text-sm font-medium">
-                {exp.jobTitle} @ {exp.company}
-              </div>
-              <div className="text-xs text-zinc-400">
-                {exp.dateFrom} -{" "}
-                {exp.ongoing || !exp.dateTo ? "present" : exp.dateTo}
-              </div>
-              <div className="mt-1 flex gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => handleModal(ModalType.WorkExperience, i)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() =>
-                    setWorkExperiences(
-                      workExperiences.filter((_, idx) => idx !== i),
-                    )
-                  }
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2 w-full">
-        <div className="flex items-center gap-2">
-          <h3 className="flex-1">projects</h3>
-          <Button
-            type="button"
-            variant="outline"
-            className="text-black"
-            onClick={() => handleModal(ModalType.Project, null)}
-          >
-            Add
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {projects.map((proj, i) => (
-            <div
-              key={i}
-              className="rounded border border-zinc-700 bg-zinc-800 px-3 py-2"
-            >
-              <div className="text-sm font-medium">{proj.projectName}</div>
-              <div className="text-xs text-zinc-400">
-                {proj.dateFrom} -{" "}
-                {proj.ongoing || !proj.dateTo ? "present" : proj.dateTo}
-              </div>
-              <div className="mt-1 flex gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => handleModal(ModalType.Project, i)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() =>
-                    setProjects(projects.filter((_, idx) => idx !== i))
-                  }
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {isModal ? (
-        <div className="fixed inset-0 z-[1000] bg-zinc-950/90 flex items-center justify-center p-4">
-          {modal}
-        </div>
-      ) : null}
-    </div>
+    <TemplateForm
+      initial={formInitial ?? undefined}
+      onCancel={handleCancel}
+      onSave={handleSave}
+      saveLabel={editingTemplateId ? "Update template" : "Save template"}
+    />
   );
 }
