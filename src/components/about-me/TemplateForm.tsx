@@ -67,7 +67,9 @@ export function TemplateForm({
     const initSkills = Array.isArray(initial.skills) ? initial.skills : [];
     setSkills(initSkills);
     setSkillsText(initSkills.join(", "));
-    setProjects(Array.isArray((initial as any).projects) ? (initial as any).projects : []);
+    setProjects(
+      Array.isArray((initial as any).projects) ? (initial as any).projects : [],
+    );
     setWorkExperiences(
       Array.isArray((initial as any).workExperiences)
         ? (initial as any).workExperiences
@@ -103,7 +105,7 @@ export function TemplateForm({
     };
   }, [isModal]);
 
-  /* helper to reset the form to pristine state */
+  /* helper to reset the form state */
   const resetForm = () => {
     setTemplateName("");
     setName("");
@@ -117,14 +119,14 @@ export function TemplateForm({
     setEditingIndex(null);
   };
 
-  /* normalized skills derived from the textarea */
-  const normalizedSkills = useMemo(() => {
+  /* get current skills array from text input */
+  const getCurrentSkills = () => {
     if (skillsText.trim().length === 0) return [];
     return skillsText
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
-  }, [skillsText]);
+  };
 
   /* open a nested modal for project or work experience */
   const handleModal = (type: ModalType, index: number | null) => {
@@ -139,14 +141,12 @@ export function TemplateForm({
       alert("Please enter a template name before saving.");
       return;
     }
-    const chosenSkills =
-      normalizedSkills.length > 0 ? normalizedSkills : skills;
     onSave({
       templateName: templateName.trim(),
       name,
       email,
       summary,
-      skills: chosenSkills,
+      skills: getCurrentSkills(),
       projects,
       workExperiences,
     });
@@ -264,22 +264,18 @@ export function TemplateForm({
             type="button"
             variant="outline"
             onClick={() => {
-              const list = skillsText
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean);
-              setSkills(list);
+              const list = getCurrentSkills();
               setSkillsText(list.join(", "));
             }}
           >
-            save
+            format
           </Button>
         </div>
         <p className="text-xs text-zinc-400">
           enter skills as a comma-separated list.
         </p>
         <div className="flex flex-wrap gap-2 mt-2">
-          {(skills.length > 0 ? skills : normalizedSkills).map((skill, i) => (
+          {getCurrentSkills().map((skill, i) => (
             <div
               key={`${skill}-${i}`}
               className="flex items-center gap-2 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-sm"
@@ -290,9 +286,8 @@ export function TemplateForm({
                 size="sm"
                 variant="destructive"
                 onClick={() => {
-                  const base = skills.length > 0 ? skills : normalizedSkills;
-                  const next = base.filter((_, idx) => idx !== i);
-                  setSkills(next);
+                  const currentSkills = getCurrentSkills();
+                  const next = currentSkills.filter((_, idx) => idx !== i);
                   setSkillsText(next.join(", "));
                 }}
               >
@@ -326,7 +321,8 @@ export function TemplateForm({
                 {exp.jobTitle} @ {exp.company}
               </div>
               <div className="text-xs text-zinc-400">
-                {exp.dateFrom} - {exp.ongoing || !exp.dateTo ? "present" : exp.dateTo}
+                {exp.dateFrom} -{" "}
+                {exp.ongoing || !exp.dateTo ? "present" : exp.dateTo}
               </div>
               <div className="mt-1 flex gap-2">
                 <Button
@@ -374,7 +370,8 @@ export function TemplateForm({
             >
               <div className="text-sm font-medium">{proj.projectName}</div>
               <div className="text-xs text-zinc-400">
-                {proj.dateFrom} - {proj.ongoing || !proj.dateTo ? "present" : proj.dateTo}
+                {proj.dateFrom} -{" "}
+                {proj.ongoing || !proj.dateTo ? "present" : proj.dateTo}
               </div>
               <div className="mt-1 flex gap-2">
                 <Button

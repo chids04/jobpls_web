@@ -28,7 +28,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="min-h-screen bg-zinc-900 text-zinc-100 antialiased">
+      <body className="min-h-screen bg-zinc-900 text-zinc-100 antialiased dark">
         {/* dev note: laying out the page as a simple flex column for readability */}
         <div className="flex min-h-screen flex-col">
           {/* header - centered 'jobpls' with a tiny rotated icon on the top-right */}
@@ -62,12 +62,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 </li>
                 <li className="text-zinc-500">|</li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/cv-template"
                     className="hover:text-white text-zinc-300 transition-colors"
                   >
-                    job desc
-                  </a>
+                    cv template
+                  </Link>
                 </li>
                 <li className="text-zinc-500">|</li>
                 <li>
@@ -75,16 +75,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                     href="#"
                     className="hover:text-white text-zinc-300 transition-colors"
                   >
-                    cv
-                  </a>
-                </li>
-                <li className="text-zinc-500">|</li>
-                <li>
-                  <a
-                    href="#"
-                    className="hover:text-white text-zinc-300 transition-colors"
-                  >
-                    template
+                    generate
                   </a>
                 </li>
               </ul>

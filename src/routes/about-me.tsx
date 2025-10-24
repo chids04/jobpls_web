@@ -9,6 +9,7 @@ import {
 
 export const Route = createFileRoute("/about-me")({
   component: RouteComponent,
+  ssr: false,
 });
 
 // route component that renders templates list or the template form
@@ -38,15 +39,6 @@ function RouteComponent() {
     }
   }, []);
 
-  // persist templates to local storage
-  useEffect(() => {
-    try {
-      localStorage.setItem(LS_KEY_TEMPLATES, JSON.stringify(templates));
-    } catch (e) {
-      console.error("failed to save templates to localStorage", e);
-    }
-  }, [templates]);
-
   // start creating a new template
   const handleCreate = () => {
     setEditingTemplateId(null);
@@ -68,12 +60,28 @@ function RouteComponent() {
       ? `Delete template "${t.templateName}"? This cannot be undone.`
       : "Delete this template? This cannot be undone.";
     if (!confirm(confirmText)) return;
-    setTemplates((prev) => prev.filter((tpl) => tpl.id !== id));
+    setTemplates((prev) => {
+      const next = prev.filter((tpl) => tpl.id !== id);
+      try {
+        localStorage.setItem(LS_KEY_TEMPLATES, JSON.stringify(next));
+      } catch (e) {
+        console.error("failed to save templates to localStorage", e);
+      }
+      return next;
+    });
   };
 
   // duplicate a template (already has a unique name and id from list component)
   const handleDuplicate = (duplicate: AboutMeTemplate) => {
-    setTemplates((prev) => [duplicate, ...prev]);
+    setTemplates((prev) => {
+      const next = [duplicate, ...prev];
+      try {
+        localStorage.setItem(LS_KEY_TEMPLATES, JSON.stringify(next));
+      } catch (e) {
+        console.error("failed to save templates to localStorage", e);
+      }
+      return next;
+    });
   };
 
   // cancel creation or editing, go back to list
@@ -97,8 +105,8 @@ function RouteComponent() {
 
     if (editingTemplateId) {
       // update existing template
-      setTemplates((prev) =>
-        prev.map((t) =>
+      setTemplates((prev) => {
+        const next = prev.map((t) =>
           t.id === editingTemplateId
             ? {
                 ...t,
@@ -112,8 +120,14 @@ function RouteComponent() {
                 updatedAt: now,
               }
             : t,
-        ),
-      );
+        );
+        try {
+          localStorage.setItem(LS_KEY_TEMPLATES, JSON.stringify(next));
+        } catch (e) {
+          console.error("failed to save templates to localStorage", e);
+        }
+        return next;
+      });
       setIsCreating(false);
       setEditingTemplateId(null);
       setFormInitial(null);
@@ -134,7 +148,15 @@ function RouteComponent() {
       createdAt: now,
       updatedAt: now,
     };
-    setTemplates((prev) => [template, ...prev]);
+    setTemplates((prev) => {
+      const next = [template, ...prev];
+      try {
+        localStorage.setItem(LS_KEY_TEMPLATES, JSON.stringify(next));
+      } catch (e) {
+        console.error("failed to save templates to localStorage", e);
+      }
+      return next;
+    });
     setIsCreating(false);
     setEditingTemplateId(null);
     setFormInitial(null);

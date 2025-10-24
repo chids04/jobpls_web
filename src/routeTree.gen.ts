@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as CvTemplateRouteImport } from './routes/cv-template'
 import { Route as AboutMeRouteImport } from './routes/about-me'
 import { Route as IndexRouteImport } from './routes/index'
 
+const CvTemplateRoute = CvTemplateRouteImport.update({
+  id: '/cv-template',
+  path: '/cv-template',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutMeRoute = AboutMeRouteImport.update({
   id: '/about-me',
   path: '/about-me',
@@ -26,31 +32,42 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about-me': typeof AboutMeRoute
+  '/cv-template': typeof CvTemplateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about-me': typeof AboutMeRoute
+  '/cv-template': typeof CvTemplateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about-me': typeof AboutMeRoute
+  '/cv-template': typeof CvTemplateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about-me'
+  fullPaths: '/' | '/about-me' | '/cv-template'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about-me'
-  id: '__root__' | '/' | '/about-me'
+  to: '/' | '/about-me' | '/cv-template'
+  id: '__root__' | '/' | '/about-me' | '/cv-template'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutMeRoute: typeof AboutMeRoute
+  CvTemplateRoute: typeof CvTemplateRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/cv-template': {
+      id: '/cv-template'
+      path: '/cv-template'
+      fullPath: '/cv-template'
+      preLoaderRoute: typeof CvTemplateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about-me': {
       id: '/about-me'
       path: '/about-me'
@@ -71,6 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutMeRoute: AboutMeRoute,
+  CvTemplateRoute: CvTemplateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
