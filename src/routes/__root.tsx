@@ -72,7 +72,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <li className="text-zinc-500">|</li>
                 <li>
                   <a
-                    href="#"
+                    href="/generate"
                     className="hover:text-white text-zinc-300 transition-colors"
                   >
                     generate
