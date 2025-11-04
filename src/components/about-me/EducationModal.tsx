@@ -4,26 +4,27 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Experience, convertDateFromForm, convertDateToForm } from "lib/types";
+import { Education, convertDateFromForm, convertDateToForm } from "lib/types";
 
-interface WorkExpModalProps {
+interface EducationModalProps {
   onClose: () => void;
-  onSave: (exp: Experience) => void;
-  initial?: Partial<Experience>;
+  onSave: (education: Education) => void;
+  initial?: Partial<Education>;
 }
 
 const mmYYYY = z
   .string()
   .regex(/^(0[1-9]|1[0-2])\/\d{4}$/, "Must be in MM/YYYY format");
 
-const WorkExpSchema = z
+const EducationSchema = z
   .object({
-    title: z.string().trim().min(1, "Job title is required"),
-    company: z.string().trim().min(1, "Company is required"),
+    title: z.string().trim().min(1, "Title is required"),
+    grade: z.string().trim().min(1, "Grade is required"),
+    name: z.string().trim().min(1, "Institution name is required"),
     dateFrom: mmYYYY,
     dateTo: z.string().optional().default(""),
-    b1: z.string().optional().default(""),
-    b2: z.string().optional().default(""),
+    location: z.string().trim().min(1, "Location is required"),
+    modules: z.array(z.string().trim()).optional().default([]),
     ongoing: z.boolean(),
   })
   .superRefine((val, ctx) => {
@@ -59,7 +60,11 @@ function normalizeMMYYYYInput(raw: string) {
   return mm;
 }
 
-export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
+export function EducationModal({
+  onClose,
+  onSave,
+  initial,
+}: EducationModalProps) {
   // convert from unified format to form format for editing
   const initialDateFrom = initial?.dates?.start
     ? convertDateToForm(initial.dates.start)
@@ -73,13 +78,18 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
 
   const [form, setForm] = useState({
     title: initial?.title ?? "",
-    company: initial?.company ?? "",
+    grade: initial?.grade ?? "",
+    name: initial?.name ?? "",
     dateFrom: initialDateFrom,
     dateTo: initialDateTo,
-    b1: initial?.b1 ?? "",
-    b2: initial?.b2 ?? "",
+    location: initial?.location ?? "",
+    modules: initial?.modules ?? [],
     ongoing: initialOngoing,
   });
+
+  const [modulesText, setModulesText] = useState(
+    initial?.modules?.join(", ") ?? "",
+  );
 
   const [errors, setErrors] = useState<
     Partial<Record<keyof typeof form, string>>
@@ -116,8 +126,25 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
     setErrors((prev) => ({ ...prev, dateTo: undefined }));
   };
 
+  const handleModulesSave = () => {
+    const list = modulesText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    setForm((prev) => ({ ...prev, modules: list }));
+    setModulesText(list.join(", "));
+  };
+
+  const handleModuleDelete = (index: number) => {
+    setForm((prev) => {
+      const next = prev.modules.filter((_, i) => i !== index);
+      setModulesText(next.join(", "));
+      return { ...prev, modules: next };
+    });
+  };
+
   const validate = (): boolean => {
-    const parsed = WorkExpSchema.safeParse(form);
+    const parsed = EducationSchema.safeParse(form);
     if (parsed.success) {
       setErrors({});
       return true;
@@ -137,18 +164,19 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
     if (!validate()) return;
 
     // convert to unified format
-    const experience: Experience = {
+    const education: Education = {
       title: form.title,
-      company: form.company,
+      grade: form.grade,
+      name: form.name,
       dates: {
         start: convertDateFromForm(form.dateFrom),
         end: form.ongoing ? "Ongoing" : convertDateFromForm(form.dateTo),
       },
-      b1: form.b1,
-      b2: form.b2,
+      location: form.location,
+      modules: form.modules.length > 0 ? form.modules : undefined,
     };
 
-    onSave(experience);
+    onSave(education);
     onClose();
   };
 
@@ -158,7 +186,7 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
     <div className="flex flex-col gap-4 max-w-md p-8 bg-zinc-800 border-zinc-500 border-2 rounded-lg max-h-[80vh] overflow-y-auto">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">
-          {isEditing ? "edit work experience" : "add work experience"}
+          {isEditing ? "edit education" : "add education"}
         </h3>
         <Button type="button" variant="ghost" onClick={onClose}>
           close
@@ -166,9 +194,9 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm text-zinc-300">job title</label>
+        <label className="text-sm text-zinc-300">title</label>
         <Input
-          placeholder="job title"
+          placeholder="e.g. Bachelor of Science in Computer Science"
           name="title"
           value={form.title}
           onChange={handleChange}
@@ -180,16 +208,44 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm text-zinc-300">company</label>
+        <label className="text-sm text-zinc-300">grade</label>
         <Input
-          placeholder="company"
-          name="company"
-          value={form.company}
+          placeholder="e.g. First Class Honours, 3.8 GPA"
+          name="grade"
+          value={form.grade}
           onChange={handleChange}
-          aria-invalid={!!errors.company}
+          aria-invalid={!!errors.grade}
         />
-        {errors.company ? (
-          <span className="text-xs text-red-400">{errors.company}</span>
+        {errors.grade ? (
+          <span className="text-xs text-red-400">{errors.grade}</span>
+        ) : null}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-zinc-300">institution</label>
+        <Input
+          placeholder="university or institution name"
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          aria-invalid={!!errors.name}
+        />
+        {errors.name ? (
+          <span className="text-xs text-red-400">{errors.name}</span>
+        ) : null}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-zinc-300">location</label>
+        <Input
+          placeholder="city, country"
+          name="location"
+          value={form.location}
+          onChange={handleChange}
+          aria-invalid={!!errors.location}
+        />
+        {errors.location ? (
+          <span className="text-xs text-red-400">{errors.location}</span>
         ) : null}
       </div>
 
@@ -239,35 +295,49 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
 
       <div className="flex items-center gap-2">
         <Checkbox
-          id="exp-ongoing"
+          id="edu-ongoing"
           checked={form.ongoing}
           onCheckedChange={handleToggleOngoing}
         />
-        <label htmlFor="exp-ongoing" className="text-sm text-zinc-200">
+        <label htmlFor="edu-ongoing" className="text-sm text-zinc-200">
           ongoing
         </label>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm text-zinc-300">description 1</label>
-        <Textarea
-          placeholder="first description"
-          className="w-full"
-          name="b1"
-          value={form.b1}
-          onChange={handleChange}
-        />
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label className="text-sm text-zinc-300">description 2</label>
-        <Textarea
-          placeholder="second description"
-          className="w-full"
-          name="b2"
-          value={form.b2}
-          onChange={handleChange}
-        />
+      <div className="flex flex-col gap-2">
+        <h4 className="text-sm font-medium">modules</h4>
+        <div className="flex gap-2">
+          <Textarea
+            className="w-full"
+            placeholder="e.g. Data Structures, Algorithms, Database Systems"
+            value={modulesText}
+            onChange={(e) => setModulesText(e.target.value)}
+          />
+          <Button type="button" variant="outline" onClick={handleModulesSave}>
+            save
+          </Button>
+        </div>
+        <p className="text-xs text-zinc-400">
+          enter modules as a comma-separated list.
+        </p>
+        <div className="flex flex-wrap gap-2 mt-1">
+          {form.modules.map((module, i) => (
+            <div
+              key={`${module}-${i}`}
+              className="flex items-center gap-2 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-sm"
+            >
+              <span>{module}</span>
+              <Button
+                type="button"
+                size="sm"
+                variant="destructive"
+                onClick={() => handleModuleDelete(i)}
+              >
+                delete
+              </Button>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="flex gap-2 justify-end">

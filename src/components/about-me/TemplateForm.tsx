@@ -1,14 +1,18 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ProjectModal } from "@/components/about-me/ProjectModal";
-import type { ProjectForm } from "@/components/about-me/ProjectModal";
+import { WorkExpModal } from "@/components/about-me/WorkExpModal";
+import { EducationModal } from "@/components/about-me/EducationModal";
 import {
-  WorkExpModal,
-  type WorkExpForm,
-} from "@/components/about-me/WorkExpModal";
-import { ModalType, type AboutMeTemplate } from "./types";
+  ModalType,
+  AboutMeTemplate,
+  Project,
+  Experience,
+  Education,
+  convertDateToForm,
+} from "lib/types";
 
 /* form values used when creating or editing templates */
 export type TemplateFormValues = {
@@ -17,8 +21,9 @@ export type TemplateFormValues = {
   email: string;
   summary: string;
   skills: string[];
-  projects: ProjectForm[];
-  workExperiences: WorkExpForm[];
+  projects: Project[];
+  workExperiences: Experience[];
+  education: Education[];
 };
 
 export type TemplateFormProps = {
@@ -45,9 +50,9 @@ export function TemplateForm({
   const [summary, setSummary] = useState("");
   const [email, setEmail] = useState("");
   const [skillsText, setSkillsText] = useState("");
-  const [skills, setSkills] = useState<string[]>([]);
-  const [projects, setProjects] = useState<ProjectForm[]>([]);
-  const [workExperiences, setWorkExperiences] = useState<WorkExpForm[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [workExperiences, setWorkExperiences] = useState<Experience[]>([]);
+  const [education, setEducation] = useState<Education[]>([]);
 
   /* modal state for nested editors */
   const [isModal, setModal] = useState(false);
@@ -65,16 +70,14 @@ export function TemplateForm({
     setEmail(initial.email || "");
     setSummary(initial.summary || "");
     const initSkills = Array.isArray(initial.skills) ? initial.skills : [];
-    setSkills(initSkills);
     setSkillsText(initSkills.join(", "));
-    setProjects(
-      Array.isArray((initial as any).projects) ? (initial as any).projects : [],
-    );
+
+    setProjects(Array.isArray(initial.projects) ? initial.projects : []);
     setWorkExperiences(
-      Array.isArray((initial as any).workExperiences)
-        ? (initial as any).workExperiences
-        : [],
+      Array.isArray(initial.workExperiences) ? initial.workExperiences : [],
     );
+    setEducation(Array.isArray(initial.education) ? initial.education : []);
+
     setModal(false);
     setEditingIndex(null);
   }, [initial]);
@@ -111,10 +114,10 @@ export function TemplateForm({
     setName("");
     setEmail("");
     setSummary("");
-    setSkills([]);
     setSkillsText("");
     setProjects([]);
     setWorkExperiences([]);
+    setEducation([]);
     setModal(false);
     setEditingIndex(null);
   };
@@ -128,7 +131,7 @@ export function TemplateForm({
       .filter(Boolean);
   };
 
-  /* open a nested modal for project or work experience */
+  /* open a nested modal for project, work experience, or education */
   const handleModal = (type: ModalType, index: number | null) => {
     setEditingIndex(index);
     setModalType(type);
@@ -149,7 +152,19 @@ export function TemplateForm({
       skills: getCurrentSkills(),
       projects,
       workExperiences,
+      education,
     });
+  };
+
+  /* format date range for display */
+  const formatDateRange = (dates: {
+    start: string;
+    end: string | "Ongoing";
+  }) => {
+    const startDate = convertDateToForm(dates.start);
+    const endDate =
+      dates.end === "Ongoing" ? "present" : convertDateToForm(dates.end);
+    return `${startDate} - ${endDate}`;
   };
 
   /* modal content rendering */
@@ -196,6 +211,29 @@ export function TemplateForm({
             }}
             initial={
               editingIndex !== null ? workExperiences[editingIndex] : undefined
+            }
+          />
+        );
+        break;
+      case ModalType.Education:
+        modal = (
+          <EducationModal
+            onClose={() => {
+              setModal(false);
+              setEditingIndex(null);
+            }}
+            onSave={(edu) => {
+              setEducation((prev) => {
+                if (editingIndex !== null) {
+                  const copy = [...prev];
+                  copy[editingIndex] = edu;
+                  return copy;
+                }
+                return [...prev, edu];
+              });
+            }}
+            initial={
+              editingIndex !== null ? education[editingIndex] : undefined
             }
           />
         );
@@ -318,11 +356,10 @@ export function TemplateForm({
               className="rounded border border-zinc-700 bg-zinc-800 px-3 py-2"
             >
               <div className="text-sm font-medium">
-                {exp.jobTitle} @ {exp.company}
+                {exp.title} @ {exp.company}
               </div>
               <div className="text-xs text-zinc-400">
-                {exp.dateFrom} -{" "}
-                {exp.ongoing || !exp.dateTo ? "present" : exp.dateTo}
+                {formatDateRange(exp.dates)}
               </div>
               <div className="mt-1 flex gap-2">
                 <Button
@@ -339,6 +376,55 @@ export function TemplateForm({
                     setWorkExperiences(
                       workExperiences.filter((_, idx) => idx !== i),
                     )
+                  }
+                >
+                  delete
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* education editor */}
+      <div className="flex flex-col gap-2 w-full">
+        <div className="flex items-center gap-2">
+          <h3 className="flex-1">education</h3>
+          <Button
+            type="button"
+            variant="outline"
+            className="text-black"
+            onClick={() => handleModal(ModalType.Education, null)}
+          >
+            add
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {education.map((edu, i) => (
+            <div
+              key={i}
+              className="rounded border border-zinc-700 bg-zinc-800 px-3 py-2"
+            >
+              <div className="text-sm font-medium">
+                {edu.title} @ {edu.name}
+              </div>
+              <div className="text-xs text-zinc-400">
+                {formatDateRange(edu.dates)}
+              </div>
+              <div className="text-xs text-zinc-500">{edu.grade}</div>
+              <div className="mt-1 flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => handleModal(ModalType.Education, i)}
+                >
+                  edit
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() =>
+                    setEducation(education.filter((_, idx) => idx !== i))
                   }
                 >
                   delete
@@ -368,11 +454,7 @@ export function TemplateForm({
               key={i}
               className="rounded border border-zinc-700 bg-zinc-800 px-3 py-2"
             >
-              <div className="text-sm font-medium">{proj.projectName}</div>
-              <div className="text-xs text-zinc-400">
-                {proj.dateFrom} -{" "}
-                {proj.ongoing || !proj.dateTo ? "present" : proj.dateTo}
-              </div>
+              <div className="text-sm font-medium">{proj.title}</div>
               <div className="mt-1 flex gap-2">
                 <Button
                   type="button"

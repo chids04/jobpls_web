@@ -16,6 +16,9 @@ const config = defineConfig({
     viteReact(),
     devtoolsJson(),
   ],
+  server: {
+    allowedHosts: ["chx"],
+  },
 });
 
 export default config;

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { DUPLICATE_SUFFIX_BASE, type AboutMeTemplate } from "./types";
+import { DUPLICATE_SUFFIX_BASE, type AboutMeTemplate } from "lib/types";
 
 /* props for the templates list component */
 export type TemplatesListProps = {
@@ -10,8 +10,10 @@ export type TemplatesListProps = {
   onDuplicate: (template: AboutMeTemplate) => void;
 };
 
-/* generate a unique template name based on an original name and existing names */
-function generateUniqueTemplateName(originalName: string, existingNames: Set<string>): string {
+function generateUniqueTemplateName(
+  originalName: string,
+  existingNames: Set<string>,
+): string {
   const baseName = `${originalName} ${DUPLICATE_SUFFIX_BASE}`;
   if (!existingNames.has(baseName)) return baseName;
 
@@ -25,9 +27,15 @@ function generateUniqueTemplateName(originalName: string, existingNames: Set<str
 }
 
 /* create a duplicated template with a new id, timestamps, and a unique name */
-function makeDuplicateTemplate(template: AboutMeTemplate, allTemplates: AboutMeTemplate[]): AboutMeTemplate {
+function makeDuplicateTemplate(
+  template: AboutMeTemplate,
+  allTemplates: AboutMeTemplate[],
+): AboutMeTemplate {
   const existingNames = new Set(allTemplates.map((t) => t.templateName));
-  const newName = generateUniqueTemplateName(template.templateName, existingNames);
+  const newName = generateUniqueTemplateName(
+    template.templateName,
+    existingNames,
+  );
   const now = new Date().toISOString();
   return {
     ...template,
@@ -59,7 +67,8 @@ export function TemplatesList({
       {/* empty state */}
       {templates.length === 0 ? (
         <div className="rounded border border-zinc-700 bg-zinc-800 p-6 text-sm text-zinc-300">
-          You have no templates yet. Click "Create new template" to build your first About Me.
+          You have no templates yet. Click "Create new template" to build your
+          first About Me.
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
@@ -110,18 +119,26 @@ export function TemplatesList({
                   <span className="text-zinc-400">Name:</span> {tpl.name || "-"}
                 </div>
                 <div className="truncate">
-                  <span className="text-zinc-400">Email:</span> {tpl.email || "-"}
+                  <span className="text-zinc-400">Email:</span>{" "}
+                  {tpl.email || "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Skills:</span>{" "}
-                  {tpl.skills && tpl.skills.length > 0 ? tpl.skills.join(", ") : "-"}
+                  {tpl.skills && tpl.skills.length > 0
+                    ? tpl.skills.join(", ")
+                    : "-"}
                 </div>
                 <div className="truncate">
-                  <span className="text-zinc-400">Projects:</span> {tpl.projects.length}
+                  <span className="text-zinc-400">Projects:</span>{" "}
+                  {tpl.projects.length}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Work Experience:</span>{" "}
                   {tpl.workExperiences.length}
+                </div>
+                <div className="truncate">
+                  <span className="text-zinc-400">Education:</span>{" "}
+                  {tpl.education?.length || 0}
                 </div>
               </div>
             </div>
