@@ -3,146 +3,148 @@ import { useState } from "react";
 import TemplatesList from "@/components/about-me/TemplatesList";
 import TemplateForm from "@/components/about-me/TemplateForm";
 import { useAboutMeTemplates } from "@/hooks/useAppStorage";
-import { type AboutMeTemplate } from "lib/types";
+import { type AboutMeTemplate } from "@/lib/types";
 
 export const Route = createFileRoute("/about-me")({
-  component: RouteComponent,
-  ssr: false,
+    component: RouteComponent,
+    ssr: false,
 });
 
 // route component that renders templates list or the template form
 function RouteComponent() {
-  const {
-    templates,
-    addTemplate,
-    updateTemplate,
-    deleteTemplate,
-    duplicateTemplate,
-  } = useAboutMeTemplates();
+    const {
+        templates,
+        addTemplate,
+        updateTemplate,
+        deleteTemplate,
+        duplicateTemplate,
+    } = useAboutMeTemplates();
 
-  // view state: list vs form
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(
-    null,
-  );
-  const [formInitial, setFormInitial] = useState<AboutMeTemplate | null>(null);
+    // view state: list vs form
+    const [isCreating, setIsCreating] = useState(false);
+    const [editingTemplateId, setEditingTemplateId] = useState<string | null>(
+        null,
+    );
+    const [formInitial, setFormInitial] = useState<AboutMeTemplate | null>(
+        null,
+    );
 
-  // start creating a new template
-  const handleCreate = () => {
-    setEditingTemplateId(null);
-    setFormInitial(null);
-    setIsCreating(true);
-  };
+    // start creating a new template
+    const handleCreate = () => {
+        setEditingTemplateId(null);
+        setFormInitial(null);
+        setIsCreating(true);
+    };
 
-  // start editing an existing template
-  const handleEdit = (template: AboutMeTemplate) => {
-    setEditingTemplateId(template.id);
-    setFormInitial(template);
-    setIsCreating(true);
-  };
+    // start editing an existing template
+    const handleEdit = (template: AboutMeTemplate) => {
+        setEditingTemplateId(template.id);
+        setFormInitial(template);
+        setIsCreating(true);
+    };
 
-  // delete a template with confirmation
-  const handleDelete = (id: string) => {
-    const t = templates.find((x) => x.id === id);
-    const confirmText = t
-      ? `Delete template "${t.templateName}"? This cannot be undone.`
-      : "Delete this template? This cannot be undone.";
-    if (!confirm(confirmText)) return;
-    deleteTemplate(id);
-  };
+    // delete a template with confirmation
+    const handleDelete = (id: string) => {
+        const t = templates.find((x) => x.id === id);
+        const confirmText = t
+            ? `Delete template "${t.templateName}"? This cannot be undone.`
+            : "Delete this template? This cannot be undone.";
+        if (!confirm(confirmText)) return;
+        deleteTemplate(id);
+    };
 
-  // duplicate a template (already has a unique name and id from list component)
-  const handleDuplicate = (duplicate: AboutMeTemplate) => {
-    duplicateTemplate(duplicate);
-  };
+    // duplicate a template (already has a unique name and id from list component)
+    const handleDuplicate = (duplicate: AboutMeTemplate) => {
+        duplicateTemplate(duplicate);
+    };
 
-  // cancel creation or editing, go back to list
-  const handleCancel = () => {
-    setIsCreating(false);
-    setEditingTemplateId(null);
-    setFormInitial(null);
-  };
+    // cancel creation or editing, go back to list
+    const handleCancel = () => {
+        setIsCreating(false);
+        setEditingTemplateId(null);
+        setFormInitial(null);
+    };
 
-  // save handler for create/update
-  const handleSave = (values: {
-    templateName: string;
-    name: string;
-    email: string;
-    summary: string;
-    skills: string[];
-    projects: AboutMeTemplate["projects"];
-    workExperiences: AboutMeTemplate["workExperiences"];
-    education: AboutMeTemplate["education"];
-  }) => {
-    const now = new Date().toISOString();
+    // save handler for create/update
+    const handleSave = (values: {
+        templateName: string;
+        name: string;
+        email: string;
+        summary: string;
+        skills: string[];
+        projects: AboutMeTemplate["projects"];
+        workExperiences: AboutMeTemplate["workExperiences"];
+        education: AboutMeTemplate["education"];
+    }) => {
+        const now = new Date().toISOString();
 
-    if (editingTemplateId) {
-      // update existing template
-      const existingTemplate = templates.find(
-        (t) => t.id === editingTemplateId,
-      );
-      if (existingTemplate) {
-        const updatedTemplate: AboutMeTemplate = {
-          ...existingTemplate,
-          templateName: values.templateName,
-          name: values.name,
-          email: values.email,
-          summary: values.summary,
-          skills: values.skills,
-          projects: values.projects,
-          workExperiences: values.workExperiences,
-          education: values.education,
-          updatedAt: now,
+        if (editingTemplateId) {
+            // update existing template
+            const existingTemplate = templates.find(
+                (t) => t.id === editingTemplateId,
+            );
+            if (existingTemplate) {
+                const updatedTemplate: AboutMeTemplate = {
+                    ...existingTemplate,
+                    templateName: values.templateName,
+                    name: values.name,
+                    email: values.email,
+                    summary: values.summary,
+                    skills: values.skills,
+                    projects: values.projects,
+                    workExperiences: values.workExperiences,
+                    education: values.education,
+                    updatedAt: now,
+                };
+                updateTemplate(updatedTemplate);
+            }
+            setIsCreating(false);
+            setEditingTemplateId(null);
+            setFormInitial(null);
+            return;
+        }
+
+        // create new template
+        const id = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        const template: AboutMeTemplate = {
+            id,
+            templateName: values.templateName,
+            name: values.name,
+            email: values.email,
+            summary: values.summary,
+            skills: values.skills,
+            projects: values.projects,
+            workExperiences: values.workExperiences,
+            education: values.education,
+            createdAt: now,
+            updatedAt: now,
         };
-        updateTemplate(updatedTemplate);
-      }
-      setIsCreating(false);
-      setEditingTemplateId(null);
-      setFormInitial(null);
-      return;
+        addTemplate(template);
+        setIsCreating(false);
+        setEditingTemplateId(null);
+        setFormInitial(null);
+    };
+
+    // render list view
+    if (!isCreating) {
+        return (
+            <TemplatesList
+                templates={templates}
+                onCreate={handleCreate}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onDuplicate={handleDuplicate}
+            />
+        );
     }
 
-    // create new template
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    const template: AboutMeTemplate = {
-      id,
-      templateName: values.templateName,
-      name: values.name,
-      email: values.email,
-      summary: values.summary,
-      skills: values.skills,
-      projects: values.projects,
-      workExperiences: values.workExperiences,
-      education: values.education,
-      createdAt: now,
-      updatedAt: now,
-    };
-    addTemplate(template);
-    setIsCreating(false);
-    setEditingTemplateId(null);
-    setFormInitial(null);
-  };
-
-  // render list view
-  if (!isCreating) {
+    // render form view
     return (
-      <TemplatesList
-        templates={templates}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onDuplicate={handleDuplicate}
-      />
+        <TemplateForm
+            initial={formInitial ?? undefined}
+            onCancel={handleCancel}
+            onSave={handleSave}
+            saveLabel={editingTemplateId ? "Update template" : "Save template"}
+        />
     );
-  }
-
-  // render form view
-  return (
-    <TemplateForm
-      initial={formInitial ?? undefined}
-      onCancel={handleCancel}
-      onSave={handleSave}
-      saveLabel={editingTemplateId ? "Update template" : "Save template"}
-    />
-  );
 }
