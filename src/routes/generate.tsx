@@ -26,16 +26,12 @@ export function GeneratePage() {
     const { cv, template, jobDesc, specialInstr, isReady, missingItems } =
         useGeneratePageData();
 
-    const { currentJob, saveJobState, clearJobState, isJobRecent } =
-        useCurrentJob();
     const { generatedPdfs, updateGenerated, clearGenerated } =
         useLastGeneratedPDF();
 
     const [pollUrl, setPollingUrl] = useState<string>("");
     const [error, setError] = useState("");
-    const [lastGeneratedJobId, setLastGeneratedJobId] = useState<string | null>(
-        null,
-    );
+    const [currentJobId, setCurrentJobId] = useState<string | null>(null);
     const [pdfUrls, setPdfUrls] = useState<{
         cvUrl: string | null;
         coverUrl: string | null;
@@ -47,26 +43,16 @@ export function GeneratePage() {
         onSuccess: (jobId: string) => {
             const pollUrl = `${SERVER_URL}/job/${jobId}`;
             setPollingUrl(pollUrl);
-            saveJobState(jobId, pollUrl);
+            setCurrentJobId(jobId);
             // clear previous pdf urls when starting new generation
             setPdfUrls({ cvUrl: null, coverUrl: null });
             setError("");
-            setLastGeneratedJobId(jobId); // track this as a new job
         },
         onError: (error: any) => {
             console.error("generate error:", error);
             setError(error.message || "failed to start generation");
         },
     });
-
-    // check for existing job on component mount
-    useEffect(() => {
-        // only resume if job is recent (within 30 minutes) and we don't already have a poll url
-        if (currentJob && isJobRecent(30) && !pollUrl) {
-            console.log("resuming polling for job:", currentJob.jobId);
-            setPollingUrl(currentJob.pollUrl);
-        }
-    }, [currentJob, isJobRecent, pollUrl]);
 
     const handleGenerate = async () => {
         if (!isReady) {
@@ -81,7 +67,7 @@ export function GeneratePage() {
             header: {
                 full_name: template.selectedTemplate!.name,
                 email: template.selectedTemplate!.email,
-                github: undefined,
+                github: template.selectedTemplate!.github || undefined,
                 residency: "",
             },
             summary: {
@@ -96,6 +82,7 @@ export function GeneratePage() {
         const req: GenerateReq = {
             resume,
             job_desc: jobDesc.jobDesc,
+            special_instr: specialInstr.specialInstr,
         };
 
         // use the mutation to send the request
@@ -111,10 +98,9 @@ export function GeneratePage() {
             updateGenerated({ cv: cvUrl, cover: coverUrl });
 
             // clear job state since generation is complete
-            clearJobState();
-            setLastGeneratedJobId(null);
+            setCurrentJobId(null);
         },
-        [updateGenerated, clearJobState],
+        [updateGenerated],
     );
 
     // reset state for new generation - memoized to avoid unnecessary re-renders
@@ -122,9 +108,8 @@ export function GeneratePage() {
         setPollingUrl("");
         setPdfUrls({ cvUrl: null, coverUrl: null });
         setError("");
-        clearJobState();
-        setLastGeneratedJobId(null);
-    }, [clearJobState]);
+        setCurrentJobId(null);
+    }, []);
 
     // open pdf in new tab - memoized since it doesn't depend on state
     const openPDF = useCallback((url: string, filename: string) => {
@@ -165,7 +150,7 @@ export function GeneratePage() {
             <div className="flex flex-col md:flex-row gap-5 items-center justify-center w-full">
                 <div className="flex flex-col max-w-lg w-full gap-5 items-center justify-center">
                     <Textarea
-                        className="max-w-md max-h-[300px] overflow-y-scroll"
+                        className="max-w-md min-h-28 max-h-32"
                         placeholder="special instructions"
                         value={specialInstr.specialInstr}
                         onChange={(e) =>
@@ -174,7 +159,7 @@ export function GeneratePage() {
                     />
 
                     <Textarea
-                        className="max-w-md max-h-[300px] overflow-y-scroll"
+                        className="max-w-md min-h-48 max-h-64 "
                         placeholder="job description"
                         value={jobDesc.jobDesc}
                         onChange={(e) => jobDesc.updateJobDesc(e.target.value)}
@@ -355,17 +340,6 @@ export function GeneratePage() {
                     <p>missing: {missingItems.join(", ")}</p>
                 </div>
             )}
-
-            {currentJob &&
-                isJobRecent(30) &&
-                pollUrl &&
-                !pdfUrls.cvUrl &&
-                !pdfUrls.coverUrl &&
-                currentJob.jobId !== lastGeneratedJobId && (
-                    <div className="flex items-center max-w-sm bg-blue-700/40 border-blue-900 p-2 border-2 text-blue-400">
-                        <p>📄 resuming previous job...</p>
-                    </div>
-                )}
 
             {pollUrl && (
                 <PollingStatus url={pollUrl} onPDFsReady={handlePDFsReady} />

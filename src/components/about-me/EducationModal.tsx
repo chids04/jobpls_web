@@ -262,7 +262,6 @@ export function EducationModal({
                         name="dateFrom"
                         value={form.dateFrom}
                         onChange={handleChange}
-                        inputMode="numeric"
                         maxLength={7}
                         aria-invalid={!!errors.dateFrom}
                     />
@@ -284,7 +283,6 @@ export function EducationModal({
                         name="dateTo"
                         value={form.dateTo}
                         onChange={handleChange}
-                        inputMode="numeric"
                         maxLength={7}
                         disabled={form.ongoing}
                         aria-invalid={!!errors.dateTo}

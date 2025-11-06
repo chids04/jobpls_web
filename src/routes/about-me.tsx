@@ -70,6 +70,7 @@ function RouteComponent() {
         templateName: string;
         name: string;
         email: string;
+        github: string | null;
         summary: string;
         skills: string[];
         projects: AboutMeTemplate["projects"];
@@ -89,6 +90,7 @@ function RouteComponent() {
                     templateName: values.templateName,
                     name: values.name,
                     email: values.email,
+                    github: values.github,
                     summary: values.summary,
                     skills: values.skills,
                     projects: values.projects,
@@ -111,6 +113,7 @@ function RouteComponent() {
             templateName: values.templateName,
             name: values.name,
             email: values.email,
+            github: values.github,
             summary: values.summary,
             skills: values.skills,
             projects: values.projects,

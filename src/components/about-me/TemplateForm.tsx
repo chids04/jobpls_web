@@ -19,6 +19,7 @@ export type TemplateFormValues = {
     templateName: string;
     name: string;
     email: string;
+    github: string | null;
     summary: string;
     skills: string[];
     projects: Project[];
@@ -49,6 +50,7 @@ export function TemplateForm({
     const [name, setName] = useState("");
     const [summary, setSummary] = useState("");
     const [email, setEmail] = useState("");
+    const [github, setGithub] = useState("");
     const [skillsText, setSkillsText] = useState("");
     const [projects, setProjects] = useState<Project[]>([]);
     const [workExperiences, setWorkExperiences] = useState<Experience[]>([]);
@@ -69,6 +71,7 @@ export function TemplateForm({
         setName(initial.name || "");
         setEmail(initial.email || "");
         setSummary(initial.summary || "");
+        setGithub(initial.github || "");
         const initSkills = Array.isArray(initial.skills) ? initial.skills : [];
         setSkillsText(initSkills.join(", "));
 
@@ -115,6 +118,7 @@ export function TemplateForm({
         setTemplateName("");
         setName("");
         setEmail("");
+        setGithub("");
         setSummary("");
         setSkillsText("");
         setProjects([]);
@@ -150,6 +154,7 @@ export function TemplateForm({
             templateName: templateName.trim(),
             name,
             email,
+            github: github.trim() || null,
             summary,
             skills: getCurrentSkills(),
             projects,
@@ -285,6 +290,18 @@ export function TemplateForm({
                     className="max-w-md"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                />
+            </div>
+
+            {/* github */}
+            <div className="flex flex-col max-w-md w-full">
+                <h3>github</h3>
+                <Input
+                    type="url"
+                    placeholder="enter your github url"
+                    className="max-w-md"
+                    value={github}
+                    onChange={(e) => setGithub(e.target.value)}
                 />
             </div>
 
