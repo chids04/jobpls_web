@@ -26,6 +26,11 @@ export function GeneratePage() {
     const { cv, template, jobDesc, specialInstr, isReady, missingItems } =
         useGeneratePageData();
 
+    // local state for tab-independent editing
+    const [localJobDesc, setLocalJobDesc] = useState("");
+    const [localSpecialInstr, setLocalSpecialInstr] = useState("");
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
     const { generatedPdfs, updateGenerated, clearGenerated } =
         useLastGeneratedPDF();
 
@@ -36,6 +41,25 @@ export function GeneratePage() {
         cvUrl: string | null;
         coverUrl: string | null;
     }>({ cvUrl: null, coverUrl: null });
+
+    // Initialize local state from localStorage on mount
+    useEffect(() => {
+        setLocalJobDesc(jobDesc.jobDesc);
+        setLocalSpecialInstr(specialInstr.specialInstr);
+    }, []);
+
+    // Track unsaved changes
+    useEffect(() => {
+        const hasChanges =
+            localJobDesc !== jobDesc.jobDesc ||
+            localSpecialInstr !== specialInstr.specialInstr;
+        setHasUnsavedChanges(hasChanges);
+    }, [
+        localJobDesc,
+        localSpecialInstr,
+        jobDesc.jobDesc,
+        specialInstr.specialInstr,
+    ]);
 
     // tanstack query mutation for the generate request
     const generateMutation = useMutation({
@@ -55,12 +79,22 @@ export function GeneratePage() {
     });
 
     const handleGenerate = async () => {
-        if (!isReady) {
+        // Check if we have required templates
+        if (!cv.selectedCV || !template.selectedTemplate) {
             setError(`missing: ${missingItems.join(", ")}`);
             return;
         }
 
+        // Check if local job description is filled
+        if (!localJobDesc.trim()) {
+            setError("Please enter a job description");
+            return;
+        }
+
         setError("");
+
+        // Save to localStorage before submission
+        saveToLocalStorage();
 
         // convert about me template to resume
         const resume: ResumeData = {
@@ -81,12 +115,18 @@ export function GeneratePage() {
 
         const req: GenerateReq = {
             resume,
-            job_desc: jobDesc.jobDesc,
-            special_instr: specialInstr.specialInstr,
+            job_desc: localJobDesc,
+            special_instr: localSpecialInstr,
         };
 
         // use the mutation to send the request
         generateMutation.mutate(req);
+    };
+
+    // Manual save function
+    const saveToLocalStorage = () => {
+        jobDesc.updateJobDesc(localJobDesc);
+        specialInstr.updateSpecialInstr(localSpecialInstr);
     };
 
     // memoize callback to prevent infinite re-renders in polling component
@@ -149,21 +189,50 @@ export function GeneratePage() {
         <div className="flex flex-col gap-5 items-center">
             <div className="flex flex-col md:flex-row gap-5 items-center justify-center w-full">
                 <div className="flex flex-col max-w-lg w-full gap-5 items-center justify-center">
-                    <Textarea
-                        className="max-w-md min-h-28 max-h-32"
-                        placeholder="special instructions"
-                        value={specialInstr.specialInstr}
-                        onChange={(e) =>
-                            specialInstr.updateSpecialInstr(e.target.value)
-                        }
-                    />
+                    <div className="flex flex-col gap-2 w-full max-w-md">
+                        <div className="flex items-center justify-between">
+                            <label className="text-sm text-slate-400">
+                                Special Instructions
+                            </label>
+                            {hasUnsavedChanges && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={saveToLocalStorage}
+                                    className="text-xs text-yellow-400 border-yellow-500 hover:bg-yellow-500 hover:text-black"
+                                >
+                                    💾 Save Changes
+                                </Button>
+                            )}
+                        </div>
+                        <Textarea
+                            className={`max-w-md min-h-28 max-h-32 ${hasUnsavedChanges ? "border-yellow-500" : ""}`}
+                            placeholder="special instructions"
+                            value={localSpecialInstr}
+                            onChange={(e) =>
+                                setLocalSpecialInstr(e.target.value)
+                            }
+                        />
+                    </div>
 
-                    <Textarea
-                        className="max-w-md min-h-48 max-h-64 "
-                        placeholder="job description"
-                        value={jobDesc.jobDesc}
-                        onChange={(e) => jobDesc.updateJobDesc(e.target.value)}
-                    />
+                    <div className="flex flex-col gap-2 w-full max-w-md">
+                        <div className="flex items-center justify-between">
+                            <label className="text-sm text-slate-400">
+                                Job Description
+                            </label>
+                            {hasUnsavedChanges && (
+                                <span className="text-xs text-yellow-400">
+                                    ● Unsaved changes
+                                </span>
+                            )}
+                        </div>
+                        <Textarea
+                            className={`max-w-md min-h-48 max-h-64 ${hasUnsavedChanges ? "border-yellow-500" : ""}`}
+                            placeholder="job description"
+                            value={localJobDesc}
+                            onChange={(e) => setLocalJobDesc(e.target.value)}
+                        />
+                    </div>
                 </div>
 
                 {cv.selectedCV && template.selectedTemplate ? (

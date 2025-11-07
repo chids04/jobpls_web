@@ -58,7 +58,7 @@ export function CVTemplateSelection() {
 
         return () => {
             api.off("select", handleSelect);
-            api.off("reInit");
+            api.off("reInit", () => {});
         };
     }, [api, templates, selectCV]);
 
