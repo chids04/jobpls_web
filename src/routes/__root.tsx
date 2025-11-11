@@ -12,6 +12,22 @@ import { Briefcase } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
+// Create QueryClient singleton to prevent hydration mismatch
+let queryClient: QueryClient | undefined;
+
+function getQueryClient() {
+  if (!queryClient) {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          staleTime: 60 * 1000,
+        },
+      },
+    });
+  }
+  return queryClient;
+}
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -24,11 +40,9 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 });
 
-const queryClient = new QueryClient();
-
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={getQueryClient()}>
       <html lang="en">
         <head>
           <HeadContent />
