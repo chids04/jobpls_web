@@ -1,4 +1,3 @@
-"use client";
 import { useEffect, useState } from "react";
 import { useSelectedCVTemplate } from "@/hooks/useAppStorage";
 import { CVTemplate } from "@/lib/types";
@@ -10,6 +9,12 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
+
+import EmblaCarousel, {
+  EmblaCarouselType,
+  EmblaEventType,
+} from "embla-carousel";
+
 import { ImageWithPreview } from "@/components/ui/image-preview";
 
 const items: CVTemplate[] = [
@@ -28,47 +33,13 @@ export function CVTemplateSelection() {
   const [templates] = useState<CVTemplate[]>(items);
   const { selectedCV, selectCV } = useSelectedCVTemplate();
 
-  const [count, setCount] = useState(0);
-  const [apiReady, setApiReady] = useState(false);
-  const [needsInitialScroll, setNeedsInitialScroll] = useState(true);
-
   // setup carousel api and event listeners
   useEffect(() => {
     if (!api) {
       return;
     }
 
-    setCount(api.scrollSnapList().length);
-
-    // handle selection changes
-    const handleSelect = () => {
-      const currentIndex = api.selectedScrollSnap();
-      const currentTemplate = templates[currentIndex];
-      if (currentTemplate) {
-        selectCV(currentTemplate);
-      }
-    };
-
-    api.on("select", handleSelect);
-
-    // listen for reInit event - this fires when API is fully ready
-    api.on("reInit", () => {
-      setApiReady(true);
-    });
-
-    return () => {
-      api.off("select", handleSelect);
-      api.off("reInit", () => {});
-    };
-  }, [api, templates, selectCV]);
-
-  // scroll to saved template on mount
-  useEffect(() => {
-    if (!api || !apiReady || templates.length === 0 || !needsInitialScroll) {
-      return;
-    }
-
-    if (selectedCV) {
+    if (api && selectedCV) {
       const scrollPos = templates.findIndex(
         (template) => template.name === selectedCV.name,
       );
@@ -78,8 +49,57 @@ export function CVTemplateSelection() {
       }
     }
 
-    setNeedsInitialScroll(false);
-  }, [api, apiReady, templates, selectedCV, needsInitialScroll]);
+    // handle selection changes
+    const handleSelect = () => {
+      const currentIndex = api.selectedScrollSnap();
+      const selectedTemplate = templates[currentIndex];
+      if (selectedTemplate) {
+        selectCV(selectedTemplate);
+      }
+    };
+
+    api.on("select", handleSelect);
+
+    // listen for reInit event - this fires when API is fully ready
+    api.on("reInit", onReinit);
+
+    return () => {
+      api.off("select", handleSelect);
+      api.off("reInit", onReinit);
+    };
+  }, [api]);
+
+  // scroll to saved template on mount
+  // useEffect(() => {
+  //   if (!api || !apiReady || templates.length === 0 || !needsInitialScroll) {
+  //     return;
+  //   }
+
+  //   if (selectedCV) {
+  //     const scrollPos = templates.findIndex(
+  //       (template) => template.name === selectedCV.name,
+  //     );
+
+  //     if (scrollPos > -1) {
+  //       api.scrollTo(scrollPos);
+  //     }
+  //   }
+
+  //   setNeedsInitialScroll(false);
+  // }, [api, apiReady, templates, selectedCV, needsInitialScroll]);
+
+  const onReinit = (emblaApi: EmblaCarouselType, eventName: EmblaEventType) => {
+    console.log(`event name ${eventName} triggered`);
+    if (selectedCV && api) {
+      const scrollPos = templates.findIndex(
+        (template) => template.name === selectedCV.name,
+      );
+
+      if (scrollPos > -1) {
+        api.scrollTo(scrollPos);
+      }
+    }
+  };
 
   const currentIndex = selectedCV
     ? templates.findIndex((t) => t.name === selectedCV.name)
@@ -88,7 +108,6 @@ export function CVTemplateSelection() {
   return (
     <div className="flex flex-col items-center gap-4">
       <h2 className="text-xl font-semibold">choose cv template</h2>
-
       <div className="mx-auto max-w-xs">
         <Carousel setApi={setApi} className="w-full max-w-xs">
           <CarouselContent>
@@ -111,12 +130,6 @@ export function CVTemplateSelection() {
         <div className="text-muted-foreground py-2 text-center text-sm">
           template {currentIndex + 1} of {templates.length}
         </div>
-
-        {selectedCV && (
-          <div className="text-center">
-            <div className="text-sm font-medium">{selectedCV.name}</div>
-          </div>
-        )}
       </div>
     </div>
   );

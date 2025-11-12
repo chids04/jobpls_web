@@ -12,13 +12,15 @@ function RouteComponent() {
   const { templates } = useAboutMeTemplates();
 
   return (
-    <div className="flex flex-col gap-10 items-center">
-      <div className="flex flex-col items-center gap-5">
-        <h1 className="text-2xl font-bold">select cv template</h1>
+    <div className="container mx-auto p-10 flex flex-col md:flex-row items-center gap-10 md:gap-40 justify-center">
+      <div className="flex flex-col items-center justify-center gap-5">
+        <h2 className="text-2xl font-bold text-center">
+          select about me template
+        </h2>
         <TemplateDropdown templates={templates} />
       </div>
 
-      <div className="w-full max-w-4xl">
+      <div className="">
         <CVTemplateSelection />
       </div>
     </div>

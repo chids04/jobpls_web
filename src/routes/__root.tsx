@@ -4,13 +4,12 @@ import {
   Scripts,
   createRootRoute,
 } from "@tanstack/react-router";
-// import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-// import { TanStackDevtools } from "@tanstack/react-devtools";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Briefcase } from "lucide-react";
+import { Briefcase, CircleUser } from "lucide-react";
 
 import appCss from "../styles.css?url";
+import { useState } from "react";
 
 // Create QueryClient singleton to prevent hydration mismatch
 let queryClient: QueryClient | undefined;
@@ -40,7 +39,11 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 });
 
+type CurrentPage = "about me" | "cv" | "generate" | "home";
+
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const [activeTab, setActiveTab] = useState<CurrentPage>("home");
+
   return (
     <QueryClientProvider client={getQueryClient()}>
       <html lang="en">
@@ -49,6 +52,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         </head>
         <body className="min-h-screen bg-zinc-900 text-zinc-100 antialiased dark">
           {/* dev note: laying out the page as a simple flex column for readability */}
+
+          <CircleUser
+            className="fixed top-0 right-0 mt-4 mr-4 w-10 h-10 z-50"
+            onClick={() => {
+              console.log("clicked");
+            }}
+          />
+
           <div className="flex min-h-screen flex-col">
             {/* header - centered 'jobpls' with a tiny rotated icon on the top-right */}
             <header className="w-full pt-8 pb-4 flex justify-center">
@@ -73,8 +84,22 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm sm:text-base">
                   <li>
                     <Link
+                      onClick={() => setActiveTab("home")}
+                      to="/home"
+                      //className="hover:text-white text-zinc-300 transition-colors"
+                      className="hover:text-white text-zinc-300 transition-colors"
+                      activeProps={{ className: "font-bold text-xl" }}
+                    >
+                      home
+                    </Link>
+                  </li>
+                  <li className="text-zinc-500">|</li>
+                  <li>
+                    <Link
+                      onClick={() => setActiveTab("about me")}
                       to="/about-me"
                       className="hover:text-white text-zinc-300 transition-colors"
+                      activeProps={{ className: "font-bold text-xl" }}
                     >
                       about me
                     </Link>
@@ -82,20 +107,24 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   <li className="text-zinc-500">|</li>
                   <li>
                     <Link
+                      onClick={() => setActiveTab("cv")}
                       to="/cv-template"
                       className="hover:text-white text-zinc-300 transition-colors"
+                      activeProps={{ className: "font-bold text-xl" }}
                     >
                       cv template
                     </Link>
                   </li>
                   <li className="text-zinc-500">|</li>
                   <li>
-                    <a
-                      href="/generate"
+                    <Link
+                      onClick={() => setActiveTab("generate")}
+                      to="/generate"
                       className="hover:text-white text-zinc-300 transition-colors"
+                      activeProps={{ className: "font-bold text-xl" }}
                     >
                       generate
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </nav>

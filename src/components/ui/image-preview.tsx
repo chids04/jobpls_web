@@ -15,7 +15,7 @@ export function ImagePreview({
   alt = "Image preview",
   isOpen,
   onClose,
-  className
+  className,
 }: ImagePreviewProps) {
   const [imageLoaded, setImageLoaded] = React.useState(false);
   const [imageError, setImageError] = React.useState(false);
@@ -48,7 +48,7 @@ export function ImagePreview({
           alt={alt}
           className={cn(
             "max-w-full max-h-full object-contain transition-opacity duration-200",
-            imageLoaded ? "opacity-100" : "opacity-0"
+            imageLoaded ? "opacity-100" : "opacity-0",
           )}
           onLoad={() => setImageLoaded(true)}
           onError={() => setImageError(true)}
@@ -61,7 +61,8 @@ export function ImagePreview({
   );
 }
 
-interface ImageWithPreviewProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface ImageWithPreviewProps
+  extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
   alt?: string;
   previewClassName?: string;
@@ -90,11 +91,16 @@ export function ImageWithPreview({
 
   return (
     <>
+      <p className="text-center mb-5">{alt}</p>
+
       <img
         {...props}
         src={src}
         alt={alt}
-        className={cn("cursor-pointer transition-opacity hover:opacity-80", className)}
+        className={cn(
+          "cursor-pointer transition-opacity hover:opacity-80",
+          className,
+        )}
         onClick={handleImageClick}
       />
 

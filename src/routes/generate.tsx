@@ -192,14 +192,16 @@ export function GeneratePage() {
           <div className="flex flex-col gap-2 w-full max-w-md">
             <div className="flex items-center justify-between">
               <label className="text-sm text-slate-400">
-                Special Instructions
+                extra instructions to follow during generation
               </label>
               {hasUnsavedChanges && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={saveToLocalStorage}
-                  className="text-xs text-yellow-400 border-yellow-500 hover:bg-yellow-500 hover:text-black"
+                  className="
+                  text-xs
+                  text-yellow-400 border-yellow-500 hover:bg-yellow-500 hover:text-black"
                 >
                   💾 Save Changes
                 </Button>
@@ -215,7 +217,7 @@ export function GeneratePage() {
 
           <div className="flex flex-col gap-2 w-full max-w-md">
             <div className="flex items-center justify-between">
-              <label className="text-sm text-slate-400">Job Description</label>
+              <label className="text-sm text-slate-400">job description</label>
               {hasUnsavedChanges && (
                 <span className="text-xs text-yellow-400">
                   ● Unsaved changes
@@ -232,21 +234,22 @@ export function GeneratePage() {
         </div>
 
         {cv.selectedCV && template.selectedTemplate ? (
-          <div className="flex flex-col gap-10">
-            <div className="flex flex-col items-center border-b-accent border-2 p-2">
+          <div className="flex flex-col items-center w-full gap-10">
+            <div></div>
+            <div className="flex flex-col w-full items-center border-b-accent border-2 p-2">
               <h1 className="text-xl">
                 selected cv -{" "}
                 <span className="font-bold">{cv.selectedCV.name}</span>
               </h1>
               <Link
-                className="hover:text-blue-400 hover:underline"
+                className="hover:text-blue-400 text-blue-300 hover:underline"
                 to="/cv-template"
               >
                 click to change
               </Link>
             </div>
 
-            <div className="flex flex-col items-center border-b-accent border-2 p-2">
+            <div className="flex flex-col items-center w-full  border-b-accent border-2 p-2">
               <h1 className="text-xl">
                 selected about me -{" "}
                 <span className="font-bold">
@@ -254,12 +257,20 @@ export function GeneratePage() {
                 </span>
               </h1>
               <Link
-                className="hover:text-blue-400 hover:underline"
+                className="hover:text-blue-400 text-blue-300 hover:underline"
                 to="/about-me"
               >
                 click to edit
               </Link>
             </div>
+
+            <Button
+              onClick={handleGenerate}
+              className="w-fit hover:text-black"
+              disabled={!isReady || generateMutation.isPending}
+            >
+              {generateMutation.isPending ? "generating..." : "generate"}
+            </Button>
           </div>
         ) : (
           <div className="flex flex-col items-center bg-red-700/40 border-red-900 p-2 border-2 text-red-400">
@@ -363,15 +374,6 @@ export function GeneratePage() {
             </Button>
           </div>
         )}
-
-      <div className="h-fit">
-        <Button
-          onClick={handleGenerate}
-          disabled={!isReady || generateMutation.isPending}
-        >
-          {generateMutation.isPending ? "generating..." : "generate"}
-        </Button>
-      </div>
 
       {error && (
         <div className="flex items-center max-w-sm bg-red-700/40 border-red-900 p-2 border-2 text-red-400">

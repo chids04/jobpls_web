@@ -2,9 +2,6 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { ProjectModal } from "@/components/about-me/ProjectModal";
-import { WorkExpModal } from "@/components/about-me/WorkExpModal";
-import { EducationModal } from "@/components/about-me/EducationModal";
 import {
   AboutMeTemplate,
   Project,
@@ -89,6 +86,8 @@ export function TemplateForm({
       education: initial.education || [],
       location: initial.location || "",
     });
+
+    setSkillsText(initial.skills.join(","));
 
     setModal(false);
     setEditingIndex(null);

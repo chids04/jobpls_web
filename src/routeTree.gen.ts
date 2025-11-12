@@ -9,11 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as HomeRedirectRouteImport } from './routes/home-redirect'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as CvTemplateRouteImport } from './routes/cv-template'
 import { Route as AboutMeRouteImport } from './routes/about-me'
 import { Route as IndexRouteImport } from './routes/index'
 
+const HomeRedirectRoute = HomeRedirectRouteImport.update({
+  id: '/home-redirect',
+  path: '/home-redirect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GenerateRoute = GenerateRouteImport.update({
   id: '/generate',
   path: '/generate',
@@ -40,12 +52,16 @@ export interface FileRoutesByFullPath {
   '/about-me': typeof AboutMeRoute
   '/cv-template': typeof CvTemplateRoute
   '/generate': typeof GenerateRoute
+  '/home': typeof HomeRoute
+  '/home-redirect': typeof HomeRedirectRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about-me': typeof AboutMeRoute
   '/cv-template': typeof CvTemplateRoute
   '/generate': typeof GenerateRoute
+  '/home': typeof HomeRoute
+  '/home-redirect': typeof HomeRedirectRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +69,34 @@ export interface FileRoutesById {
   '/about-me': typeof AboutMeRoute
   '/cv-template': typeof CvTemplateRoute
   '/generate': typeof GenerateRoute
+  '/home': typeof HomeRoute
+  '/home-redirect': typeof HomeRedirectRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about-me' | '/cv-template' | '/generate'
+  fullPaths:
+    | '/'
+    | '/about-me'
+    | '/cv-template'
+    | '/generate'
+    | '/home'
+    | '/home-redirect'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about-me' | '/cv-template' | '/generate'
-  id: '__root__' | '/' | '/about-me' | '/cv-template' | '/generate'
+  to:
+    | '/'
+    | '/about-me'
+    | '/cv-template'
+    | '/generate'
+    | '/home'
+    | '/home-redirect'
+  id:
+    | '__root__'
+    | '/'
+    | '/about-me'
+    | '/cv-template'
+    | '/generate'
+    | '/home'
+    | '/home-redirect'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,10 +104,26 @@ export interface RootRouteChildren {
   AboutMeRoute: typeof AboutMeRoute
   CvTemplateRoute: typeof CvTemplateRoute
   GenerateRoute: typeof GenerateRoute
+  HomeRoute: typeof HomeRoute
+  HomeRedirectRoute: typeof HomeRedirectRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/home-redirect': {
+      id: '/home-redirect'
+      path: '/home-redirect'
+      fullPath: '/home-redirect'
+      preLoaderRoute: typeof HomeRedirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/generate': {
       id: '/generate'
       path: '/generate'
@@ -107,6 +160,8 @@ const rootRouteChildren: RootRouteChildren = {
   AboutMeRoute: AboutMeRoute,
   CvTemplateRoute: CvTemplateRoute,
   GenerateRoute: GenerateRoute,
+  HomeRoute: HomeRoute,
+  HomeRedirectRoute: HomeRedirectRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
