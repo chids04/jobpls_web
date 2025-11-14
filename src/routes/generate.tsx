@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 
 import {
   useGeneratePageData,
-  useCurrentJob,
   useLastGeneratedPDF,
 } from "@/hooks/useAppStorage";
 
