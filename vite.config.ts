@@ -19,6 +19,11 @@ const config = defineConfig({
   server: {
     allowedHosts: ["chx"],
   },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/setupTests.ts",
+  },
 });
 
 export default config;

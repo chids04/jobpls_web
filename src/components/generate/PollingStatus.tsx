@@ -1,6 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, useRef } from "react";
 
+class HttpError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 // progress indicator component
 function ProgressIndicator({ currentStep }: { currentStep: number }) {
   const steps = [
@@ -58,8 +66,13 @@ const POLLING_INTERVAL = 5000; // poll every 5 seconds
 const fetchStatus = async (url: string): Promise<JobStatus> => {
   const res = await fetch(url);
 
+  // 2. Handle 429 specifically
+  if (res.status === 429) {
+    throw new HttpError("Rate limit exceeded", 429);
+  }
+
   if (!res.ok) {
-    throw new Error(`http error ${res.status}`);
+    throw new HttpError(`http error ${res.status}`, res.status);
   }
 
   return res.json();
@@ -91,8 +104,15 @@ type JobStatus =
 function PollingStatus({ url, onPDFsReady }: PollingStatusProps) {
   const { data, isPending, error } = useQuery({
     queryKey: ["jobStatus", url],
-
     queryFn: () => fetchStatus(url),
+
+    // 3. Don't retry immediately on rate limit, let the poll interval handle it
+    retry: (failureCount, error) => {
+      if (error instanceof HttpError && error.status === 429) {
+        return false;
+      }
+      return failureCount < 3;
+    },
 
     refetchInterval: (query) => {
       const latestData = query.state.data;
@@ -108,7 +128,7 @@ function PollingStatus({ url, onPDFsReady }: PollingStatusProps) {
         return false; // false stops the interval
       }
 
-      // continue polling every 5 seconds for active jobs
+      // continue polling every 5 seconds for active jobs (and errors like 429)
       return POLLING_INTERVAL;
     },
 
@@ -116,14 +136,10 @@ function PollingStatus({ url, onPDFsReady }: PollingStatusProps) {
     refetchOnReconnect: false,
   });
 
-  // prevent multiple callback calls for same job completion
   const [hasNotifiedParent, setHasNotifiedParent] = useState(false);
-
-  // use ref to store the latest callback without causing re-renders
   const onPDFsReadyRef = useRef(onPDFsReady);
   onPDFsReadyRef.current = onPDFsReady;
 
-  // handle PDF creation when job finishes - only call once per job
   useEffect(() => {
     if (
       data?.status === "Finished" &&
@@ -132,7 +148,6 @@ function PollingStatus({ url, onPDFsReady }: PollingStatusProps) {
     ) {
       setHasNotifiedParent(true);
       try {
-        // create blob URLs for PDFs
         const cv_blob = new Blob([b64toArr(data.cv)], {
           type: "application/pdf",
         });
@@ -143,7 +158,6 @@ function PollingStatus({ url, onPDFsReady }: PollingStatusProps) {
         });
         const cover_url = URL.createObjectURL(cover_blob);
 
-        // notify parent component once
         onPDFsReadyRef.current(cv_url, cover_url);
       } catch (error) {
         console.error("error creating PDF blobs:", error);
@@ -156,14 +170,12 @@ function PollingStatus({ url, onPDFsReady }: PollingStatusProps) {
     data && data.status === "Finished" ? data.cover : null,
   ]);
 
-  // reset notification flag when polling starts new job
   useEffect(() => {
     if (data?.status && data.status !== "Finished") {
       setHasNotifiedParent(false);
     }
   }, [data?.status]);
 
-  // render the component based on query state
   if (isPending) {
     return (
       <div className="flex items-center gap-2">
@@ -174,6 +186,22 @@ function PollingStatus({ url, onPDFsReady }: PollingStatusProps) {
   }
 
   if (error) {
+    // 4. Specific UI for Rate Limiting
+    if (error instanceof HttpError && error.status === 429) {
+      return (
+        <div className="bg-yellow-700/20 border-yellow-900 p-3 border-2 text-yellow-400 rounded mx-2 sm:mx-0 transition-all duration-300">
+          <div className="flex items-center gap-2 font-semibold">
+            <span>✋</span>
+            <span>Traffic is high</span>
+          </div>
+          <div className="text-sm text-yellow-300 mt-1">
+            We are rate limiting requests. Retrying in a few seconds...
+          </div>
+        </div>
+      );
+    }
+
+    // Generic Error
     return (
       <div className="bg-red-700/40 border-red-900 p-3 border-2 text-red-400 rounded">
         <div>❌ error: {error.message}</div>
@@ -185,7 +213,6 @@ function PollingStatus({ url, onPDFsReady }: PollingStatusProps) {
     return <div>no job data available</div>;
   }
 
-  // get current step for progress indicator
   const getCurrentStep = () => {
     switch (data.status) {
       case "Pending":
@@ -203,7 +230,6 @@ function PollingStatus({ url, onPDFsReady }: PollingStatusProps) {
     }
   };
 
-  // render based on job status
   switch (data.status) {
     case "Pending":
       return (
