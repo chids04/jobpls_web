@@ -45,6 +45,8 @@ export async function personaliseCV(
     },
   });
 
+  console.log(response);
+
   if (response.text == undefined) {
     throw new Error("failed to generate llm response");
   }
@@ -52,8 +54,6 @@ export async function personaliseCV(
   const generatedResume = ResumeDataSchema.parse(JSON.parse(response.text));
 
   console.log(generatedResume);
-
-  return generatedResume as ResumeData;
 }
 
 const GENERAL_CV_SYS_INSTR = String.raw`
