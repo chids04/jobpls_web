@@ -35,6 +35,13 @@ export const Route = createRootRoute({
       { title: "jobpls" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
+    scripts: [
+      {
+        type: "module",
+        src: "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst.ts/dist/esm/contrib/all-in-one-lite.bundle.js",
+        id: "typst",
+      },
+    ],
   }),
   shellComponent: RootDocument,
 });

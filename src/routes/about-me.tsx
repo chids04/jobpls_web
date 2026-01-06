@@ -4,7 +4,7 @@ import TemplatesList from "@/components/about-me/TemplatesList";
 import TemplateForm from "@/components/about-me/TemplateForm";
 import { useAboutMeTemplates } from "@/hooks/useAppStorage";
 
-import { AboutMeTemplate } from "@/lib/types";
+import { AboutMeTemplate, Education, Experience, Project } from "@/lib/types";
 
 export const Route = createFileRoute("/about-me")({
   component: RouteComponent,
@@ -73,9 +73,9 @@ function RouteComponent() {
     github: string | null;
     summary: string;
     skills: string[];
-    projects: AboutMeTemplate["projects"];
-    workExperiences: AboutMeTemplate["workExperiences"];
-    education: AboutMeTemplate["education"];
+    projects: Project[];
+    workExperiences: Experience[];
+    education: Education[];
   }) => {
     const now = new Date().toISOString();
 

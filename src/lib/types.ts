@@ -43,12 +43,9 @@ export interface GenerateResp {
   job_id: string;
 }
 
-// unified backend types
-export type EndDate = "Ongoing" | string; // dates are formatted as "YYYY-MM-DD"
-
 export interface DateRange {
-  start: string; // YYYY-MM-DD
-  end: EndDate;
+  start: Date; // YYYY-MM-DD
+  end: Date | "Ongoing";
 }
 
 export interface Project {
@@ -127,16 +124,28 @@ export type AboutMeTemplate = {
 };
 
 // utility functions for date conversion
-export function convertDateFromForm(mmYYYY: string): string {
-  if (!mmYYYY || mmYYYY.trim() === "") return "";
-  const [month, year] = mmYYYY.split("/");
-  return `${year}-${month.padStart(2, "0")}-01`;
-}
 
-export function convertDateToForm(isoDate: string): string {
-  if (!isoDate || isoDate.trim() === "") return "";
-  const date = new Date(isoDate);
+export const dateString = (date: Date): string => {
+  if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
+
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
   const year = date.getFullYear().toString();
   return `${month}/${year}`;
+};
+
+export function displayDate(dateRange: DateRange): string {
+  return `${dateString(dateRange.start)} - ${dateRange.end == "Ongoing" ? "Ongoing" : dateString(dateRange.end)}`;
+}
+
+export function formatDate(mmYYYY: string): Date {
+  if (!mmYYYY || mmYYYY.trim() === "") throw new Error("invalid date string");
+  const [month, year] = mmYYYY.split("/");
+
+  if (!month || !year || month.length != 2 || year.length != 4) {
+    throw new Error("invalid date string");
+  }
+
+  return new Date(Number(year), Number(month) - 1);
 }

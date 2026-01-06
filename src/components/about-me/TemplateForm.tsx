@@ -7,7 +7,7 @@ import {
   Project,
   Experience,
   Education,
-  convertDateToForm,
+  displayDate,
 } from "@/lib/types";
 
 import { ModalType, ModalDisplay } from "@/components/about-me/ModalDisplay";
@@ -290,18 +290,6 @@ export function TemplateForm({
 
     onSave(formData);
   };
-
-  /* format date range for display */
-  const formatDateRange = (dates: {
-    start: string;
-    end: string | "Ongoing";
-  }) => {
-    const startDate = convertDateToForm(dates.start);
-    const endDate =
-      dates.end === "Ongoing" ? dates.end : convertDateToForm(dates.end);
-    return `${startDate} - ${endDate}`;
-  };
-
   /* render form */
   return (
     <div className="flex flex-col gap-5 max-w-3xl mx-auto px-4 items-center py-6 border-2">
@@ -449,7 +437,7 @@ export function TemplateForm({
                 {edu.title} @ {edu.name}
               </div>
               <div className="text-xs text-zinc-400">
-                {formatDateRange(edu.dates)}
+                {displayDate(edu.dates)}
               </div>
               <div className="text-xs text-zinc-500">{edu.grade}</div>
               <div className="mt-1 flex gap-2">
@@ -496,7 +484,7 @@ export function TemplateForm({
                 {exp.title} @ {exp.company}
               </div>
               <div className="text-xs text-zinc-400">
-                {formatDateRange(exp.dates)}
+                {displayDate(exp.dates)}
               </div>
               <div className="mt-1 flex gap-2">
                 <Button
@@ -574,7 +562,7 @@ export function TemplateForm({
 
       {/* modal overlay */}
       {isModal ? (
-        <div className="fixed inset-0 z-[1000] bg-zinc-950/90 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-1000 bg-zinc-950/90 flex items-center justify-center p-4">
           <ModalDisplay
             type={modalType}
             onSave={updateModalSelection}
