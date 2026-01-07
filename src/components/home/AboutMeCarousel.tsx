@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Autoplay from "embla-carousel-autoplay";
 import AutoScroll from "embla-carousel-auto-scroll";
 
@@ -6,17 +6,15 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { AboutMeTemplate } from "@/lib/types";
+import { ResumeTemplate } from "@/store/useStore";
 
 interface AboutMeCarouselProps {
-  templates: AboutMeTemplate[];
+  templates: ResumeTemplate[];
 }
 export function AboutMeCarousel({ templates }: AboutMeCarouselProps) {
-  const [api, setApi] = useState<CarouselApi>();
+  const [, setApi] = useState<CarouselApi>();
 
   return (
     <Carousel
@@ -47,30 +45,30 @@ export function AboutMeCarousel({ templates }: AboutMeCarouselProps) {
               </div>
 
               <div className="text-xs text-zinc-400">
-                Created {new Date(tpl.createdAt).toLocaleString()}
+                Created {tpl.createdAt.toLocaleString()}
               </div>
 
               <div className="text-sm text-zinc-200">
                 <div className="truncate">
-                  <span className="text-zinc-400">Name:</span> {tpl.name || "-"}
+                  <span className="text-zinc-400">Name:</span> {tpl.full_name || "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Email:</span>{" "}
                   {tpl.email || "-"}
                 </div>
                 <div className="truncate">
-                  <span className="text-zinc-400">Skills:</span>{" "}
-                  {tpl.skills && tpl.skills.length > 0
-                    ? tpl.skills.join(", ")
+                  <span className="text-zinc-400">Languages:</span>{" "}
+                  {tpl.languages && tpl.languages.length > 0
+                    ? tpl.languages.join(", ")
                     : "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Projects:</span>{" "}
-                  {tpl.projects?.length}
+                  {tpl.projects?.length || 0}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Work Experience:</span>{" "}
-                  {tpl.workExperiences?.length || 0}
+                  {tpl.work_exp?.length || 0}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Education:</span>{" "}

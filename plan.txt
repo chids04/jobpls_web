@@ -1,0 +1,9 @@
+what we need to do
+
+no auth for now, let it be free to use
+i  want to use this as an exercise of creating software that other people will be using.
+
+what i need to do
+
+fix pdf gen, need to clean up the interface a bit
+set up google ai gen with an api key so that i can make some prompts

@@ -1,33 +1,34 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
-  AboutMeTemplate,
   Project,
   Experience,
   Education,
-  convertDateToForm,
-} from "@/lib/types";
+} from "@/lib/schemas";
+import { ResumeTemplate } from "@/store/useStore";
 
 import { ModalType, ModalDisplay } from "@/components/about-me/ModalDisplay";
 
 /* form values used when creating or editing templates */
 export type TemplateFormValues = {
   templateName: string;
-  name: string;
+  full_name: string;
   email: string;
-  location: string;
+  residency: string;
   github: string | null;
-  summary: string;
-  skills: string[];
+  about_me: string;
+  languages: string[];
+  frameworks: string[];
+  developer_tools: string[];
   projects: Project[];
-  workExperiences: Experience[];
+  work_exp: Experience[];
   education: Education[];
 };
 
 export type TemplateFormProps = {
-  initial?: AboutMeTemplate | null;
+  initial?: ResumeTemplate | null;
   // handler to cancel from parent
   onCancel: () => void;
 
@@ -50,17 +51,21 @@ export function TemplateForm({
 
   const [formData, setFormData] = useState<TemplateFormValues>({
     templateName: "",
-    name: "",
-    summary: "",
+    full_name: "",
+    about_me: "",
     email: "",
     github: "",
-    skills: [],
+    languages: [],
+    frameworks: [],
+    developer_tools: [],
     projects: [],
-    workExperiences: [],
+    work_exp: [],
     education: [],
-    location: "",
+    residency: "",
   });
-  const [skillsText, setSkillsText] = useState("");
+  const [languagesText, setLanguagesText] = useState("");
+  const [frameworksText, setFrameworksText] = useState("");
+  const [toolsText, setToolsText] = useState("");
 
   /* modal state for nested editors */
   const [isModal, setModal] = useState(false);
@@ -76,18 +81,22 @@ export function TemplateForm({
 
     setFormData({
       templateName: initial.templateName || "",
-      name: initial.name || "",
-      summary: initial.summary || "",
+      full_name: initial.full_name || "",
+      about_me: initial.about_me || "",
       email: initial.email || "",
       github: initial.github || "",
-      skills: initial.skills,
+      languages: initial.languages || [],
+      frameworks: initial.frameworks || [],
+      developer_tools: initial.developer_tools || [],
       projects: initial.projects || [],
-      workExperiences: initial.workExperiences || [],
+      work_exp: initial.work_exp || [],
       education: initial.education || [],
-      location: initial.location || "",
+      residency: initial.residency || "",
     });
 
-    setSkillsText(initial.skills.join(","));
+    setLanguagesText(initial.languages?.join(",") || "");
+    setFrameworksText(initial.frameworks?.join(",") || "");
+    setToolsText(initial.developer_tools?.join(",") || "");
 
     setModal(false);
     setEditingIndex(null);
@@ -150,19 +159,19 @@ export function TemplateForm({
         break;
 
       case "work":
-        let new_work = [...formData.workExperiences];
+        let new_work = [...formData.work_exp];
         // this is not good but idk the better alternative lol
         if (editingIndex != null) {
           new_work[editingIndex] = newItem as Experience;
           setFormData((prev) => ({
             ...prev,
-            workExperiences: new_work,
+            work_exp: new_work,
           }));
         } else {
           new_work = [...new_work, newItem as Experience];
           setFormData((prev) => ({
             ...prev,
-            workExperiences: new_work,
+            work_exp: new_work,
           }));
         }
         break;
@@ -206,12 +215,12 @@ export function TemplateForm({
         break;
 
       case "work":
-        const newWork = formData.workExperiences.filter(
+        const newWork = formData.work_exp.filter(
           (_, i) => i != removeIdx,
         );
         setFormData((prev) => ({
           ...prev,
-          workExperiences: newWork,
+          work_exp: newWork,
         }));
         break;
     }
@@ -221,15 +230,17 @@ export function TemplateForm({
   const resetForm = () => {
     setFormData({
       templateName: "",
-      name: "",
-      summary: "",
+      full_name: "",
+      about_me: "",
       email: "",
       github: "",
-      skills: [],
+      languages: [],
+      frameworks: [],
+      developer_tools: [],
       projects: [],
-      workExperiences: [],
+      work_exp: [],
       education: [],
-      location: "",
+      residency: "",
     });
     setModal(false);
     setEditingIndex(null);
@@ -246,10 +257,10 @@ export function TemplateForm({
     }));
   };
 
-  /* get current skills array from text input */
-  const getCurrentSkills = () => {
-    if (skillsText.trim().length === 0) return [];
-    return skillsText
+  /* get current array from text input */
+  const parseList = (text: string) => {
+    if (text.trim().length === 0) return [];
+    return text
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
@@ -265,7 +276,7 @@ export function TemplateForm({
           break;
 
         case "work":
-          const initialWork = formData.workExperiences[index];
+          const initialWork = formData.work_exp[index];
           setModalItem(initialWork);
           break;
 
@@ -290,18 +301,6 @@ export function TemplateForm({
 
     onSave(formData);
   };
-
-  /* format date range for display */
-  const formatDateRange = (dates: {
-    start: string;
-    end: string | "Ongoing";
-  }) => {
-    const startDate = convertDateToForm(dates.start);
-    const endDate =
-      dates.end === "Ongoing" ? dates.end : convertDateToForm(dates.end);
-    return `${startDate} - ${endDate}`;
-  };
-
   /* render form */
   return (
     <div className="flex flex-col gap-5 max-w-3xl mx-auto px-4 items-center py-6 border-2">
@@ -317,14 +316,14 @@ export function TemplateForm({
         />
       </div>
 
-      {/* name */}
+      {/* full_name */}
       <div className="flex flex-col">
         <h3>name</h3>
         <Input
           placeholder="enter your name"
           className="max-w-3xs"
-          name="name"
-          value={formData.name}
+          name="full_name"
+          value={formData.full_name}
           onChange={handleInputChange}
         />
       </div>
@@ -342,14 +341,14 @@ export function TemplateForm({
         />
       </div>
 
-      {/* location */}
+      {/* residency */}
       <div className="flex flex-col max-w-md w-full">
         <h3>location</h3>
         <Input
           placeholder="enter location (London/UK)"
-          name="location"
+          name="residency"
           className="max-w-md"
-          value={formData.location}
+          value={formData.residency}
           onChange={handleInputChange}
         />
       </div>
@@ -367,57 +366,58 @@ export function TemplateForm({
         />
       </div>
 
-      {/* summary */}
+      {/* about_me */}
       <div className="flex flex-col w-full gap-1">
         <h3>about me</h3>
         <Textarea
           className="w-full"
-          name="summary"
-          value={formData.summary}
+          name="about_me"
+          value={formData.about_me}
           onChange={handleInputChange}
         />
       </div>
 
-      {/* skills editor */}
+      {/* languages editor */}
       <div className="flex flex-col w-full gap-1">
-        <h3>skills</h3>
+        <h3>languages</h3>
         <div className="flex flex-row gap-2 w-full">
           <Textarea
             className="w-full"
             placeholder="e.g. react, typescript, tailwind"
-            name="skills"
-            value={skillsText}
-            onChange={(e) => setSkillsText(e.target.value)}
+            name="languages"
+            value={languagesText}
+            onChange={(e) => setLanguagesText(e.target.value)}
           />
           <Button
             type="button"
             variant="outline"
             onClick={() => {
-              const list = getCurrentSkills();
-              setSkillsText(list.join(", "));
+              const list = parseList(languagesText);
+              setFormData(prev => ({ ...prev, languages: list }));
+              setLanguagesText(list.join(", "));
             }}
           >
             save
           </Button>
         </div>
         <p className="text-xs text-zinc-400">
-          enter skills as a comma-separated list.
+          enter languages as a comma-separated list.
         </p>
         <div className="flex flex-wrap gap-2 mt-2">
-          {getCurrentSkills().map((skill, i) => (
+          {formData.languages.map((lang, i) => (
             <div
-              key={`${skill}-${i}`}
+              key={`${lang}-${i}`}
               className="flex items-center gap-2 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-sm"
             >
-              <span>{skill}</span>
+              <span>{lang}</span>
               <Button
                 type="button"
                 size="sm"
                 variant="destructive"
                 onClick={() => {
-                  const currentSkills = getCurrentSkills();
-                  const next = currentSkills.filter((_, idx) => idx !== i);
-                  setSkillsText(next.join(", "));
+                  const next = formData.languages.filter((_, idx) => idx !== i);
+                  setFormData(prev => ({ ...prev, languages: next }));
+                  setLanguagesText(next.join(", "));
                 }}
               >
                 delete
@@ -426,6 +426,101 @@ export function TemplateForm({
           ))}
         </div>
       </div>
+
+      {/* frameworks editor */}
+      <div className="flex flex-col w-full gap-1">
+        <h3>frameworks</h3>
+        <div className="flex flex-row gap-2 w-full">
+          <Textarea
+            className="w-full"
+            placeholder="e.g. react, nextjs, express"
+            name="frameworks"
+            value={frameworksText}
+            onChange={(e) => setFrameworksText(e.target.value)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              const list = parseList(frameworksText);
+              setFormData(prev => ({ ...prev, frameworks: list }));
+              setFrameworksText(list.join(", "));
+            }}
+          >
+            save
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {formData.frameworks.map((fw, i) => (
+            <div
+              key={`${fw}-${i}`}
+              className="flex items-center gap-2 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-sm"
+            >
+              <span>{fw}</span>
+              <Button
+                type="button"
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  const next = formData.frameworks.filter((_, idx) => idx !== i);
+                  setFormData(prev => ({ ...prev, frameworks: next }));
+                  setFrameworksText(next.join(", "));
+                }}
+              >
+                delete
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* developer_tools editor */}
+      <div className="flex flex-col w-full gap-1">
+        <h3>developer tools</h3>
+        <div className="flex flex-row gap-2 w-full">
+          <Textarea
+            className="w-full"
+            placeholder="e.g. git, docker, kubernetes"
+            name="developer_tools"
+            value={toolsText}
+            onChange={(e) => setToolsText(e.target.value)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              const list = parseList(toolsText);
+              setFormData(prev => ({ ...prev, developer_tools: list }));
+              setToolsText(list.join(", "));
+            }}
+          >
+            save
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {formData.developer_tools.map((tool, i) => (
+            <div
+              key={`${tool}-${i}`}
+              className="flex items-center gap-2 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-sm"
+            >
+              <span>{tool}</span>
+              <Button
+                type="button"
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  const next = formData.developer_tools.filter((_, idx) => idx !== i);
+                  setFormData(prev => ({ ...prev, developer_tools: next }));
+                  setToolsText(next.join(", "));
+                }}
+              >
+                delete
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* education editor */}
       <div className="flex flex-col gap-2 w-full">
         <div className="flex items-center gap-2">
@@ -449,7 +544,7 @@ export function TemplateForm({
                 {edu.title} @ {edu.name}
               </div>
               <div className="text-xs text-zinc-400">
-                {formatDateRange(edu.dates)}
+                {edu.start_date} - {edu.end_date}
               </div>
               <div className="text-xs text-zinc-500">{edu.grade}</div>
               <div className="mt-1 flex gap-2">
@@ -487,7 +582,7 @@ export function TemplateForm({
           </Button>
         </div>
         <div className="flex flex-wrap gap-3">
-          {formData.workExperiences.map((exp: Experience, i: number) => (
+          {formData.work_exp.map((exp: Experience, i: number) => (
             <div
               key={i}
               className="rounded border border-zinc-700 bg-zinc-800 px-3 py-2"
@@ -496,7 +591,7 @@ export function TemplateForm({
                 {exp.title} @ {exp.company}
               </div>
               <div className="text-xs text-zinc-400">
-                {formatDateRange(exp.dates)}
+                {exp.start_date} - {exp.end_date}
               </div>
               <div className="mt-1 flex gap-2">
                 <Button
@@ -574,7 +669,7 @@ export function TemplateForm({
 
       {/* modal overlay */}
       {isModal ? (
-        <div className="fixed inset-0 z-[1000] bg-zinc-950/90 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-1000 bg-zinc-950/90 flex items-center justify-center p-4">
           <ModalDisplay
             type={modalType}
             onSave={updateModalSelection}
@@ -589,3 +684,4 @@ export function TemplateForm({
 }
 
 export default TemplateForm;
+

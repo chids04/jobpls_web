@@ -5,15 +5,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
-import {
-  useGeneratePageData,
-  useLastGeneratedPDF,
-} from "@/hooks/useAppStorage";
+import { useStore } from "@/store/useStore";
 
-import { SERVER_URL, ResumeData, type GenerateReq } from "@/lib/types";
-import PollingStatus from "@/components/generate/PollingStatus";
+import { SERVER_URL } from "@/lib/types";
+import { Resume } from "@/lib/schemas";
 import { sendGenerate } from "@/lib/api";
 import { ExternalLinkIcon, DownloadIcon } from "lucide-react";
+import { CV_Type, genCV } from "@/lib/pdf_gen";
+import { personaliseCV } from "@/lib/prompts";
+import clsx from "clsx";
 
 // generate page allows users to gen their cv and add a short pre-prompt
 
@@ -22,42 +22,70 @@ export const Route = createFileRoute("/generate")({
   ssr: false,
 });
 
-export function GeneratePage() {
-  const { cv, template, jobDesc, specialInstr, isReady, missingItems } =
-    useGeneratePageData();
+function GeneratePage() {
+  const {
+    selectedCV,
+    templates,
+    selectedTemplateId,
+    jobDesc,
+    specialInstr,
+    setJobDesc,
+    setSpecialInstr,
+    generatedPdfs,
+    setGeneratedPdfs,
+    clearGenerated,
+  } = useStore();
+
+  const selectedTemplate = selectedTemplateId
+    ? templates[selectedTemplateId]
+    : null;
+  const isReady = !!(
+    selectedCV &&
+    selectedTemplate &&
+    jobDesc.trim().length > 0
+  );
+
+  const missingItems: string[] = [];
+  if (!selectedCV) missingItems.push("CV template");
+  if (!selectedTemplate) missingItems.push("About Me template");
+  if (jobDesc.trim().length === 0) missingItems.push("Job description");
 
   // local state for tab-independent editing
   const [localJobDesc, setLocalJobDesc] = useState("");
   const [localSpecialInstr, setLocalSpecialInstr] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const { generatedPdfs, updateGenerated, clearGenerated } =
-    useLastGeneratedPDF();
-
   const [pollUrl, setPollingUrl] = useState<string>("");
   const [error, setError] = useState("");
-  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+
   const [pdfUrls, setPdfUrls] = useState<{
     cvUrl: string | null;
     coverUrl: string | null;
   }>({ cvUrl: null, coverUrl: null });
 
+  const [status, setStatus] = useState({
+    success: true,
+    msg: "",
+  });
+
+  const setStatusMessage = (msg: string, success: boolean) => {
+    setStatus({ msg, success });
+
+    setTimeout(() => {
+      setStatus({ msg: "", success: true });
+    }, 2000);
+  };
+
   useEffect(() => {
-    setLocalJobDesc(jobDesc.jobDesc);
-    setLocalSpecialInstr(specialInstr.specialInstr);
-  }, [jobDesc.jobDesc, specialInstr.specialInstr]);
+    setLocalJobDesc(jobDesc);
+    setLocalSpecialInstr(specialInstr);
+  }, [jobDesc, specialInstr]);
 
   useEffect(() => {
     const hasChanges =
-      localJobDesc !== jobDesc.jobDesc ||
-      localSpecialInstr !== specialInstr.specialInstr;
+      localJobDesc !== jobDesc || localSpecialInstr !== specialInstr;
     setHasUnsavedChanges(hasChanges);
-  }, [
-    localJobDesc,
-    localSpecialInstr,
-    jobDesc.jobDesc,
-    specialInstr.specialInstr,
-  ]);
+  }, [localJobDesc, localSpecialInstr, jobDesc, specialInstr]);
 
   // tanstack query mutation for the generate request
   const generateMutation = useMutation({
@@ -65,12 +93,12 @@ export function GeneratePage() {
     onSuccess: (jobId: string) => {
       const pollUrl = `${SERVER_URL}/job/${jobId}`;
       setPollingUrl(pollUrl);
-      setCurrentJobId(jobId);
 
       // clear previous pdf urls when starting new generation
       setPdfUrls({ cvUrl: null, coverUrl: null });
       setError("");
     },
+    // 3. dont't retry immediately on rate limit, let the poll interval handle it
     onError: (error: any) => {
       console.error("generate error:", error);
       setError(error.message || "failed to start generation");
@@ -79,7 +107,7 @@ export function GeneratePage() {
 
   const handleGenerate = async () => {
     // Check if we have required templates
-    if (!cv.selectedCV || !template.selectedTemplate) {
+    if (!selectedCV || !selectedTemplate) {
       setError(`missing: ${missingItems.join(", ")}`);
       return;
     }
@@ -92,66 +120,86 @@ export function GeneratePage() {
 
     setError("");
 
-    // Save to localStorage before submission
-    saveToLocalStorage();
+    // Save to store before submission
+    saveToStore();
 
-    // convert about me template to resume
-    const resume: ResumeData = {
-      header: {
-        full_name: template.selectedTemplate.name,
-        email: template.selectedTemplate.email,
-        github: template.selectedTemplate.github || undefined,
-        residency: "",
-      },
-      summary: {
-        about_me: template.selectedTemplate.summary,
-      },
-      tech_skills: undefined,
-
-      projects: template.selectedTemplate.projects ?? undefined,
-      work_exp: template.selectedTemplate.workExperiences ?? undefined,
+    // convert about me template to flattened resume format
+    const resume: Resume = {
+      full_name: selectedTemplate.full_name,
+      email: selectedTemplate.email,
+      github: selectedTemplate.github || undefined,
+      residency: selectedTemplate.residency || "",
+      about_me: selectedTemplate.about_me,
+      education: selectedTemplate.education || undefined,
+      projects: selectedTemplate.projects || undefined,
+      work_exp: selectedTemplate.work_exp || undefined,
+      languages: selectedTemplate.languages || [],
+      frameworks: selectedTemplate.frameworks || [],
+      developer_tools: selectedTemplate.developer_tools || [],
     };
 
-    const req: GenerateReq = {
-      resume,
-      job_desc: localJobDesc,
-      special_instr: localSpecialInstr,
-    };
+    setStatusMessage("personalising doc", true);
 
-    // use the mutation to send the request
-    generateMutation.mutate(req);
+    let aiCV;
+
+    try {
+      aiCV = await personaliseCV(
+        resume,
+        localJobDesc,
+        localSpecialInstr,
+        CV_Type.TechCV,
+      );
+    } catch (error: any) {
+      setStatusMessage(error?.message || "An unknown error occurred", false);
+    }
+
+    if (aiCV == undefined) {
+      return;
+    }
+
+    setStatusMessage("personalised doc", true);
+
+    genCV(aiCV, CV_Type.TechCV)
+      .then((p) => {
+        if (p == undefined) {
+          throw new Error("pdf gen failed");
+        }
+
+        const cv_blob = new Blob([p.slice(0)], {
+          type: "application/pdf",
+        });
+
+        const cv_url = URL.createObjectURL(cv_blob);
+
+        console.log(cv_url);
+
+        handlePDFsReady(cv_url, "hello");
+      })
+      .catch((error) => {
+        console.log(`pdf generation error occured ${error}`);
+      });
   };
 
   // manual save function
-  const saveToLocalStorage = () => {
-    jobDesc.updateJobDesc(localJobDesc);
-    specialInstr.updateSpecialInstr(localSpecialInstr);
+  const saveToStore = () => {
+    setJobDesc(localJobDesc);
+    setSpecialInstr(localSpecialInstr);
   };
 
-  // memoize callback to prevent infinite re-renders in polling component
-  const handlePDFsReady = useCallback(
-    (cvUrl: string, coverUrl: string) => {
-      setPdfUrls({ cvUrl, coverUrl });
-
-      // save pdfs to localstorage for persistence
-      updateGenerated({ cv: cvUrl, cover: coverUrl });
-
-      // clear job state since generation is complete
-      setCurrentJobId(null);
-    },
-    [updateGenerated],
-  );
+  const handlePDFsReady = (cvUrl: string, coverUrl: string) => {
+    setPdfUrls({ cvUrl, coverUrl });
+    setGeneratedPdfs({ cv: cvUrl, cover: coverUrl });
+  };
 
   // reset state for new generation - memoized to avoid unnecessary re-renders
   const handleReset = useCallback(() => {
     setPollingUrl("");
     setPdfUrls({ cvUrl: null, coverUrl: null });
     setError("");
-    setCurrentJobId(null);
   }, []);
 
-  // open pdf in new tab - memoized since it doesn't depend on state
-  const openPDF = useCallback((url: string, filename: string) => {
+  // open pdf in new tab
+  const openPDF = (url: string, filename: string) => {
     const link = document.createElement("a");
     link.href = url;
     link.target = "_blank";
@@ -160,29 +208,17 @@ export function GeneratePage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, []);
+  };
 
-  // trigger pdf download - memoized since it doesn't depend on state
-  const downloadPDF = useCallback((url: string, filename: string) => {
+  // trigger pdf download
+  const downloadPDF = (url: string, filename: string) => {
     const link = document.createElement("a");
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, []);
-
-  // cleanup blob urls to prevent memory leaks
-  useEffect(() => {
-    return () => {
-      if (pdfUrls.cvUrl) {
-        URL.revokeObjectURL(pdfUrls.cvUrl);
-      }
-      if (pdfUrls.coverUrl) {
-        URL.revokeObjectURL(pdfUrls.coverUrl);
-      }
-    };
-  }, [pdfUrls.cvUrl, pdfUrls.coverUrl]);
+  };
 
   return (
     <div className="flex flex-col gap-5 items-center">
@@ -197,7 +233,7 @@ export function GeneratePage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={saveToLocalStorage}
+                  onClick={saveToStore}
                   className="
                   text-xs
                   text-yellow-400 border-yellow-500 hover:bg-yellow-500 hover:text-black"
@@ -217,14 +253,9 @@ export function GeneratePage() {
           <div className="flex flex-col gap-2 w-full max-w-md">
             <div className="flex items-center justify-between">
               <label className="text-sm text-slate-400">job description</label>
-              {hasUnsavedChanges && (
-                <span className="text-xs text-yellow-400">
-                  ● Unsaved changes
-                </span>
-              )}
             </div>
             <Textarea
-              className={`max-w-md min-h-48 max-h-64 ${hasUnsavedChanges ? "border-yellow-500" : ""}`}
+              className="max-w-md min-h-48 max-h-64"
               placeholder="job description"
               value={localJobDesc}
               onChange={(e) => setLocalJobDesc(e.target.value)}
@@ -232,13 +263,13 @@ export function GeneratePage() {
           </div>
         </div>
 
-        {cv.selectedCV && template.selectedTemplate ? (
+        {selectedCV && selectedTemplate ? (
           <div className="flex flex-col items-center w-full gap-10">
             <div></div>
             <div className="flex flex-col w-full items-center border-b-accent border-2 p-2">
               <h1 className="text-xl">
-                selected cv -{" "}
-                <span className="font-bold">{cv.selectedCV.name}</span>
+                {"selected cv - "}
+                <span className="font-bold">{selectedCV.name}</span>
               </h1>
               <Link
                 className="hover:text-blue-400 text-blue-300 hover:underline"
@@ -250,9 +281,9 @@ export function GeneratePage() {
 
             <div className="flex flex-col items-center w-full  border-b-accent border-2 p-2">
               <h1 className="text-xl">
-                selected about me -{" "}
+                {"selected about me - "}
                 <span className="font-bold">
-                  {template.selectedTemplate.templateName}
+                  {selectedTemplate.templateName}
                 </span>
               </h1>
               <Link
@@ -284,7 +315,20 @@ export function GeneratePage() {
         )}
       </div>
 
-      {/* display last generated pdfs from localstorage */}
+      {status.msg && (
+        <div
+          className={clsx(
+            "flex flex-col justify-center items-center p-4",
+            status.success === false
+              ? "bg-red-900 border-red-800 border-2 text-red-500"
+              : "bg-green-900 border-green-800 border-2 text-green-500",
+          )}
+        >
+          <p>{status.msg}</p>
+        </div>
+      )}
+
+      {/* display last generated pdfs from store */}
       {generatedPdfs &&
         generatedPdfs.cv &&
         generatedPdfs.cover &&
@@ -360,7 +404,7 @@ export function GeneratePage() {
             </div>
 
             <p className="text-xs text-slate-400 text-center max-w-md">
-              These are your previously generated documents from localStorage.
+              These are your previously generated documents.
             </p>
 
             <Button
@@ -379,14 +423,6 @@ export function GeneratePage() {
           <p>{error}</p>
         </div>
       )}
-
-      {!isReady && missingItems.length > 0 && (
-        <div className="flex items-center max-w-sm bg-yellow-700/40 border-yellow-900 p-2 border-2 text-yellow-400">
-          <p>missing: {missingItems.join(", ")}</p>
-        </div>
-      )}
-
-      {pollUrl && <PollingStatus url={pollUrl} onPDFsReady={handlePDFsReady} />}
 
       {pdfUrls.cvUrl && pdfUrls.coverUrl && (
         <div className="flex flex-col items-center gap-4 mt-6 p-6 bg-green-700/20 border-green-900 border-2 rounded-lg">

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AboutMeTemplate } from "@/lib/types";
+import { ResumeTemplate } from "@/store/useStore";
 import { AboutMeCarousel } from "@/components/home/AboutMeCarousel";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -19,13 +19,13 @@ export const Route = createFileRoute("/home")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const [mockAboutMe, setMockAboutMe] = useState<AboutMeTemplate[]>([]);
+  const [mockAboutMe, setMockAboutMe] = useState<ResumeTemplate[]>([]);
 
   useEffect(() => {
     const getMockData = async () => {
       try {
         const response = await axios.get("/home_data/mock_aboutme.json");
-        setMockAboutMe(response.data as AboutMeTemplate[]);
+        setMockAboutMe(response.data as ResumeTemplate[]);
       } catch (e) {
         if (axios.isAxiosError(e)) {
           console.log(e);

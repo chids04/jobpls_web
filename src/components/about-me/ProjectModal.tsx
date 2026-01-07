@@ -1,30 +1,14 @@
 import { useState } from "react";
-import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Project } from "@/lib/types";
+import { Project, ProjectSchema } from "@/lib/schemas";
 
 interface ProjectModalProps {
   onClose: () => void;
   onSave: (project: Project) => void;
   initial?: Partial<Project>;
 }
-
-const ProjectSchema = z.object({
-  title: z.string().trim(),
-  b1: z.string().optional().default(""),
-  b2: z.string().optional().default(""),
-  url: z
-    .string()
-    .trim()
-    .default("")
-    .refine(
-      (v) => v === "" || /^https?:\/\//i.test(v),
-      "Must be a valid URL or leave empty",
-    ),
-  languages: z.array(z.string().trim()).optional().default([]),
-});
 
 export function ProjectModal({ onClose, onSave, initial }: ProjectModalProps) {
   const [projectDetails, setProjectDetails] = useState<Project>({
@@ -68,7 +52,7 @@ export function ProjectModal({ onClose, onSave, initial }: ProjectModalProps) {
 
   const handleLanguageDelete = (index: number) => {
     setProjectDetails((prev) => {
-      const next = prev.languages.filter((_, i) => i !== index);
+      const next = prev.languages?.filter((_, i) => i !== index) ?? [];
       setLanguagesText(next.join(", "));
       return { ...prev, languages: next };
     });

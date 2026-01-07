@@ -4,7 +4,7 @@ import { EducationModal } from "./EducationModal";
 
 export type ModalType = "edu" | "work" | "project";
 
-import { Project, Experience, Education } from "@/lib/types";
+import { Project, Experience, Education } from "@/lib/schemas";
 
 interface ModalDisplayProps {
   type: ModalType;

@@ -7,20 +7,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CheckIcon, XIcon } from "lucide-react";
-import { useSelectedAboutMeTemplate } from "@/hooks/useAppStorage";
-import { type AboutMeTemplate } from "@/lib/types";
+import { useStore, ResumeTemplate } from "@/store/useStore";
 
 interface TemplateDropdownProps {
-  templates: AboutMeTemplate[];
-  onSelect?: (template: AboutMeTemplate | null) => void;
+  templates: ResumeTemplate[];
+  onSelect?: (template: ResumeTemplate | null) => void;
 }
 
 export function TemplateDropdown({
   templates,
   onSelect,
 }: TemplateDropdownProps) {
-  const { selectedTemplate, selectedId, selectTemplate, clearSelection } =
-    useSelectedAboutMeTemplate();
+  const { selectedTemplateId, setSelectedTemplateId } = useStore();
+
+  const selectedTemplate = templates.find(
+    (t) => t.templateId === selectedTemplateId,
+  );
 
   // notify parent of selection changes
   useEffect(() => {
@@ -29,20 +31,22 @@ export function TemplateDropdown({
 
   // validate that selected template still exists
   useEffect(() => {
-    if (selectedId && templates.length > 0) {
-      const stillExists = templates.some((t) => t.id === selectedId);
+    if (selectedTemplateId && templates.length > 0) {
+      const stillExists = templates.some(
+        (t) => t.templateId === selectedTemplateId,
+      );
       if (!stillExists) {
-        clearSelection();
+        setSelectedTemplateId(null);
       }
     }
-  }, [selectedId, templates, clearSelection]);
+  }, [selectedTemplateId, templates, setSelectedTemplateId]);
 
-  const handleSelect = (template: AboutMeTemplate) => {
-    selectTemplate(template);
+  const handleSelect = (template: ResumeTemplate) => {
+    setSelectedTemplateId(template.templateId);
   };
 
   const handleClear = () => {
-    clearSelection();
+    setSelectedTemplateId(null);
   };
 
   return (
@@ -59,12 +63,12 @@ export function TemplateDropdown({
           ) : (
             templates.map((template) => (
               <DropdownMenuItem
-                key={template.id}
+                key={template.templateId}
                 onClick={() => handleSelect(template)}
                 className="flex items-center justify-between"
               >
                 <span>{template.templateName}</span>
-                {selectedId === template.id && (
+                {selectedTemplateId === template.templateId && (
                   <CheckIcon className="h-4 w-4 text-green-500" />
                 )}
               </DropdownMenuItem>
@@ -87,11 +91,11 @@ export function TemplateDropdown({
 
       {selectedTemplate && (
         <div className="text-xs text-zinc-400 text-center max-w-xs">
-          <div>name: {selectedTemplate.name}</div>
+          <div>name: {selectedTemplate.full_name}</div>
           <div>email: {selectedTemplate.email}</div>
           <div>projects: {selectedTemplate.projects?.length || 0}</div>
           <div>
-            work experience: {selectedTemplate.workExperiences?.length || 0}
+            work experience: {selectedTemplate.work_exp?.length || 0}
           </div>
           <div>education: {selectedTemplate.education?.length || 0}</div>
         </div>
@@ -99,3 +103,5 @@ export function TemplateDropdown({
     </div>
   );
 }
+
+export default TemplateDropdown;
