@@ -1,13 +1,3 @@
-import { ResumeData } from "./types";
-
-class BaseTemplate {
-  cv_template: string;
-
-  constructor(resume: ResumeData) {
-    this.cv_template = TECH_TEMPLATE_1;
-  }
-}
-
 export const EDU_TEMPLATE = String.raw`
 #grid(
   columns: (1fr, auto),

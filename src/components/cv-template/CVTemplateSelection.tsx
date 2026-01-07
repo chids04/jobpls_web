@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSelectedCVTemplate } from "@/hooks/useAppStorage";
+import { useStore } from "@/store/useStore";
 import { CVTemplate } from "@/lib/types";
 import {
   Carousel,
@@ -10,7 +10,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 
-import EmblaCarousel, {
+import {
   EmblaCarouselType,
   EmblaEventType,
 } from "embla-carousel";
@@ -31,7 +31,7 @@ const items: CVTemplate[] = [
 export function CVTemplateSelection() {
   const [api, setApi] = useState<CarouselApi>();
   const [templates] = useState<CVTemplate[]>(items);
-  const { selectedCV, selectCV } = useSelectedCVTemplate();
+  const { selectedCV, setSelectedCV } = useStore();
 
   // setup carousel api and event listeners
   useEffect(() => {
@@ -45,7 +45,7 @@ export function CVTemplateSelection() {
       );
 
       if (scrollPos > -1) {
-        api.scrollTo(scrollPos);
+        api.scrollTo(scrollPos, true);
       }
     }
 
@@ -54,7 +54,7 @@ export function CVTemplateSelection() {
       const currentIndex = api.selectedScrollSnap();
       const selectedTemplate = templates[currentIndex];
       if (selectedTemplate) {
-        selectCV(selectedTemplate);
+        setSelectedCV(selectedTemplate);
       }
     };
 
@@ -69,26 +69,7 @@ export function CVTemplateSelection() {
     };
   }, [api]);
 
-  // scroll to saved template on mount
-  // useEffect(() => {
-  //   if (!api || !apiReady || templates.length === 0 || !needsInitialScroll) {
-  //     return;
-  //   }
-
-  //   if (selectedCV) {
-  //     const scrollPos = templates.findIndex(
-  //       (template) => template.name === selectedCV.name,
-  //     );
-
-  //     if (scrollPos > -1) {
-  //       api.scrollTo(scrollPos);
-  //     }
-  //   }
-
-  //   setNeedsInitialScroll(false);
-  // }, [api, apiReady, templates, selectedCV, needsInitialScroll]);
-
-  const onReinit = (emblaApi: EmblaCarouselType, eventName: EmblaEventType) => {
+  const onReinit = (_emblaApi: EmblaCarouselType, eventName: EmblaEventType) => {
     console.log(`event name ${eventName} triggered`);
     if (selectedCV && api) {
       const scrollPos = templates.findIndex(
@@ -96,7 +77,7 @@ export function CVTemplateSelection() {
       );
 
       if (scrollPos > -1) {
-        api.scrollTo(scrollPos);
+        api.scrollTo(scrollPos, true);
       }
     }
   };

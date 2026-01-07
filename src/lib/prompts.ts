@@ -1,14 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
-import { ResumeData } from "./types";
+import { Resume, ResumeDataSchema } from "./schemas";
 import { CV_Type } from "./pdf_gen";
-import { ResumeDataSchema } from "./schemas";
 
 import * as z from "zod";
 
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 export async function personaliseCV(
-  resume: ResumeData,
+  resume: Resume,
   job_desc: string,
   special_instr: string,
   cv_type: CV_Type,

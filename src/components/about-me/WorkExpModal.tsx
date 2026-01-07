@@ -1,52 +1,15 @@
 import { useState } from "react";
-import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { dateString, Experience, formatDate } from "@/lib/types";
+import { Experience, ExperienceSchema } from "@/lib/schemas";
 
 interface WorkExpModalProps {
   onClose: () => void;
   onSave: (exp: Experience) => void;
   initial?: Partial<Experience>;
 }
-
-const mmYYYY = z
-  .string()
-  .regex(/^(0[1-9]|1[0-2])\/\d{4}$/, "Must be in MM/YYYY format");
-
-const WorkExpSchema = z
-  .object({
-    title: z.string().trim().min(1, "Job title is required"),
-    company: z.string().trim().min(1, "Company is required"),
-    dateFrom: mmYYYY,
-    dateTo: z.string().optional().default(""),
-    b1: z.string().optional().default(""),
-    b2: z.string().optional().default(""),
-    ongoing: z.boolean(),
-  })
-  .superRefine((val, ctx) => {
-    if (val.ongoing) {
-      if (val.dateTo && val.dateTo.trim() !== "") {
-        if (!mmYYYY.safeParse(val.dateTo).success) {
-          ctx.addIssue({
-            path: ["dateTo"],
-            code: "custom",
-            message: "Must be in MM/YYYY format or left empty if ongoing",
-          });
-        }
-      }
-    } else {
-      if (!val.dateTo || !mmYYYY.safeParse(val.dateTo).success) {
-        ctx.addIssue({
-          path: ["dateTo"],
-          code: "custom",
-          message: "Required in MM/YYYY format",
-        });
-      }
-    }
-  });
 
 function normalizeMMYYYYInput(raw: string) {
   const digits = raw.replace(/\D/g, "");
@@ -60,40 +23,30 @@ function normalizeMMYYYYInput(raw: string) {
 }
 
 export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
-  // convert from unified format to form format for editing
-  const initialDateFrom = initial?.dates?.start
-    ? dateString(initial.dates.start)
-    : "";
-  const initialOngoing = initial?.dates?.end === "Ongoing";
-  const initialDateTo = initialOngoing
-    ? ""
-    : initial?.dates?.end
-      ? dateString(initial.dates.end as Date)
-      : "";
-
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<Experience>({
     title: initial?.title ?? "",
     company: initial?.company ?? "",
-    dateFrom: initialDateFrom,
-    dateTo: initialDateTo,
+    start_date: initial?.start_date ?? "",
+    end_date: initial?.end_date ?? "",
     b1: initial?.b1 ?? "",
     b2: initial?.b2 ?? "",
-    ongoing: initialOngoing,
   });
 
   const [errors, setErrors] = useState<
-    Partial<Record<keyof typeof form, string>>
+    Partial<Record<keyof Experience, string>>
   >({});
+
+  const isOngoing = form.end_date === "Ongoing";
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target as {
-      name: keyof typeof form;
+      name: keyof Experience;
       value: string;
     };
 
-    if (name === "dateFrom" || name === "dateTo") {
+    if (name === "start_date" || name === "end_date") {
       setForm((prev) => ({
         ...prev,
         [name]: normalizeMMYYYYInput(value),
@@ -110,21 +63,20 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
     const isChecked = Boolean(checked);
     setForm((prev) => ({
       ...prev,
-      ongoing: isChecked,
-      dateTo: isChecked ? "" : prev.dateTo,
+      end_date: isChecked ? "Ongoing" : "",
     }));
-    setErrors((prev) => ({ ...prev, dateTo: undefined }));
+    setErrors((prev) => ({ ...prev, end_date: undefined }));
   };
 
   const validate = (): boolean => {
-    const parsed = WorkExpSchema.safeParse(form);
+    const parsed = ExperienceSchema.safeParse(form);
     if (parsed.success) {
       setErrors({});
       return true;
     }
-    const fieldErrors: Partial<Record<keyof typeof form, string>> = {};
+    const fieldErrors: Partial<Record<keyof Experience, string>> = {};
     for (const issue of parsed.error.issues) {
-      const key = issue.path[0] as keyof typeof form;
+      const key = issue.path[0] as keyof Experience;
       if (!fieldErrors[key]) {
         fieldErrors[key] = issue.message;
       }
@@ -136,29 +88,15 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
   const handleSave = () => {
     if (!validate()) return;
 
-    // convert to unified format
-    const experience: Experience = {
-      title: form.title,
-      company: form.company,
-      dates: {
-        start: formatDate(form.dateFrom),
-        end: form.ongoing ? "Ongoing" : formatDate(form.dateTo),
-      },
-      b1: form.b1,
-      b2: form.b2,
-    };
-
-    onSave(experience);
+    onSave(form);
     onClose();
   };
-
-  const isEditing = !!initial && !!initial.title;
 
   return (
     <div className="flex flex-col gap-4 max-w-md p-8 bg-zinc-800 border-zinc-500 border-2 rounded-lg max-h-[80vh] overflow-y-auto">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">
-          {isEditing ? "edit work experience" : "add work experience"}
+          edit work experience
         </h3>
         <Button type="button" variant="ghost" onClick={onClose}>
           close
@@ -198,14 +136,14 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
           <label className="text-sm text-zinc-300">start date</label>
           <Input
             placeholder="MM/YYYY"
-            name="dateFrom"
-            value={form.dateFrom}
+            name="start_date"
+            value={form.start_date}
             onChange={handleChange}
             maxLength={7}
-            aria-invalid={!!errors.dateFrom}
+            aria-invalid={!!errors.start_date}
           />
-          {errors.dateFrom ? (
-            <span className="text-xs text-red-400">{errors.dateFrom}</span>
+          {errors.start_date ? (
+            <span className="text-xs text-red-400">{errors.start_date}</span>
           ) : (
             <span className="text-[10px] text-zinc-400">
               start date (MM/YYYY)
@@ -217,19 +155,19 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
           <label className="text-sm text-zinc-300">end date</label>
           <Input
             placeholder="MM/YYYY"
-            name="dateTo"
-            value={form.dateTo}
+            name="end_date"
+            value={form.end_date === "Ongoing" ? "" : form.end_date}
             onChange={handleChange}
             maxLength={7}
-            disabled={form.ongoing}
-            aria-invalid={!!errors.dateTo}
+            disabled={isOngoing}
+            aria-invalid={!!errors.end_date}
           />
-          {errors.dateTo ? (
-            <span className="text-xs text-red-400">{errors.dateTo}</span>
+          {errors.end_date ? (
+            <span className="text-xs text-red-400">{errors.end_date}</span>
           ) : (
             <span className="text-[10px] text-zinc-400">
               end date (MM/YYYY)
-              {form.ongoing ? " (disabled while ongoing)" : ""}
+              {isOngoing ? " (disabled while ongoing)" : ""}
             </span>
           )}
         </div>
@@ -238,7 +176,7 @@ export function WorkExpModal({ onClose, onSave, initial }: WorkExpModalProps) {
       <div className="flex items-center gap-2">
         <Checkbox
           id="exp-ongoing"
-          checked={form.ongoing}
+          checked={isOngoing}
           onCheckedChange={handleToggleOngoing}
         />
         <label htmlFor="exp-ongoing" className="text-sm text-zinc-200">

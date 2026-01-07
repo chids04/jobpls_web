@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button";
-import { DUPLICATE_SUFFIX_BASE, type AboutMeTemplate } from "@/lib/types";
+import { DUPLICATE_SUFFIX_BASE } from "@/lib/types";
+import { ResumeTemplate } from "@/store/useStore";
 
 /* props for the templates list component */
 export type TemplatesListProps = {
-  templates: AboutMeTemplate[];
+  templates: ResumeTemplate[];
   onCreate: () => void;
-  onEdit: (template: AboutMeTemplate) => void;
+  onEdit: (template: ResumeTemplate) => void;
   onDelete: (id: string) => void;
-  onDuplicate: (template: AboutMeTemplate) => void;
+  onDuplicate: (template: ResumeTemplate) => void;
 };
 
 function generateUniqueTemplateName(
@@ -28,18 +29,18 @@ function generateUniqueTemplateName(
 
 /* create a duplicated template with a new id, timestamps, and a unique name */
 function makeDuplicateTemplate(
-  template: AboutMeTemplate,
-  allTemplates: AboutMeTemplate[],
-): AboutMeTemplate {
+  template: ResumeTemplate,
+  allTemplates: ResumeTemplate[],
+): ResumeTemplate {
   const existingNames = new Set(allTemplates.map((t) => t.templateName));
   const newName = generateUniqueTemplateName(
     template.templateName,
     existingNames,
   );
-  const now = new Date().toISOString();
+  const now = new Date();
   return {
     ...template,
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+    templateId: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
     templateName: newName,
     createdAt: now,
     updatedAt: now,
@@ -58,7 +59,7 @@ export function TemplatesList({
     <div className="flex flex-col gap-6 max-w-4xl mx-auto px-4 py-6">
       {/* header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">About Me Templates</h1>
+        <h1 className="text-xl font-semibold">Resume Templates</h1>
         <Button type="button" onClick={onCreate} className="text-black">
           Create new template
         </Button>
@@ -68,13 +69,13 @@ export function TemplatesList({
       {templates.length === 0 ? (
         <div className="rounded border border-zinc-700 bg-zinc-800 p-6 text-sm text-zinc-300">
           You have no templates yet. Click "Create new template" to build your
-          first About Me.
+          first Resume template.
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {templates.map((tpl) => (
             <div
-              key={tpl.id}
+              key={tpl.templateId}
               className="rounded border border-zinc-700 bg-zinc-800 p-4 flex flex-col gap-2"
             >
               <div className="flex items-center justify-between">
@@ -103,7 +104,7 @@ export function TemplatesList({
                     type="button"
                     size="sm"
                     variant="destructive"
-                    onClick={() => onDelete(tpl.id)}
+                    onClick={() => onDelete(tpl.templateId)}
                   >
                     Delete
                   </Button>
@@ -111,30 +112,30 @@ export function TemplatesList({
               </div>
 
               <div className="text-xs text-zinc-400">
-                Created {new Date(tpl.createdAt).toLocaleString()}
+                Created {tpl.createdAt.toLocaleString()}
               </div>
 
               <div className="text-sm text-zinc-200">
                 <div className="truncate">
-                  <span className="text-zinc-400">Name:</span> {tpl.name || "-"}
+                  <span className="text-zinc-400">Name:</span> {tpl.full_name || "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Email:</span>{" "}
                   {tpl.email || "-"}
                 </div>
                 <div className="truncate">
-                  <span className="text-zinc-400">Skills:</span>{" "}
-                  {tpl.skills && tpl.skills.length > 0
-                    ? tpl.skills.join(", ")
+                  <span className="text-zinc-400">Languages:</span>{" "}
+                  {tpl.languages && tpl.languages.length > 0
+                    ? tpl.languages.join(", ")
                     : "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Projects:</span>{" "}
-                  {tpl.projects?.length}
+                  {tpl.projects?.length || 0}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Work Experience:</span>{" "}
-                  {tpl.workExperiences?.length || 0}
+                  {tpl.work_exp?.length || 0}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Education:</span>{" "}

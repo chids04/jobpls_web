@@ -2,9 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import TemplatesList from "@/components/about-me/TemplatesList";
 import TemplateForm from "@/components/about-me/TemplateForm";
-import { useAboutMeTemplates } from "@/hooks/useAppStorage";
-
-import { AboutMeTemplate, Education, Experience, Project } from "@/lib/types";
+import { useStore, ResumeTemplate } from "@/store/useStore";
+import { Education, Experience, Project } from "@/lib/schemas";
 
 export const Route = createFileRoute("/about-me")({
   component: RouteComponent,
@@ -18,15 +17,18 @@ function RouteComponent() {
     addTemplate,
     updateTemplate,
     deleteTemplate,
-    duplicateTemplate,
-  } = useAboutMeTemplates();
+  } = useStore();
+
+  const templatesArray = Object.values(templates).sort((a, b) => 
+    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  );
 
   // view state: list vs form
   const [isCreating, setIsCreating] = useState(false);
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(
     null,
   );
-  const [formInitial, setFormInitial] = useState<AboutMeTemplate | null>(null);
+  const [formInitial, setFormInitial] = useState<ResumeTemplate | null>(null);
 
   // start creating a new template
   const handleCreate = () => {
@@ -36,15 +38,15 @@ function RouteComponent() {
   };
 
   // start editing an existing template
-  const handleEdit = (template: AboutMeTemplate) => {
-    setEditingTemplateId(template.id);
+  const handleEdit = (template: ResumeTemplate) => {
+    setEditingTemplateId(template.templateId);
     setFormInitial(template);
     setIsCreating(true);
   };
 
   // delete a template with confirmation
   const handleDelete = (id: string) => {
-    const t = templates.find((x) => x.id === id);
+    const t = templates[id];
     const confirmText = t
       ? `Delete template "${t.templateName}"? This cannot be undone.`
       : "Delete this template? This cannot be undone.";
@@ -53,8 +55,8 @@ function RouteComponent() {
   };
 
   // duplicate a template (already has a unique name and id from list component)
-  const handleDuplicate = (duplicate: AboutMeTemplate) => {
-    duplicateTemplate(duplicate);
+  const handleDuplicate = (duplicate: ResumeTemplate) => {
+    addTemplate(duplicate);
   };
 
   // cancel creation or editing, go back to list
@@ -67,35 +69,37 @@ function RouteComponent() {
   // save handler for create/update
   const handleSave = (values: {
     templateName: string;
-    name: string;
+    full_name: string;
     email: string;
-    location: string;
+    residency: string;
     github: string | null;
-    summary: string;
-    skills: string[];
+    about_me: string;
+    languages: string[];
+    frameworks: string[];
+    developer_tools: string[];
     projects: Project[];
-    workExperiences: Experience[];
+    work_exp: Experience[];
     education: Education[];
   }) => {
-    const now = new Date().toISOString();
+    const now = new Date();
 
     if (editingTemplateId) {
       // update existing template
-      const existingTemplate = templates.find(
-        (t) => t.id === editingTemplateId,
-      );
+      const existingTemplate = templates[editingTemplateId];
       if (existingTemplate) {
-        const updatedTemplate: AboutMeTemplate = {
+        const updatedTemplate: ResumeTemplate = {
           ...existingTemplate,
           templateName: values.templateName,
-          name: values.name,
+          full_name: values.full_name,
           email: values.email,
-          github: values.github,
-          summary: values.summary,
-          location: values.location,
-          skills: values.skills,
+          github: values.github ?? undefined,
+          about_me: values.about_me,
+          residency: values.residency,
+          languages: values.languages,
+          frameworks: values.frameworks,
+          developer_tools: values.developer_tools,
           projects: values.projects,
-          workExperiences: values.workExperiences,
+          work_exp: values.work_exp,
           education: values.education,
           updatedAt: now,
         };
@@ -108,18 +112,20 @@ function RouteComponent() {
     }
 
     // create new template
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    const template: AboutMeTemplate = {
-      id,
+    const templateId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const template: ResumeTemplate = {
+      templateId,
       templateName: values.templateName,
-      name: values.name,
+      full_name: values.full_name,
       email: values.email,
-      github: values.github,
-      summary: values.summary,
-      location: values.location,
-      skills: values.skills,
+      github: values.github ?? undefined,
+      about_me: values.about_me,
+      residency: values.residency,
+      languages: values.languages,
+      frameworks: values.frameworks,
+      developer_tools: values.developer_tools,
       projects: values.projects,
-      workExperiences: values.workExperiences,
+      work_exp: values.work_exp,
       education: values.education,
       createdAt: now,
       updatedAt: now,
@@ -134,7 +140,7 @@ function RouteComponent() {
   if (!isCreating) {
     return (
       <TemplatesList
-        templates={templates}
+        templates={templatesArray}
         onCreate={handleCreate}
         onEdit={handleEdit}
         onDelete={handleDelete}

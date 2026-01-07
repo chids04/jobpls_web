@@ -1,74 +1,60 @@
 import { z } from "zod";
 
-export const DateRangeSchema = z.object({
-  start: z.string(),
-  end: z.union([z.string(), z.literal("Ongoing")]),
+export const MM_YYYY_REGEX = /^(0[1-9]|1[0-2])\/\d{4}$/;
+export const DateFormSchema = z.object({
+  start_date: z.string().regex(MM_YYYY_REGEX, "Must be in MM/YYYY format"),
+  end_date: z.union([
+    z.string().regex(MM_YYYY_REGEX, "Must be in MM/YYYY format"),
+    z.literal("Ongoing"),
+  ]),
 });
 
 export const ProjectSchema = z.object({
-  title: z.string(),
-  b1: z.string(),
-  b2: z.string(),
-  languages: z.array(z.string()),
-  url: z.string(),
+  title: z.string().trim().min(1, "Title is required"),
+  b1: z.string().optional().default(""),
+  b2: z.string().optional().default(""),
+  languages: z.array(z.string()).optional().default([]),
+  url: z.url(),
 });
 
-export const EducationSchema = z.object({
-  title: z.string(),
-  grade: z.string(),
-  name: z.string(),
-  start_date: z.string(),
-  end_date: z.string(),
-  location: z.string(),
-  modules: z.array(z.string()).optional(),
+export const EducationSchema = DateFormSchema.extend({
+  title: z.string().trim().min(1, "Title is required"),
+  grade: z.string().trim().min(1, "Grade is required"),
+  name: z.string().trim().min(1, "Institution name is required"),
+  location: z.string().trim().min(1, "Location is required"),
+  modules: z.array(z.string()).optional().default([]),
 });
 
-export const ExperienceSchema = z.object({
-  title: z.string(),
-  start_date: z.string(),
-  end_date: z.string(),
-  company: z.string(),
-  b1: z.string(),
-  b2: z.string(),
+export const ExperienceSchema = DateFormSchema.extend({
+  title: z.string().trim().min(1, "Job title is required"),
+  company: z.string().trim().min(1, "Company is required"),
+  b1: z.string().optional().default(""),
+  b2: z.string().optional().default(""),
 });
-
-export const HeaderSchema = z.object({
-  full_name: z.string(),
-  email: z.email(),
-  github: z.string().optional(),
-  residency: z.string(),
-});
-
-export const SummarySchema = z.object({
-  about_me: z.string(),
-});
-
-export const TechSkillsSchema = z.object({
-  languages: z.array(z.string()),
-  frameworks: z.array(z.string()),
-  developer_tools: z.array(z.string()),
-});
-
-// export const ResumeDataSchema = z.object({
-//   header: HeaderSchema,
-//   summary: SummarySchema,
-//   tech_skills: TechSkillsSchema.optional(),
-//   education: z.array(EducationSchema).optional(),
-//   projects: z.array(ProjectSchema).optional(),
-//   work_exp: z.array(ExperienceSchema).optional(),
-// });
 
 export const ResumeDataSchema = z.object({
   full_name: z.string(),
   email: z.email(),
-  github: z.string().optional(),
-  languages: z.array(z.string()),
-  frameworks: z.array(z.string()),
-  developer_tools: z.array(z.string()),
+  github: z.string().url().optional().or(z.literal("")),
+  languages: z.array(z.string()).optional(),
+  frameworks: z.array(z.string()).optional(),
+  developer_tools: z.array(z.string()).optional(),
   residency: z.string(),
+  about_me: z.string(),
   education: z.array(EducationSchema).optional(),
   projects: z.array(ProjectSchema).optional(),
   work_exp: z.array(ExperienceSchema).optional(),
 });
 
+export const ResumeTemplateSchema = ResumeDataSchema.extend({
+  templateId: z.string(),
+  templateName: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
+export type Project = z.infer<typeof ProjectSchema>;
+export type Education = z.infer<typeof EducationSchema>;
+export type Experience = z.infer<typeof ExperienceSchema>;
 export type Resume = z.infer<typeof ResumeDataSchema>;
+export type ResumeTemplate = z.infer<typeof ResumeTemplateSchema>;

@@ -5,17 +5,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
-import {
-  useGeneratePageData,
-  useLastGeneratedPDF,
-} from "@/hooks/useAppStorage";
+import { useStore } from "@/store/useStore";
 
-import { SERVER_URL, ResumeData, type GenerateReq } from "@/lib/types";
-import PollingStatus from "@/components/generate/PollingStatus";
+import { SERVER_URL } from "@/lib/types";
+import { Resume } from "@/lib/schemas";
 import { sendGenerate } from "@/lib/api";
 import { ExternalLinkIcon, DownloadIcon } from "lucide-react";
 import { CV_Type, genCV } from "@/lib/pdf_gen";
-import { mockResumeFullStackDev } from "@/lib/mockData";
 import { personaliseCV } from "@/lib/prompts";
 import clsx from "clsx";
 
@@ -26,21 +22,41 @@ export const Route = createFileRoute("/generate")({
   ssr: false,
 });
 
-export function GeneratePage() {
-  const { cv, template, jobDesc, specialInstr, isReady, missingItems } =
-    useGeneratePageData();
+function GeneratePage() {
+  const {
+    selectedCV,
+    templates,
+    selectedTemplateId,
+    jobDesc,
+    specialInstr,
+    setJobDesc,
+    setSpecialInstr,
+    generatedPdfs,
+    setGeneratedPdfs,
+    clearGenerated,
+  } = useStore();
+
+  const selectedTemplate = selectedTemplateId
+    ? templates[selectedTemplateId]
+    : null;
+  const isReady = !!(
+    selectedCV &&
+    selectedTemplate &&
+    jobDesc.trim().length > 0
+  );
+
+  const missingItems: string[] = [];
+  if (!selectedCV) missingItems.push("CV template");
+  if (!selectedTemplate) missingItems.push("About Me template");
+  if (jobDesc.trim().length === 0) missingItems.push("Job description");
 
   // local state for tab-independent editing
   const [localJobDesc, setLocalJobDesc] = useState("");
   const [localSpecialInstr, setLocalSpecialInstr] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const { generatedPdfs, updateGenerated, clearGenerated } =
-    useLastGeneratedPDF();
-
   const [pollUrl, setPollingUrl] = useState<string>("");
   const [error, setError] = useState("");
-  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
 
   const [pdfUrls, setPdfUrls] = useState<{
     cvUrl: string | null;
@@ -61,21 +77,15 @@ export function GeneratePage() {
   };
 
   useEffect(() => {
-    setLocalJobDesc(jobDesc.jobDesc);
-    setLocalSpecialInstr(specialInstr.specialInstr);
-  }, [jobDesc.jobDesc, specialInstr.specialInstr]);
+    setLocalJobDesc(jobDesc);
+    setLocalSpecialInstr(specialInstr);
+  }, [jobDesc, specialInstr]);
 
   useEffect(() => {
     const hasChanges =
-      localJobDesc !== jobDesc.jobDesc ||
-      localSpecialInstr !== specialInstr.specialInstr;
+      localJobDesc !== jobDesc || localSpecialInstr !== specialInstr;
     setHasUnsavedChanges(hasChanges);
-  }, [
-    localJobDesc,
-    localSpecialInstr,
-    jobDesc.jobDesc,
-    specialInstr.specialInstr,
-  ]);
+  }, [localJobDesc, localSpecialInstr, jobDesc, specialInstr]);
 
   // tanstack query mutation for the generate request
   const generateMutation = useMutation({
@@ -83,7 +93,6 @@ export function GeneratePage() {
     onSuccess: (jobId: string) => {
       const pollUrl = `${SERVER_URL}/job/${jobId}`;
       setPollingUrl(pollUrl);
-      setCurrentJobId(jobId);
 
       // clear previous pdf urls when starting new generation
       setPdfUrls({ cvUrl: null, coverUrl: null });
@@ -98,7 +107,7 @@ export function GeneratePage() {
 
   const handleGenerate = async () => {
     // Check if we have required templates
-    if (!cv.selectedCV || !template.selectedTemplate) {
+    if (!selectedCV || !selectedTemplate) {
       setError(`missing: ${missingItems.join(", ")}`);
       return;
     }
@@ -111,34 +120,23 @@ export function GeneratePage() {
 
     setError("");
 
-    // Save to localStorage before submission
-    saveToLocalStorage();
+    // Save to store before submission
+    saveToStore();
 
-    // convert about me template to resume
-    const resume: ResumeData = {
-      header: {
-        full_name: template.selectedTemplate.name,
-        email: template.selectedTemplate.email,
-        github: template.selectedTemplate.github || undefined,
-        residency: "",
-      },
-      summary: {
-        about_me: template.selectedTemplate.summary,
-      },
-      tech_skills: undefined,
-      education: template.selectedTemplate.education || undefined,
-      projects: template.selectedTemplate.projects ?? undefined,
-      work_exp: template.selectedTemplate.workExperiences ?? undefined,
+    // convert about me template to flattened resume format
+    const resume: Resume = {
+      full_name: selectedTemplate.full_name,
+      email: selectedTemplate.email,
+      github: selectedTemplate.github || undefined,
+      residency: selectedTemplate.residency || "",
+      about_me: selectedTemplate.about_me,
+      education: selectedTemplate.education || undefined,
+      projects: selectedTemplate.projects || undefined,
+      work_exp: selectedTemplate.work_exp || undefined,
+      languages: selectedTemplate.languages || [],
+      frameworks: selectedTemplate.frameworks || [],
+      developer_tools: selectedTemplate.developer_tools || [],
     };
-
-    const req: GenerateReq = {
-      resume,
-      job_desc: localJobDesc,
-      special_instr: localSpecialInstr,
-    };
-
-    // use the mutation to send the request
-    //generateMutation.mutate(req);
 
     setStatusMessage("personalising doc", true);
 
@@ -183,13 +181,14 @@ export function GeneratePage() {
   };
 
   // manual save function
-  const saveToLocalStorage = () => {
-    specialInstr.updateSpecialInstr(localSpecialInstr);
+  const saveToStore = () => {
+    setJobDesc(localJobDesc);
+    setSpecialInstr(localSpecialInstr);
   };
 
   const handlePDFsReady = (cvUrl: string, coverUrl: string) => {
     setPdfUrls({ cvUrl, coverUrl });
-    updateGenerated({ cv: cvUrl, cover: coverUrl });
+    setGeneratedPdfs({ cv: cvUrl, cover: coverUrl });
   };
 
   // reset state for new generation - memoized to avoid unnecessary re-renders
@@ -197,7 +196,6 @@ export function GeneratePage() {
     setPollingUrl("");
     setPdfUrls({ cvUrl: null, coverUrl: null });
     setError("");
-    setCurrentJobId(null);
   }, []);
 
   // open pdf in new tab
@@ -235,7 +233,7 @@ export function GeneratePage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={saveToLocalStorage}
+                  onClick={saveToStore}
                   className="
                   text-xs
                   text-yellow-400 border-yellow-500 hover:bg-yellow-500 hover:text-black"
@@ -265,13 +263,13 @@ export function GeneratePage() {
           </div>
         </div>
 
-        {cv.selectedCV && template.selectedTemplate ? (
+        {selectedCV && selectedTemplate ? (
           <div className="flex flex-col items-center w-full gap-10">
             <div></div>
             <div className="flex flex-col w-full items-center border-b-accent border-2 p-2">
               <h1 className="text-xl">
                 {"selected cv - "}
-                <span className="font-bold">{cv.selectedCV.name}</span>
+                <span className="font-bold">{selectedCV.name}</span>
               </h1>
               <Link
                 className="hover:text-blue-400 text-blue-300 hover:underline"
@@ -285,7 +283,7 @@ export function GeneratePage() {
               <h1 className="text-xl">
                 {"selected about me - "}
                 <span className="font-bold">
-                  {template.selectedTemplate.templateName}
+                  {selectedTemplate.templateName}
                 </span>
               </h1>
               <Link
@@ -330,7 +328,7 @@ export function GeneratePage() {
         </div>
       )}
 
-      {/* display last generated pdfs from localstorage */}
+      {/* display last generated pdfs from store */}
       {generatedPdfs &&
         generatedPdfs.cv &&
         generatedPdfs.cover &&
@@ -406,7 +404,7 @@ export function GeneratePage() {
             </div>
 
             <p className="text-xs text-slate-400 text-center max-w-md">
-              These are your previously generated documents from localStorage.
+              These are your previously generated documents.
             </p>
 
             <Button

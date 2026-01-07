@@ -9,7 +9,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Briefcase, CircleUser } from "lucide-react";
 
 import appCss from "../styles.css?url";
-import { useState } from "react";
 
 // Create QueryClient singleton to prevent hydration mismatch
 let queryClient: QueryClient | undefined;
@@ -46,11 +45,7 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 });
 
-type CurrentPage = "about me" | "cv" | "generate" | "home";
-
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const [activeTab, setActiveTab] = useState<CurrentPage>("home");
-
   return (
     <QueryClientProvider client={getQueryClient()}>
       <html lang="en">
@@ -91,9 +86,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm sm:text-base">
                   <li>
                     <Link
-                      onClick={() => setActiveTab("home")}
                       to="/home"
-                      //className="hover:text-white text-zinc-300 transition-colors"
                       className="hover:text-white text-zinc-300 transition-colors"
                       activeProps={{ className: "font-bold text-xl" }}
                     >
@@ -103,7 +96,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   <li className="text-zinc-500">|</li>
                   <li>
                     <Link
-                      onClick={() => setActiveTab("about me")}
                       to="/about-me"
                       className="hover:text-white text-zinc-300 transition-colors"
                       activeProps={{ className: "font-bold text-xl" }}
@@ -114,7 +106,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   <li className="text-zinc-500">|</li>
                   <li>
                     <Link
-                      onClick={() => setActiveTab("cv")}
                       to="/cv-template"
                       className="hover:text-white text-zinc-300 transition-colors"
                       activeProps={{ className: "font-bold text-xl" }}
@@ -125,7 +116,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   <li className="text-zinc-500">|</li>
                   <li>
                     <Link
-                      onClick={() => setActiveTab("generate")}
                       to="/generate"
                       className="hover:text-white text-zinc-300 transition-colors"
                       activeProps={{ className: "font-bold text-xl" }}
@@ -154,8 +144,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             {/* dev note: small spacer so content doesn't stick to bottom */}
             <div className="h-6" />
           </div>
-
-          {/* TanStack devtools temporarily disabled due to module export mismatch */}
 
           <Scripts />
         </body>

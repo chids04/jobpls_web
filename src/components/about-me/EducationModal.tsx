@@ -1,53 +1,15 @@
 import { useState } from "react";
-import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { dateString, Education, formatDate } from "@/lib/types";
+import { Education, EducationSchema } from "@/lib/schemas";
 
 interface EducationModalProps {
   onClose: () => void;
   onSave: (education: Education) => void;
   initial?: Partial<Education>;
 }
-
-const mmYYYY = z
-  .string()
-  .regex(/^(0[1-9]|1[0-2])\/\d{4}$/, "Must be in MM/YYYY format");
-
-const EducationSchema = z
-  .object({
-    title: z.string().trim().min(1, "Title is required"),
-    grade: z.string().trim().min(1, "Grade is required"),
-    name: z.string().trim().min(1, "Institution name is required"),
-    dateFrom: mmYYYY,
-    dateTo: z.string().optional().default(""),
-    location: z.string().trim().min(1, "Location is required"),
-    modules: z.array(z.string().trim()).optional().default([]),
-    ongoing: z.boolean(),
-  })
-  .superRefine((val, ctx) => {
-    if (val.ongoing) {
-      if (val.dateTo && val.dateTo.trim() !== "") {
-        if (!mmYYYY.safeParse(val.dateTo).success) {
-          ctx.addIssue({
-            path: ["dateTo"],
-            code: "custom",
-            message: "Must be in MM/YYYY format or left empty if ongoing",
-          });
-        }
-      }
-    } else {
-      if (!val.dateTo || !mmYYYY.safeParse(val.dateTo).success) {
-        ctx.addIssue({
-          path: ["dateTo"],
-          code: "custom",
-          message: "Required in MM/YYYY format",
-        });
-      }
-    }
-  });
 
 function normalizeMMYYYYInput(raw: string) {
   const digits = raw.replace(/\D/g, "");
@@ -65,26 +27,14 @@ export function EducationModal({
   onSave,
   initial,
 }: EducationModalProps) {
-  // convert from unified format to form format for editing
-  const initialDateFrom = initial?.dates?.start
-    ? dateString(initial.dates.start)
-    : "";
-  const initialOngoing = initial?.dates?.end === "Ongoing";
-  const initialDateTo = initialOngoing
-    ? ""
-    : initial?.dates?.end
-      ? dateString(initial.dates.end as Date)
-      : "";
-
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<Education>({
     title: initial?.title ?? "",
     grade: initial?.grade ?? "",
     name: initial?.name ?? "",
-    dateFrom: initialDateFrom,
-    dateTo: initialDateTo,
+    start_date: initial?.start_date ?? "",
+    end_date: initial?.end_date ?? "",
     location: initial?.location ?? "",
     modules: initial?.modules ?? [],
-    ongoing: initialOngoing,
   });
 
   const [modulesText, setModulesText] = useState(
@@ -92,18 +42,20 @@ export function EducationModal({
   );
 
   const [errors, setErrors] = useState<
-    Partial<Record<keyof typeof form, string>>
+    Partial<Record<keyof Education, string>>
   >({});
+
+  const isOngoing = form.end_date === "Ongoing";
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target as {
-      name: keyof typeof form;
+      name: keyof Education;
       value: string;
     };
 
-    if (name === "dateFrom" || name === "dateTo") {
+    if (name === "start_date" || name === "end_date") {
       setForm((prev) => ({
         ...prev,
         [name]: normalizeMMYYYYInput(value),
@@ -120,10 +72,9 @@ export function EducationModal({
     const isChecked = Boolean(checked);
     setForm((prev) => ({
       ...prev,
-      ongoing: isChecked,
-      dateTo: isChecked ? "" : prev.dateTo,
+      end_date: isChecked ? "Ongoing" : "",
     }));
-    setErrors((prev) => ({ ...prev, dateTo: undefined }));
+    setErrors((prev) => ({ ...prev, end_date: undefined }));
   };
 
   const handleModulesSave = () => {
@@ -137,7 +88,7 @@ export function EducationModal({
 
   const handleModuleDelete = (index: number) => {
     setForm((prev) => {
-      const next = prev.modules.filter((_, i) => i !== index);
+      const next = prev.modules?.filter((_, i) => i !== index) ?? [];
       setModulesText(next.join(", "));
       return { ...prev, modules: next };
     });
@@ -149,9 +100,9 @@ export function EducationModal({
       setErrors({});
       return true;
     }
-    const fieldErrors: Partial<Record<keyof typeof form, string>> = {};
+    const fieldErrors: Partial<Record<keyof Education, string>> = {};
     for (const issue of parsed.error.issues) {
-      const key = issue.path[0] as keyof typeof form;
+      const key = issue.path[0] as keyof Education;
       if (!fieldErrors[key]) {
         fieldErrors[key] = issue.message;
       }
@@ -163,30 +114,15 @@ export function EducationModal({
   const handleSave = () => {
     if (!validate()) return;
 
-    // convert to unified format
-    const education: Education = {
-      title: form.title,
-      grade: form.grade,
-      name: form.name,
-      dates: {
-        start: formatDate(form.dateFrom),
-        end: form.ongoing ? "Ongoing" : formatDate(form.dateTo),
-      },
-      location: form.location,
-      modules: form.modules.length > 0 ? form.modules : undefined,
-    };
-
-    onSave(education);
+    onSave(form);
     onClose();
   };
-
-  const isEditing = !!initial && !!initial.title;
 
   return (
     <div className="flex flex-col gap-4 max-w-md p-8 bg-zinc-800 border-zinc-500 border-2 rounded-lg max-h-[80vh] overflow-y-auto">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">
-          {isEditing ? "edit education" : "add education"}
+          edit education
         </h3>
         <Button type="button" variant="ghost" onClick={onClose}>
           close
@@ -254,14 +190,14 @@ export function EducationModal({
           <label className="text-sm text-zinc-300">start date</label>
           <Input
             placeholder="MM/YYYY"
-            name="dateFrom"
-            value={form.dateFrom}
+            name="start_date"
+            value={form.start_date}
             onChange={handleChange}
             maxLength={7}
-            aria-invalid={!!errors.dateFrom}
+            aria-invalid={!!errors.start_date}
           />
-          {errors.dateFrom ? (
-            <span className="text-xs text-red-400">{errors.dateFrom}</span>
+          {errors.start_date ? (
+            <span className="text-xs text-red-400">{errors.start_date}</span>
           ) : (
             <span className="text-[10px] text-zinc-400">
               start date (MM/YYYY)
@@ -273,19 +209,19 @@ export function EducationModal({
           <label className="text-sm text-zinc-300">end date</label>
           <Input
             placeholder="MM/YYYY"
-            name="dateTo"
-            value={form.dateTo}
+            name="end_date"
+            value={form.end_date === "Ongoing" ? "" : form.end_date}
             onChange={handleChange}
             maxLength={7}
-            disabled={form.ongoing}
-            aria-invalid={!!errors.dateTo}
+            disabled={isOngoing}
+            aria-invalid={!!errors.end_date}
           />
-          {errors.dateTo ? (
-            <span className="text-xs text-red-400">{errors.dateTo}</span>
+          {errors.end_date ? (
+            <span className="text-xs text-red-400">{errors.end_date}</span>
           ) : (
             <span className="text-[10px] text-zinc-400">
               end date (MM/YYYY)
-              {form.ongoing ? " (disabled while ongoing)" : ""}
+              {isOngoing ? " (disabled while ongoing)" : ""}
             </span>
           )}
         </div>
@@ -294,7 +230,7 @@ export function EducationModal({
       <div className="flex items-center gap-2">
         <Checkbox
           id="edu-ongoing"
-          checked={form.ongoing}
+          checked={isOngoing}
           onCheckedChange={handleToggleOngoing}
         />
         <label htmlFor="edu-ongoing" className="text-sm text-zinc-200">
@@ -319,7 +255,7 @@ export function EducationModal({
           enter modules as a comma-separated list.
         </p>
         <div className="flex flex-wrap gap-2 mt-1">
-          {form.modules.map((module, i) => (
+          {form.modules?.map((module, i) => (
             <div
               key={`${module}-${i}`}
               className="flex items-center gap-2 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-sm"
