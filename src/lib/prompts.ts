@@ -52,7 +52,7 @@ export async function personaliseCV(
 
   const generatedResume = ResumeDataSchema.parse(JSON.parse(response.text));
 
-  console.log(generatedResume);
+  return generatedResume as Resume;
 }
 
 const GENERAL_CV_SYS_INSTR = String.raw`

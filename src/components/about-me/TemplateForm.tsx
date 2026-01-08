@@ -81,22 +81,22 @@ export function TemplateForm({
 
     setFormData({
       templateName: initial.templateName || "",
-      full_name: initial.full_name || "",
-      about_me: initial.about_me || "",
-      email: initial.email || "",
-      github: initial.github || "",
-      languages: initial.languages || [],
-      frameworks: initial.frameworks || [],
-      developer_tools: initial.developer_tools || [],
-      projects: initial.projects || [],
-      work_exp: initial.work_exp || [],
-      education: initial.education || [],
-      residency: initial.residency || "",
+      full_name: initial.resume.full_name || "",
+      about_me: initial.resume.about_me || "",
+      email: initial.resume.email || "",
+      github: initial.resume.github || "",
+      languages: initial.resume.languages || [],
+      frameworks: initial.resume.frameworks || [],
+      developer_tools: initial.resume.developer_tools || [],
+      projects: initial.resume.projects || [],
+      work_exp: initial.resume.work_exp || [],
+      education: initial.resume.education || [],
+      residency: initial.resume.residency || "",
     });
 
-    setLanguagesText(initial.languages?.join(",") || "");
-    setFrameworksText(initial.frameworks?.join(",") || "");
-    setToolsText(initial.developer_tools?.join(",") || "");
+    setLanguagesText(initial.resume.languages?.join(",") || "");
+    setFrameworksText(initial.resume.frameworks?.join(",") || "");
+    setToolsText(initial.resume.developer_tools?.join(",") || "");
 
     setModal(false);
     setEditingIndex(null);

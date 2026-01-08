@@ -117,29 +117,29 @@ export function TemplatesList({
 
               <div className="text-sm text-zinc-200">
                 <div className="truncate">
-                  <span className="text-zinc-400">Name:</span> {tpl.full_name || "-"}
+                  <span className="text-zinc-400">Name:</span> {tpl.resume.full_name || "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Email:</span>{" "}
-                  {tpl.email || "-"}
+                  {tpl.resume.email || "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Languages:</span>{" "}
-                  {tpl.languages && tpl.languages.length > 0
-                    ? tpl.languages.join(", ")
+                  {tpl.resume.languages && tpl.resume.languages.length > 0
+                    ? tpl.resume.languages.join(", ")
                     : "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Projects:</span>{" "}
-                  {tpl.projects?.length || 0}
+                  {tpl.resume.projects?.length || 0}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Work Experience:</span>{" "}
-                  {tpl.work_exp?.length || 0}
+                  {tpl.resume.work_exp?.length || 0}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Education:</span>{" "}
-                  {tpl.education?.length || 0}
+                  {tpl.resume.education?.length || 0}
                 </div>
               </div>
             </div>

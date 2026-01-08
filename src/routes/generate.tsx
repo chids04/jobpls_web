@@ -68,12 +68,13 @@ function GeneratePage() {
     msg: "",
   });
 
-  const setStatusMessage = (msg: string, success: boolean) => {
+  const setStatusMessage = (msg: string, success: boolean, timeout = true) => {
     setStatus({ msg, success });
 
-    setTimeout(() => {
-      setStatus({ msg: "", success: true });
-    }, 2000);
+    timeout &&
+      setTimeout(() => {
+        setStatus({ msg: "", success: true });
+      }, 2000);
   };
 
   useEffect(() => {
@@ -106,13 +107,11 @@ function GeneratePage() {
   });
 
   const handleGenerate = async () => {
-    // Check if we have required templates
     if (!selectedCV || !selectedTemplate) {
       setError(`missing: ${missingItems.join(", ")}`);
       return;
     }
 
-    // Check if local job description is filled
     if (!localJobDesc.trim()) {
       setError("Please enter a job description");
       return;
@@ -120,25 +119,11 @@ function GeneratePage() {
 
     setError("");
 
-    // Save to store before submission
     saveToStore();
 
-    // convert about me template to flattened resume format
-    const resume: Resume = {
-      full_name: selectedTemplate.full_name,
-      email: selectedTemplate.email,
-      github: selectedTemplate.github || undefined,
-      residency: selectedTemplate.residency || "",
-      about_me: selectedTemplate.about_me,
-      education: selectedTemplate.education || undefined,
-      projects: selectedTemplate.projects || undefined,
-      work_exp: selectedTemplate.work_exp || undefined,
-      languages: selectedTemplate.languages || [],
-      frameworks: selectedTemplate.frameworks || [],
-      developer_tools: selectedTemplate.developer_tools || [],
-    };
+    const resume: Resume = selectedTemplate.resume;
 
-    setStatusMessage("personalising doc", true);
+    setStatusMessage("personalising doc", true, false);
 
     let aiCV;
 
@@ -150,8 +135,11 @@ function GeneratePage() {
         CV_Type.TechCV,
       );
     } catch (error: any) {
+      console.log(error);
       setStatusMessage(error?.message || "An unknown error occurred", false);
     }
+
+    console.log(aiCV);
 
     if (aiCV == undefined) {
       return;
@@ -177,6 +165,7 @@ function GeneratePage() {
       })
       .catch((error) => {
         console.log(`pdf generation error occured ${error}`);
+        setStatusMessage(`pdf generation error occured ${error}`, false, false);
       });
   };
 

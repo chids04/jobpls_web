@@ -1,195 +1,80 @@
 [
   {
-    "id": "mock-template-tech",
+    "templateId": "mock-template-tech",
     "templateName": "Software Engineer Profile",
-    "name": "Alex Johnson",
-    "email": "alex.johnson@example.com",
-    "summary": "Highly motivated Software Engineer with 5+ years of experience in full-stack web development and a passion for building scalable, high-performance applications. Proficient in modern JavaScript frameworks, backend technologies, and cloud platforms.",
-    "location": "San Francisco, CA",
-    "github": "alexjohnsondev",
-    "skills": [
-      "JavaScript",
-      "TypeScript",
-      "React",
-      "Node.js",
-      "Python",
-      "Django",
-      "AWS",
-      "Docker",
-      "SQL",
-      "REST APIs",
-      "Agile Methodologies"
-    ],
-    "projects": [
-      {
-        "title": "E-commerce Platform Rearchitecture",
-        "b1": "Led a team in refactoring monolithic e-commerce application to microservices architecture, improving system scalability by 40%.",
-        "b2": "Implemented GraphQL API gateways and integrated new payment processing modules.",
-        "languages": ["TypeScript", "Node.js", "React", "GraphQL"],
-        "url": "https://github.com/alexjohnsondev/ecommerce-platform"
-      },
-      {
-        "title": "Real-time Chat Application",
-        "b1": "Developed a real-time chat application using WebSockets, enabling instant messaging and group chat features.",
-        "b2": "Designed and implemented robust backend services with authentication and message persistence.",
-        "languages": ["Python", "Flask", "WebSocket", "PostgreSQL"],
-        "url": "https://github.com/alexjohnsondev/realtime-chat"
-      }
-    ],
-    "workExperiences": [
-      {
-        "title": "Senior Software Engineer",
-        "dates": { "start": "2021-03-01", "end": "Ongoing" },
-        "company": "Innovate Solutions",
-        "b1": "Designed and developed critical backend services for a SaaS product, handling millions of daily requests.",
-        "b2": "Mentored junior developers and contributed to code review processes, improving team's code quality standards."
-      },
-      {
-        "title": "Software Developer",
-        "dates": { "start": "2018-06-01", "end": "2021-02-28" },
-        "company": "WebTech Co.",
-        "b1": "Contributed to the development of new features for a customer relationship management (CRM) platform.",
-        "b2": "Optimized database queries and API endpoints, reducing response times by 15%."
-      }
-    ],
-    "education": [
-      {
-        "title": "Master of Science in Computer Science",
-        "grade": "GPA: 3.9/4.0",
-        "name": "Stanford University",
-        "dates": { "start": "2017-09-01", "end": "2018-05-31" },
-        "location": "Stanford, CA",
-        "modules": [
-          "Advanced Algorithms",
-          "Distributed Systems",
-          "Machine Learning"
-        ]
-      },
-      {
-        "title": "Bachelor of Science in Software Engineering",
-        "grade": "Magna Cum Laude",
-        "name": "University of California, Berkeley",
-        "dates": { "start": "2013-09-01", "end": "2017-05-31" },
-        "location": "Berkeley, CA"
-      }
-    ],
+    "resume": {
+      "full_name": "Alex Johnson",
+      "email": "alex.johnson@example.com",
+      "about_me": "Highly motivated Software Engineer with 5+ years of experience in full-stack web development and a passion for building scalable, high-performance applications. Proficient in modern JavaScript frameworks, backend technologies, and cloud platforms.",
+      "residency": "San Francisco, CA",
+      "github": "https://github.com/alexjohnsondev",
+      "languages": ["JavaScript", "TypeScript", "Python", "Go", "SQL"],
+      "frameworks": ["React", "Node.js", "Django", "Docker"],
+      "developer_tools": ["AWS", "Git", "PostgreSQL", "REST APIs"],
+      "projects": [
+        {
+          "title": "E-commerce Platform Rearchitecture",
+          "b1": "Led a team in refactoring monolithic e-commerce application to microservices architecture, improving system scalability by 40%.",
+          "b2": "Implemented CI/CD pipelines and integrated new payment processing modules.",
+          "languages": ["TypeScript", "Node.js", "React"],
+          "url": "https://github.com/alexjohnsondev/ecommerce-platform"
+        }
+      ],
+      "work_exp": [
+        {
+          "title": "Senior Software Engineer",
+          "start_date": "03/2021",
+          "end_date": "Ongoing",
+          "company": "Innovate Solutions",
+          "b1": "Designed and developed critical backend services for a SaaS product, handling millions of daily requests.",
+          "b2": "Mentored junior developers and contributed to code review processes."
+        }
+      ],
+      "education": [
+        {
+          "title": "Master of Science in Computer Science",
+          "grade": "GPA: 3.9/4.0",
+          "name": "Stanford University",
+          "start_date": "09/2017",
+          "end_date": "05/2018",
+          "location": "Stanford, CA"
+        }
+      ]
+    },
     "createdAt": "2023-10-27T12:00:00.000Z",
     "updatedAt": "2023-10-27T12:00:00.000Z"
   },
   {
-    "id": "mock-template-retail",
+    "templateId": "mock-template-retail",
     "templateName": "Retail Sales Associate Profile",
-    "name": "Maria Rodriguez",
-    "email": "maria.rodriguez@example.com",
-    "summary": "Energetic and customer-focused Retail Sales Associate with 3 years of experience in fast-paced retail environments. Proven ability to drive sales, manage inventory, and provide exceptional service, contributing to increased customer satisfaction and loyalty.",
-    "location": "Austin, TX",
-    "github": null,
-    "skills": [
-      "Customer Service",
-      "Sales",
-      "Merchandising",
-      "Inventory Management",
-      "POS Systems",
-      "Team Leadership",
-      "Communication",
-      "Problem Solving"
-    ],
-    "projects": null,
-    "workExperiences": [
-      {
-        "title": "Sales Associate",
-        "dates": { "start": "2020-08-01", "end": "Ongoing" },
-        "company": "Fashion Forward Boutique",
-        "b1": "Achieved monthly sales targets consistently, contributing to a 10% increase in store revenue over one year.",
-        "b2": "Assisted customers with product selection, provided styling advice, and resolved inquiries to ensure positive shopping experiences."
-      },
-      {
-        "title": "Seasonal Retail Worker",
-        "dates": { "start": "2019-11-01", "end": "2020-01-31" },
-        "company": "MegaMart Department Store",
-        "b1": "Managed cash register operations, processed payments, and handled returns efficiently during peak holiday season.",
-        "b2": "Maintained store cleanliness and organized merchandise displays to enhance visual appeal and customer navigation."
-      }
-    ],
-    "education": [
-      {
-        "title": "Associate of Arts in Business Administration",
-        "grade": "GPA: 3.5/4.0",
-        "name": "Austin Community College",
-        "dates": { "start": "2018-09-01", "end": "2020-05-31" },
-        "location": "Austin, TX",
-        "modules": ["Principles of Marketing", "Retail Management"]
-      }
-    ],
-    "createdAt": "2023-10-27T12:00:00.000Z",
-    "updatedAt": "2023-10-27T12:00:00.000Z"
-  },
-  {
-    "id": "mock-template-art",
-    "templateName": "Graphic Designer Portfolio",
-    "name": "Liam O'Connell",
-    "email": "liam.oconnell@example.com",
-    "summary": "Creative and versatile Graphic Designer with 4 years of experience delivering compelling visual solutions across print and digital media. Adept at conceptualizing and executing designs that capture brand essence and engage target audiences.",
-    "location": "Brooklyn, NY",
-    "github": "liamoconnelldesign",
-    "skills": [
-      "Adobe Photoshop",
-      "Adobe Illustrator",
-      "Adobe InDesign",
-      "Figma",
-      "UI/UX Design Principles",
-      "Branding",
-      "Typography",
-      "Print Design",
-      "Web Design",
-      "Concept Development"
-    ],
-    "projects": [
-      {
-        "title": "Brand Identity Redesign for Local Cafe",
-        "b1": "Developed a comprehensive brand identity including logo, color palette, typography, and marketing collateral for a new cafe.",
-        "b2": "Managed client communication from concept to final delivery, ensuring alignment with brand vision.",
-        "languages": ["Adobe Illustrator", "Adobe Photoshop"],
-        "url": "https://liamoconnelldesign.com/cafe-branding"
-      },
-      {
-        "title": "Responsive Website UI/UX for Startup",
-        "b1": "Designed intuitive and visually appealing user interfaces for a tech startup's web application, improving user engagement by 25%.",
-        "b2": "Conducted user research, created wireframes and prototypes, and iterated designs based on feedback.",
-        "languages": ["Figma", "Adobe XD"],
-        "url": "https://liamoconnelldesign.com/startup-ux"
-      }
-    ],
-    "workExperiences": [
-      {
-        "title": "Graphic Designer",
-        "dates": { "start": "2020-01-01", "end": "Ongoing" },
-        "company": "Creative Collective Agency",
-        "b1": "Collaborated with clients to translate marketing objectives into effective visual designs for campaigns, websites, and print materials.",
-        "b2": "Ensured brand consistency across all projects while meeting tight deadlines in a fast-paced agency environment."
-      },
-      {
-        "title": "Junior Designer (Internship)",
-        "dates": { "start": "2019-06-01", "end": "2019-12-31" },
-        "company": "Artistic Vision Studio",
-        "b1": "Assisted senior designers with layout adjustments, image retouching, and preparing files for print production.",
-        "b2": "Gained hands-on experience in client presentations and project management within a professional design studio."
-      }
-    ],
-    "education": [
-      {
-        "title": "Bachelor of Fine Arts in Graphic Design",
-        "grade": "Summa Cum Laude",
-        "name": "Pratt Institute",
-        "dates": { "start": "2015-09-01", "end": "2019-05-31" },
-        "location": "Brooklyn, NY",
-        "modules": [
-          "Visual Communications",
-          "Digital Imaging",
-          "Motion Graphics"
-        ]
-      }
-    ],
+    "resume": {
+      "full_name": "Maria Rodriguez",
+      "email": "maria.rodriguez@example.com",
+      "about_me": "Energetic and customer-focused Retail Sales Associate with 3 years of experience in fast-paced retail environments.",
+      "residency": "Austin, TX",
+      "github": "",
+      "languages": ["English", "Spanish"],
+      "work_exp": [
+        {
+          "title": "Sales Associate",
+          "start_date": "08/2020",
+          "end_date": "Ongoing",
+          "company": "Fashion Forward Boutique",
+          "b1": "Achieved monthly sales targets consistently, contributing to revenue growth.",
+          "b2": "Assisted customers with product selection and resolved inquiries."
+        }
+      ],
+      "education": [
+        {
+          "title": "Associate of Arts",
+          "grade": "GPA: 3.5/4.0",
+          "name": "Austin Community College",
+          "start_date": "09/2018",
+          "end_date": "05/2020",
+          "location": "Austin, TX"
+        }
+      ]
+    },
     "createdAt": "2023-10-27T12:00:00.000Z",
     "updatedAt": "2023-10-27T12:00:00.000Z"
   }

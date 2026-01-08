@@ -35,7 +35,7 @@ export const ExperienceSchema = DateFormSchema.extend({
 export const ResumeDataSchema = z.object({
   full_name: z.string(),
   email: z.email(),
-  github: z.string().url().optional().or(z.literal("")),
+  github: z.url().optional(),
   languages: z.array(z.string()).optional(),
   frameworks: z.array(z.string()).optional(),
   developer_tools: z.array(z.string()).optional(),
@@ -46,9 +46,10 @@ export const ResumeDataSchema = z.object({
   work_exp: z.array(ExperienceSchema).optional(),
 });
 
-export const ResumeTemplateSchema = ResumeDataSchema.extend({
+export const ResumeTemplateSchema = z.object({
   templateId: z.string(),
   templateName: z.string(),
+  resume: ResumeDataSchema,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
