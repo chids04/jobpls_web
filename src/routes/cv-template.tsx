@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useStore } from "@/store/useStore";
+import { useTemplateStore } from "@/store/useStore";
 import { TemplateDropdown } from "@/components/about-me/TemplateDropdown";
 import { CVTemplateSelection } from "@/components/cv-template/CVTemplateSelection";
 
@@ -9,7 +9,7 @@ export const Route = createFileRoute("/cv-template")({
 });
 
 function RouteComponent() {
-  const { templates } = useStore();
+  const { templates } = useTemplateStore();
   const templatesArray = Object.values(templates);
 
   return (

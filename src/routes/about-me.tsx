@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import TemplatesList from "@/components/about-me/TemplatesList";
 import TemplateForm from "@/components/about-me/TemplateForm";
-import { useStore, ResumeTemplate } from "@/store/useStore";
+import { useTemplateStore, ResumeTemplate } from "@/store/useStore";
 import { Education, Experience, Project } from "@/lib/schemas";
 
 export const Route = createFileRoute("/about-me")({
@@ -12,15 +12,11 @@ export const Route = createFileRoute("/about-me")({
 
 // route component that renders templates list or the template form
 function RouteComponent() {
-  const {
-    templates,
-    addTemplate,
-    updateTemplate,
-    deleteTemplate,
-  } = useStore();
+  const { templates, addTemplate, updateTemplate, deleteTemplate } =
+    useTemplateStore();
 
-  const templatesArray = Object.values(templates).sort((a, b) => 
-    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  const templatesArray = Object.values(templates).sort(
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
   );
 
   // view state: list vs form

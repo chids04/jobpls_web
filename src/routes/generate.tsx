@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
-import { useStore } from "@/store/useStore";
+import { usePDFStore, useTemplateStore } from "@/store/useStore";
 
 import { SERVER_URL } from "@/lib/types";
 import { Resume } from "@/lib/schemas";
@@ -31,10 +31,9 @@ function GeneratePage() {
     specialInstr,
     setJobDesc,
     setSpecialInstr,
-    generatedPdfs,
-    setGeneratedPdfs,
-    clearGenerated,
-  } = useStore();
+  } = useTemplateStore();
+
+  const { cv, cover, setCV, setCover, clearPDFs } = usePDFStore();
 
   const selectedTemplate = selectedTemplateId
     ? templates[selectedTemplateId]
@@ -176,8 +175,8 @@ function GeneratePage() {
   };
 
   const handlePDFsReady = (cvUrl: string, coverUrl: string) => {
-    setPdfUrls({ cvUrl, coverUrl });
-    setGeneratedPdfs({ cv: cvUrl, cover: coverUrl });
+    setCV(cvUrl);
+    setCover(coverUrl);
   };
 
   // reset state for new generation - memoized to avoid unnecessary re-renders
@@ -316,8 +315,7 @@ function GeneratePage() {
           <p>{status.msg}</p>
         </div>
       )}
-
-      {/* display last generated pdfs from store */}
+      {/*
       {generatedPdfs &&
         generatedPdfs.cv &&
         generatedPdfs.cover &&
@@ -329,7 +327,6 @@ function GeneratePage() {
             </h3>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              {/* resume buttons */}
               <div className="flex flex-col gap-2">
                 <span className="text-sm text-slate-400 text-center">
                   Last Resume
@@ -360,7 +357,6 @@ function GeneratePage() {
                 </div>
               </div>
 
-              {/* cover letter buttons */}
               <div className="flex flex-col gap-2">
                 <span className="text-sm text-slate-400 text-center">
                   Last Cover Letter
@@ -391,7 +387,6 @@ function GeneratePage() {
                 </div>
               </div>
             </div>
-
             <p className="text-xs text-slate-400 text-center max-w-md">
               These are your previously generated documents.
             </p>
@@ -406,6 +401,7 @@ function GeneratePage() {
             </Button>
           </div>
         )}
+    */}
 
       {error && (
         <div className="flex items-center max-w-sm bg-red-700/40 border-red-900 p-2 border-2 text-red-400">
@@ -413,16 +409,15 @@ function GeneratePage() {
         </div>
       )}
 
-      {pdfUrls.cvUrl && pdfUrls.coverUrl && (
+      {true && (
         <div className="flex flex-col items-center gap-4 mt-6 p-6 bg-green-700/20 border-green-900 border-2 rounded-lg">
           <h3 className="text-lg font-semibold text-green-400">
-            🎉 Documents Ready!
+            generated items
           </h3>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            {/* resume buttons */}
             <div className="flex flex-col gap-2">
-              <span className="text-sm text-green-300 text-center">Resume</span>
+              <span className="text-sm text-green-300 text-center">CV</span>
               <div className="flex gap-2">
                 <Button
                   variant="outline"

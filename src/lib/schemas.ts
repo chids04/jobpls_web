@@ -54,6 +54,18 @@ export const ResumeTemplateSchema = z.object({
   updatedAt: z.coerce.date(),
 });
 
+export const CoverDataSchema = z.object({
+  hiring_manager: z.string(),
+  company_name: z.string(),
+  salutation: z.string(),
+  paragraphs: z.array(z.string()),
+});
+
+export const OutputSchema = z.object({
+  resume: ResumeDataSchema,
+  cover: CoverDataSchema,
+});
+
 export type Project = z.infer<typeof ProjectSchema>;
 export type Education = z.infer<typeof EducationSchema>;
 export type Experience = z.infer<typeof ExperienceSchema>;

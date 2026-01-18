@@ -7,32 +7,25 @@ import { z } from "zod";
 const AppStateSchema = z.object({
   templates: z.record(z.string(), ResumeTemplateSchema),
   selectedTemplateId: z.string().nullable(),
-  selectedCV: z.any().nullable(), // Simplified for now as CVTemplate is an interface
-  jobDesc: z.string(),
-  specialInstr: z.string(),
-  generatedPdfs: z.any().nullable(),
+  selectedCV: z.any().nullable(),
+  jobDesc: z.string().optional(),
+  specialInstr: z.string().optional(),
   currentJob: z.any().nullable(),
 });
 
 export type { ResumeTemplate };
 
-interface AppState {
-  // Templates stored as a hashmap keyed by templateId
+type AppState = {
   templates: Record<string, ResumeTemplate>;
   selectedTemplateId: string | null;
 
-  // CV Selection
   selectedCV: CVTemplate | null;
 
-  // Job Data
   jobDesc: string;
   specialInstr: string;
 
-  // Generation State
-  generatedPdfs: GeneratedPdfs | null;
   currentJob: CurrentJobState | null;
 
-  // Actions
   addTemplate: (template: ResumeTemplate) => void;
   updateTemplate: (template: ResumeTemplate) => void;
   deleteTemplate: (id: string) => void;
@@ -40,12 +33,43 @@ interface AppState {
   setSelectedCV: (cv: CVTemplate | null) => void;
   setJobDesc: (desc: string) => void;
   setSpecialInstr: (instr: string) => void;
-  setGeneratedPdfs: (pdfs: GeneratedPdfs | null) => void;
   setCurrentJob: (job: CurrentJobState | null) => void;
-  clearGenerated: () => void;
-}
+};
 
-export const useStore = create<AppState>()(
+type PdfStore = {
+  cv: string | null;
+  cover: string | null;
+  setCV: (cv: string | null) => void;
+  setCover: (cover: string | null) => void;
+  clearPDFs: () => void;
+};
+
+export const usePDFStore = create<PdfStore>()(
+  persist(
+    (set) => ({
+      cv: null,
+      cover: null,
+
+      setCV: (cv) => set({ cv }),
+      setCover: (cover) => set({ cover }),
+      clearPDFs: () => set({ cv: null, cover: null }),
+    }),
+    {
+      name: "jobpls-pdfs",
+      storage: createJSONStorage(() =>
+        typeof window !== "undefined"
+          ? sessionStorage
+          : {
+              getItem: () => null,
+              setItem: () => {},
+              removeItem: () => {},
+            },
+      ),
+    },
+  ),
+);
+
+export const useTemplateStore = create<AppState>()(
   persist(
     (set) => ({
       templates: {},
@@ -53,7 +77,6 @@ export const useStore = create<AppState>()(
       selectedCV: null,
       jobDesc: "",
       specialInstr: "",
-      generatedPdfs: null,
       currentJob: null,
 
       addTemplate: (template) =>
@@ -73,9 +96,7 @@ export const useStore = create<AppState>()(
       setSelectedCV: (cv) => set({ selectedCV: cv }),
       setJobDesc: (desc) => set({ jobDesc: desc }),
       setSpecialInstr: (instr) => set({ specialInstr: instr }),
-      setGeneratedPdfs: (pdfs) => set({ generatedPdfs: pdfs }),
       setCurrentJob: (job) => set({ currentJob: job }),
-      clearGenerated: () => set({ generatedPdfs: null }),
     }),
     {
       name: "jobpls-storage",
@@ -91,7 +112,6 @@ export const useStore = create<AppState>()(
             ? localStorage.removeItem(name)
             : undefined,
       })),
-      // Validation and transformation during rehydration
       onRehydrateStorage: (_state) => {
         console.log("hydration starting");
         return (rehydratedState, error) => {
@@ -101,12 +121,11 @@ export const useStore = create<AppState>()(
             const result = AppStateSchema.safeParse(rehydratedState);
             if (!result.success) {
               console.error(
-                "store validation failed, resetting to defaults",
+                "failed to parse saved state, possibly corrupted",
                 result.error,
               );
-              // You could choose to fix the state here or return defaults
             } else {
-              console.log("store validated and transformed (Dates restored)");
+              console.log("succesfully restored and validated state");
             }
           }
         };
