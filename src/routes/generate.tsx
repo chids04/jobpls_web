@@ -146,7 +146,7 @@ function GeneratePage() {
 
     setStatusMessage("personalised doc", true);
 
-    genCV(aiCV, CV_Type.TechCV)
+    genCV(aiCV.resume, CV_Type.TechCV)
       .then((p) => {
         if (p == undefined) {
           throw new Error("pdf gen failed");

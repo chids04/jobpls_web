@@ -1,5 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
-import { Resume, ResumeDataSchema } from "./schemas";
+import {
+  GenerationOutput,
+  GenerationOutputSchema,
+  Resume,
+  ResumeDataSchema,
+} from "./schemas";
 import { CV_Type } from "./pdf_gen";
 
 import * as z from "zod";
@@ -17,16 +22,16 @@ export async function personaliseCV(
 
   switch (cv_type) {
     case CV_Type.TechCV:
-      prompt = TECH_CV_PROMPT;
-      sysInstr = TECH_CV_SYS_INSTR;
+      prompt = TECH_CV_PROMPT_2;
+      sysInstr = TECH_CV_SYS_INSTR_2;
       break;
     case CV_Type.GeneralCV:
-      prompt = GENERAL_CV_PROMPT;
-      sysInstr = GENERAL_CV_SYS_INSTR;
+      prompt = GENERAL_CV_PROMPT_2;
+      sysInstr = GENERAL_CV_SYS_INSTR_2;
       break;
     default:
-      prompt = TECH_CV_PROMPT;
-      sysInstr = GENERAL_CV_SYS_INSTR;
+      prompt = GENERAL_CV_PROMPT_2;
+      sysInstr = GENERAL_CV_SYS_INSTR_2;
   }
 
   prompt = prompt
@@ -40,7 +45,7 @@ export async function personaliseCV(
     config: {
       systemInstruction: sysInstr,
       responseMimeType: "application/json",
-      responseJsonSchema: z.toJSONSchema(ResumeDataSchema),
+      responseJsonSchema: z.toJSONSchema(OutputSchema),
     },
   });
 
@@ -50,13 +55,19 @@ export async function personaliseCV(
     throw new Error("failed to generate llm response");
   }
 
-  const generatedResume = ResumeDataSchema.parse(JSON.parse(response.text));
+  const generatedResume = GenerationOutputSchema.parse(
+    JSON.parse(response.text),
+  );
 
-  return generatedResume as Resume;
+  return generatedResume as GenerationOutput;
 }
 
 const GENERAL_CV_SYS_INSTR = String.raw`
 "You are an expert CV writing assistant for general employment roles (retail, warehouse, hospitality, admin). You generate tailored, professional CVs by analyzing candidate work history and job descriptions. You must use concise British English, straight to the point, dont over use words like "particularly", "extremely", "keen". Talk in the tone of a smart first class graduate but not an English professor. You must return ONLY raw JSON with no markdown formatting, no code blocks, no backticks. You must ensure that the JSON returned is able to be parsed immediately by the serde rust crate, error-free.All Values must be strings, all arrays of strings must be represented as comma seperated strings.
+`;
+
+const GENERAL_CV_SYS_INSTR_2 = String.raw`
+"You are an expert CV and Cover letter writing assistant for general employment roles (retail, warehouse, hospitality, admin). You generate tailored, professional CVs by analyzing candidate work history and job descriptions. You must use concise British English, straight to the point, dont over use words like "particularly", "extremely", "keen". Talk in the tone of a smart first class graduate but not an English professor. You must return ONLY raw JSON with no markdown formatting, no code blocks, no backticks. You must ensure that the JSON returned is able to be parsed immediately by the serde rust crate, error-free.All Values must be strings, all arrays of strings must be represented as comma seperated strings.
 `;
 
 const GENERAL_CV_PROMPT = String.raw`
@@ -145,6 +156,71 @@ Generate a JSON object with these exact keys:
 ---
 `;
 
+const GENERAL_CV_PROMPT_2 = String.raw`
+  Generate a JSON object to populate an employment template consisting of a cv and a cover letter. Analyse the BASE_CV_DATA and JOB_DESCRIPTION to create professional, relevant content that highlights transferable skills and work ethic.
+
+## Core Principles
+
+1. **Relevance First**: Highlight work experience and skills most relevant to the target role
+2. **Transferable Skills**: Emphasize reliability, teamwork, customer service, attention to detail, and work ethic
+3. **Natural Keywords**: Use terminology from the job description naturally throughout
+4. **Professional Tone**: Clear, professional British English suitable for non-technical roles
+5. **Conciseness**: CV and Cover Letter must each be able to fit on an A4 page
+
+The provided response schema defines the shape that the cv and cover letter responses should have, along the information required for each of them.
+
+The BASE_CV_DATA already closely follows the schema for the CV.
+
+## Selection & Writing Guidelines for CV
+
+**Job Selection**: Choose the 3 most relevant jobs from BASE_CV_DATA. Prioritize:
+1. Jobs with similar duties to the target role
+2. Recent positions (last 2-3 years)
+3. Roles demonstrating progression or diverse skills
+
+**Bullet Point Guidelines**:
+- Start with strong action verbs: Managed, Operated, Maintained, Processed, Handled, Achieved, Ensured, Delivered, Organised, Collaborated
+- Be specific: Include numbers, percentages, or quantities where available
+- Focus on achievements and responsibilities relevant to the target role
+- Demonstrate reliability, work ethic, attention to detail, and team contribution
+- Use past tense for previous roles
+
+**Skills Guidelines**:
+- Prioritize skills mentioned in the job description
+- Include a mix of technical skills (e.g., "Till Operation", "Stock Management", "GDPR Compliance") and soft skills (e.g., "Time Management", "Problem Solving")
+- Use industry-standard terminology
+- Keep as comma-separated string, not an array
+
+
+**Summary Guidelines**:
+- Mention work ethic, reliability, and key strengths
+- Reference the type of role or industry if relevant
+- Show enthusiasm and readiness to contribute
+- Avoid clichés - be specific about capabilities
+
+
+## Guidelines for cover letter generation
+
+1. **Authenticity**: Use British English, dont use words like "particularly", "immense" , "aligns" etc, just concise and straight to the point
+2. **Company-Specific**: Explain WHY this specific company and role, not just any job
+3. **Complementary**: Add personality and context to CV achievements, don't just repeat them
+4. **Researched**: Demonstrate understanding of the company's work, products, or values
+5. **Conciseness**: Must fit on one A4 page with standard margins. Each paragraph: 3-5 sentences
+
+
+---
+
+## BASE_CV_DATA:
+{CV}
+
+---
+
+## JOB_DESCRIPTION:
+{JOB_DESC}
+
+---
+`;
+
 const TECH_CV_SYS_INSTR = String.raw`
 
 Rules:
@@ -158,6 +234,18 @@ Leave values empty ("") if there’s no data.
 Avoid long sentences, filler words, or repeated phrases.
 Do not use words like “particularly”, “drawn”, “compelling”, or anything that sounds forced.
 Keep it factual, specific, and easy to read. One A4 page max.
+";
+`;
+
+const TECH_CV_SYS_INSTR_2 = String.raw`
+Rules:
+Read BASE_CV_DATA and JOB_DESCRIPTION.
+Pick the most relevant education, work, and projects for the role.
+Write short, clear text in natural British English with a confident graduate tone.
+Output one JSON object only — no markdown, comments, explanations
+Avoid long sentences, filler words, or repeated phrases.
+Do not use words like “particularly”, “drawn”, “compelling”, or anything that sounds forced.
+Keep it factual, specific, and easy to read.
 ";
 `;
 
@@ -251,4 +339,65 @@ Each entry uses:
 ---
 
 Generate **valid JSON only**, no markdown, comments, or explanations."#;
+`;
+
+const TECH_CV_PROMPT_2 = String.raw`
+Create a JSON object to fill the CV and Cover schema defined in the response schema. Use BASE_CV_DATA and JOB_DESCRIPTION to generate short, relevant, British-English content in a confident graduate tone. Ensure that instructions stated in EXTRA_NOTES at the end are followed
+
+Ensure that the cv details are relevant for the attached job description, dont hallucinate, but you can overexaggerate what i actually did at work etc, to sound better and more relevant for the role at hand. also use this to generate a cover letter following the schema in the response schema.
+
+---
+## CV Rules
+
+1. **Relevance**: Prioritise skills, experience, and projects that directly match the job.
+2. **Keywords**: Integrate job terms naturally.
+3. **Conciseness**: Fit all output within one A4 page.
+4. **Voice**: Human-written, clear, professional tone.
+---
+
+## Selection Rules
+- **Projects**: Pick 2–3 most relevant or highest-impact. Sort by most relevant first
+- **Work Experience**: Pick 2–3 most relevant or most recent. Sort by most recent first
+- **Education**: Include up to 3, prioritising highest level or most relevant. Sort by most recent first
+
+---
+
+## Writing Rules
+
+- Start bullets with strong verbs (Built, Implemented, Designed, Optimised).
+- Mention concrete tools and results.
+- Quantify impact when possible (e.g. “Improved load time by 40%”).
+- Avoid filler terms (“detail-oriented”, “team player”).
+
+---------------------------------------------
+
+## Cover Letter Rules
+
+Create a personalised cover letter that adds personality and context beyond the CV.
+
+There should be some character behind the words, but it still be formal, it MUST NOT look like it was AI-generated, a human tone is required
+
+## Core Principles
+
+1. **Authenticity**: Use British English, dont use words like "particularly", "immense" , "aligns" etc, just concise and straight to the point
+2. **Company-Specific**: Explain WHY this specific company and role, not just any job
+3. **Complementary**: Add personality and context to CV achievements, don't just repeat them
+4. **Researched**: Demonstrate understanding of the company's work, products, or values
+5. **Conciseness**: Must fit on one A4 page with standard margins. Each paragraph: 3-5 sentences
+
+## Selection Rules
+1. Max 4 paragraphs for the cover letter, or however much to ensure the full cover letter content fits on one A4 page
+
+
+## BASE_CV_DATA:
+{CV}
+---
+
+## JOB_DESCRIPTION:
+{JOB_DESC}
+
+## EXTRA NOTES:
+{SPECIAL_INSTR}
+
+---
 `;

@@ -61,7 +61,7 @@ export const CoverDataSchema = z.object({
   paragraphs: z.array(z.string()),
 });
 
-export const OutputSchema = z.object({
+export const GenerationOutputSchema = z.object({
   resume: ResumeDataSchema,
   cover: CoverDataSchema,
 });
@@ -71,3 +71,4 @@ export type Education = z.infer<typeof EducationSchema>;
 export type Experience = z.infer<typeof ExperienceSchema>;
 export type Resume = z.infer<typeof ResumeDataSchema>;
 export type ResumeTemplate = z.infer<typeof ResumeTemplateSchema>;
+export type GenerationOutput = z.infer<typeof GenerationOutputSchema>;
