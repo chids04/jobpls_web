@@ -8,12 +8,15 @@ import { Button } from "@/components/ui/button";
 import { usePDFStore, useTemplateStore } from "@/store/useStore";
 
 import { SERVER_URL } from "@/lib/types";
-import { Resume } from "@/lib/schemas";
+import { GenerationOutputSchema, Resume } from "@/lib/schemas";
 import { sendGenerate } from "@/lib/api";
 import { ExternalLinkIcon, DownloadIcon } from "lucide-react";
-import { CV_Type, genCV } from "@/lib/pdf_gen";
+import { CV_Type, genCV, genCover } from "@/lib/pdf_gen";
 import { personaliseCV } from "@/lib/prompts";
 import clsx from "clsx";
+
+// mock test data
+import MockGeminiOutput from "@/mock/GenerationOutput.json?raw";
 
 // generate page allows users to gen their cv and add a short pre-prompt
 
@@ -125,47 +128,99 @@ function GeneratePage() {
     setStatusMessage("personalising doc", true, false);
 
     let aiCV;
+    // try {
+    //   aiCV = await personaliseCV(
+    //     resume,
+    //     localJobDesc,
+    //     localSpecialInstr,
+    //     CV_Type.TechCV,
+    //   );
+    // } catch (error: any) {
+    //   console.log(error);
+    //   setStatusMessage(error?.message || "An unknown error occurred", false);
+    // }
 
-    try {
-      aiCV = await personaliseCV(
-        resume,
-        localJobDesc,
-        localSpecialInstr,
-        CV_Type.TechCV,
-      );
-    } catch (error: any) {
-      console.log(error);
-      setStatusMessage(error?.message || "An unknown error occurred", false);
-    }
+    // console.log(aiCV);
 
-    console.log(aiCV);
-
-    if (aiCV == undefined) {
-      return;
-    }
+    // if (aiCV == undefined) {
+    //   return;
+    // }
 
     setStatusMessage("personalised doc", true);
 
-    genCV(aiCV.resume, CV_Type.TechCV)
-      .then((p) => {
-        if (p == undefined) {
-          throw new Error("pdf gen failed");
-        }
+    const generationOutput = GenerationOutputSchema.parse(
+      JSON.parse(MockGeminiOutput),
+    );
 
-        const cv_blob = new Blob([p.slice(0)], {
-          type: "application/pdf",
-        });
+    try {
+      const cv = await genCV(generationOutput, CV_Type.TechCV);
 
-        const cv_url = URL.createObjectURL(cv_blob);
-
-        console.log(cv_url);
-
-        handlePDFsReady(cv_url, "hello");
-      })
-      .catch((error) => {
-        console.log(`pdf generation error occured ${error}`);
-        setStatusMessage(`pdf generation error occured ${error}`, false, false);
+      if (!cv) {
+        throw new Error("failed to generate cover pdf");
+      }
+      const cv_blob = new Blob([cv.slice(0)], {
+        type: "application/pdf",
       });
+
+      const cvUrl = URL.createObjectURL(cv_blob);
+
+      setPdfUrls({
+        ...pdfUrls,
+        cvUrl,
+      });
+    } catch (error) {
+      setStatusMessage(
+        `cv pdf generation error occured ${error}`,
+        false,
+        false,
+      );
+      console.log(error);
+    }
+
+    try {
+      const cover = await genCover(generationOutput);
+
+      if (!cover) {
+        throw new Error("pdf gen failed");
+      }
+      const cover_blob = new Blob([cover.slice(0)], {
+        type: "application/pdf",
+      });
+
+      const coverUrl = URL.createObjectURL(cover_blob);
+
+      setPdfUrls({
+        ...pdfUrls,
+        coverUrl,
+      });
+    } catch (error) {
+      setStatusMessage(
+        `cover pdf generation error occured ${error}`,
+        false,
+        false,
+      );
+      console.log(error);
+    }
+    // genCV(aiCV, CV_Type.TechCV)
+    //   .then((p) => {
+    //     if (p == undefined) {
+    //       throw new Error("pdf gen failed");
+    //     }
+
+    //     const cv_blob = new Blob([p.slice(0)], {
+    //       type: "application/pdf",
+    //     });
+
+    //     const cv_url = URL.createObjectURL(cv_blob);
+
+    //     console.log(cv_url);
+
+    //     handlePDFsReady(cv_url, "hello");
+    //   })
+    //   .catch((error) => {
+    //     console.log(`pdf generation error occured ${error}`);
+    //     setStatusMessage(`pdf generation error occured ${error}`, false, false);
+    //   });
   };
 
   // manual save function
@@ -285,7 +340,7 @@ function GeneratePage() {
             <Button
               onClick={handleGenerate}
               className="w-fit hover:text-black"
-              disabled={!isReady || generateMutation.isPending}
+              //disabled={!isReady || generateMutation.isPending}
             >
               {generateMutation.isPending ? "generating..." : "generate"}
             </Button>

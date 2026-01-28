@@ -62,9 +62,11 @@ export const CoverDataSchema = z.object({
 });
 
 export const GenerationOutputSchema = z.object({
-  resume: ResumeDataSchema,
-  cover: CoverDataSchema,
+  ...ResumeDataSchema.shape,
+  ...CoverDataSchema.shape,
 });
+
+console.log(GenerationOutputSchema);
 
 export type Project = z.infer<typeof ProjectSchema>;
 export type Education = z.infer<typeof EducationSchema>;

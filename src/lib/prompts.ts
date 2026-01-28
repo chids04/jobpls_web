@@ -45,7 +45,7 @@ export async function personaliseCV(
     config: {
       systemInstruction: sysInstr,
       responseMimeType: "application/json",
-      responseJsonSchema: z.toJSONSchema(OutputSchema),
+      responseJsonSchema: z.toJSONSchema(GenerationOutputSchema),
     },
   });
 
