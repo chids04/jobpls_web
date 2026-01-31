@@ -5,6 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
+import { Separator } from "@/components/ui/separator";
+
 import { usePDFStore, useTemplateStore } from "@/store/useStore";
 
 import { SERVER_URL } from "@/lib/types";
@@ -15,8 +17,8 @@ import { CV_Type, genCV, genCover } from "@/lib/pdf_gen";
 import { personaliseCV } from "@/lib/prompts";
 import clsx from "clsx";
 
-// mock test data
 import MockGeminiOutput from "@/mock/GenerationOutput.json?raw";
+import { GeneratedDocs } from "@/components/generate/GeneratedDocs";
 
 // generate page allows users to gen their cv and add a short pre-prompt
 
@@ -36,7 +38,7 @@ function GeneratePage() {
     setSpecialInstr,
   } = useTemplateStore();
 
-  const { cv, cover, setCV, setCover, clearPDFs } = usePDFStore();
+  const { setCV, setCover } = usePDFStore();
 
   const selectedTemplate = selectedTemplateId
     ? templates[selectedTemplateId]
@@ -61,9 +63,9 @@ function GeneratePage() {
   const [error, setError] = useState("");
 
   const [pdfUrls, setPdfUrls] = useState<{
-    cvUrl: string | null;
-    coverUrl: string | null;
-  }>({ cvUrl: null, coverUrl: null });
+    cvUrl: string | undefined;
+    coverUrl: string | undefined;
+  }>({ cvUrl: undefined, coverUrl: undefined });
 
   const [status, setStatus] = useState({
     success: true,
@@ -90,24 +92,6 @@ function GeneratePage() {
     setHasUnsavedChanges(hasChanges);
   }, [localJobDesc, localSpecialInstr, jobDesc, specialInstr]);
 
-  // tanstack query mutation for the generate request
-  const generateMutation = useMutation({
-    mutationFn: sendGenerate,
-    onSuccess: (jobId: string) => {
-      const pollUrl = `${SERVER_URL}/job/${jobId}`;
-      setPollingUrl(pollUrl);
-
-      // clear previous pdf urls when starting new generation
-      setPdfUrls({ cvUrl: null, coverUrl: null });
-      setError("");
-    },
-    // 3. dont't retry immediately on rate limit, let the poll interval handle it
-    onError: (error: any) => {
-      console.error("generate error:", error);
-      setError(error.message || "failed to start generation");
-    },
-  });
-
   const handleGenerate = async () => {
     if (!selectedCV || !selectedTemplate) {
       setError(`missing: ${missingItems.join(", ")}`);
@@ -125,7 +109,7 @@ function GeneratePage() {
 
     const resume: Resume = selectedTemplate.resume;
 
-    setStatusMessage("personalising doc", true, false);
+    setStatusMessage("Amending documents for the job....", true, false);
 
     let aiCV;
     // try {
@@ -146,14 +130,17 @@ function GeneratePage() {
     //   return;
     // }
 
-    setStatusMessage("personalised doc", true);
+    setStatusMessage("finished amending documents", true, false);
 
-    const generationOutput = GenerationOutputSchema.parse(
-      JSON.parse(MockGeminiOutput),
-    );
+    aiCV = GenerationOutputSchema.parse(JSON.parse(MockGeminiOutput));
+
+    let cvUrl;
+    let coverUrl;
 
     try {
-      const cv = await genCV(generationOutput, CV_Type.TechCV);
+      setStatusMessage("Generating CV...", true, false);
+
+      const cv = await genCV(aiCV, CV_Type.TechCV);
 
       if (!cv) {
         throw new Error("failed to generate cover pdf");
@@ -162,12 +149,7 @@ function GeneratePage() {
         type: "application/pdf",
       });
 
-      const cvUrl = URL.createObjectURL(cv_blob);
-
-      setPdfUrls({
-        ...pdfUrls,
-        cvUrl,
-      });
+      cvUrl = URL.createObjectURL(cv_blob);
     } catch (error) {
       setStatusMessage(
         `cv pdf generation error occured ${error}`,
@@ -178,7 +160,7 @@ function GeneratePage() {
     }
 
     try {
-      const cover = await genCover(generationOutput);
+      const cover = await genCover(aiCV);
 
       if (!cover) {
         throw new Error("pdf gen failed");
@@ -187,12 +169,7 @@ function GeneratePage() {
         type: "application/pdf",
       });
 
-      const coverUrl = URL.createObjectURL(cover_blob);
-
-      setPdfUrls({
-        ...pdfUrls,
-        coverUrl,
-      });
+      coverUrl = URL.createObjectURL(cover_blob);
     } catch (error) {
       setStatusMessage(
         `cover pdf generation error occured ${error}`,
@@ -201,66 +178,20 @@ function GeneratePage() {
       );
       console.log(error);
     }
-    // genCV(aiCV, CV_Type.TechCV)
-    //   .then((p) => {
-    //     if (p == undefined) {
-    //       throw new Error("pdf gen failed");
-    //     }
 
-    //     const cv_blob = new Blob([p.slice(0)], {
-    //       type: "application/pdf",
-    //     });
+    setCV(cvUrl);
+    setCover(coverUrl);
 
-    //     const cv_url = URL.createObjectURL(cv_blob);
-
-    //     console.log(cv_url);
-
-    //     handlePDFsReady(cv_url, "hello");
-    //   })
-    //   .catch((error) => {
-    //     console.log(`pdf generation error occured ${error}`);
-    //     setStatusMessage(`pdf generation error occured ${error}`, false, false);
-    //   });
+    setPdfUrls({
+      cvUrl,
+      coverUrl,
+    });
   };
 
   // manual save function
   const saveToStore = () => {
     setJobDesc(localJobDesc);
     setSpecialInstr(localSpecialInstr);
-  };
-
-  const handlePDFsReady = (cvUrl: string, coverUrl: string) => {
-    setCV(cvUrl);
-    setCover(coverUrl);
-  };
-
-  // reset state for new generation - memoized to avoid unnecessary re-renders
-  const handleReset = useCallback(() => {
-    setPollingUrl("");
-    setPdfUrls({ cvUrl: null, coverUrl: null });
-    setError("");
-  }, []);
-
-  // open pdf in new tab
-  const openPDF = (url: string, filename: string) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.setAttribute("aria-label", `Open ${filename} in new tab`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // trigger pdf download
-  const downloadPDF = (url: string, filename: string) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   return (
@@ -342,7 +273,7 @@ function GeneratePage() {
               className="w-fit hover:text-black"
               //disabled={!isReady || generateMutation.isPending}
             >
-              {generateMutation.isPending ? "generating..." : "generate"}
+              generate
             </Button>
           </div>
         ) : (
@@ -358,10 +289,12 @@ function GeneratePage() {
         )}
       </div>
 
+      <Separator />
+
       {status.msg && (
         <div
           className={clsx(
-            "flex flex-col justify-center items-center p-4",
+            "flex flex-col rounded-lg justify-center items-center p-4",
             status.success === false
               ? "bg-red-900 border-red-800 border-2 text-red-500"
               : "bg-green-900 border-green-800 border-2 text-green-500",
@@ -370,175 +303,8 @@ function GeneratePage() {
           <p>{status.msg}</p>
         </div>
       )}
-      {/*
-      {generatedPdfs &&
-        generatedPdfs.cv &&
-        generatedPdfs.cover &&
-        !pollUrl &&
-        !pdfUrls.cvUrl && (
-          <div className="flex flex-col items-center gap-4 mt-6 p-6 bg-slate-700/20 border-slate-600 border-2 rounded-lg">
-            <h3 className="text-lg font-semibold text-slate-300">
-              📁 Previously Generated Documents
-            </h3>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex flex-col gap-2">
-                <span className="text-sm text-slate-400 text-center">
-                  Last Resume
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      openPDF(generatedPdfs.cv!, "last-resume.pdf")
-                    }
-                    className="text-slate-300 border-slate-500 hover:bg-slate-500 hover:text-white"
-                  >
-                    <ExternalLinkIcon className="w-4 h-4 mr-1" />
-                    View
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      downloadPDF(generatedPdfs.cv!, "last-resume.pdf")
-                    }
-                    className="text-slate-300 border-slate-500 hover:bg-slate-500 hover:text-white"
-                  >
-                    <DownloadIcon className="w-4 h-4 mr-1" />
-                    Download
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <span className="text-sm text-slate-400 text-center">
-                  Last Cover Letter
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      openPDF(generatedPdfs.cover!, "last-cover-letter.pdf")
-                    }
-                    className="text-slate-300 border-slate-500 hover:bg-slate-500 hover:text-white"
-                  >
-                    <ExternalLinkIcon className="w-4 h-4 mr-1" />
-                    View
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      downloadPDF(generatedPdfs.cover!, "last-cover-letter.pdf")
-                    }
-                    className="text-slate-300 border-slate-500 hover:bg-slate-500 hover:text-white"
-                  >
-                    <DownloadIcon className="w-4 h-4 mr-1" />
-                    Download
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <p className="text-xs text-slate-400 text-center max-w-md">
-              These are your previously generated documents.
-            </p>
-
-            <Button
-              variant="ghost"
-              onClick={() => clearGenerated()}
-              className="text-slate-400 hover:text-slate-300 hover:bg-slate-500/20"
-              size="sm"
-            >
-              Clear Saved Documents
-            </Button>
-          </div>
-        )}
-    */}
-
-      {error && (
-        <div className="flex items-center max-w-sm bg-red-700/40 border-red-900 p-2 border-2 text-red-400">
-          <p>{error}</p>
-        </div>
-      )}
-
-      {true && (
-        <div className="flex flex-col items-center gap-4 mt-6 p-6 bg-green-700/20 border-green-900 border-2 rounded-lg">
-          <h3 className="text-lg font-semibold text-green-400">
-            generated items
-          </h3>
-
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex flex-col gap-2">
-              <span className="text-sm text-green-300 text-center">CV</span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openPDF(pdfUrls.cvUrl!, "resume.pdf")}
-                  className="text-green-400 border-green-400 hover:bg-green-400 hover:text-green-900"
-                >
-                  <ExternalLinkIcon className="w-4 h-4 mr-1" />
-                  View
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => downloadPDF(pdfUrls.cvUrl!, "resume.pdf")}
-                  className="text-green-400 border-green-400 hover:bg-green-400 hover:text-green-900"
-                >
-                  <DownloadIcon className="w-4 h-4 mr-1" />
-                  Download
-                </Button>
-              </div>
-            </div>
-
-            {/* cover letter buttons */}
-            <div className="flex flex-col gap-2">
-              <span className="text-sm text-green-300 text-center">
-                Cover Letter
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openPDF(pdfUrls.coverUrl!, "cover-letter.pdf")}
-                  className="text-green-400 border-green-400 hover:bg-green-400 hover:text-green-900"
-                >
-                  <ExternalLinkIcon className="w-4 h-4 mr-1" />
-                  View
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    downloadPDF(pdfUrls.coverUrl!, "cover-letter.pdf")
-                  }
-                  className="text-green-400 border-green-400 hover:bg-green-400 hover:text-green-900"
-                >
-                  <DownloadIcon className="w-4 h-4 mr-1" />
-                  Download
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <p className="text-xs text-green-300 text-center max-w-md">
-            Your documents have been generated successfully. You can view them
-            in your browser or download them to your device.
-          </p>
-
-          <Button
-            variant="ghost"
-            onClick={handleReset}
-            className="text-green-400 hover:text-green-300 hover:bg-green-400/20"
-          >
-            Generate Another
-          </Button>
-        </div>
-      )}
+      <GeneratedDocs cv={pdfUrls.cvUrl} cover={pdfUrls.coverUrl} />
     </div>
   );
 }

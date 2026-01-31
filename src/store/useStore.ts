@@ -37,22 +37,22 @@ type AppState = {
 };
 
 type PdfStore = {
-  cv: string | null;
-  cover: string | null;
-  setCV: (cv: string | null) => void;
-  setCover: (cover: string | null) => void;
+  cv: string | undefined;
+  cover: string | undefined;
+  setCV: (cv: string | undefined) => void;
+  setCover: (cover: string | undefined) => void;
   clearPDFs: () => void;
 };
 
 export const usePDFStore = create<PdfStore>()(
   persist(
     (set) => ({
-      cv: null,
-      cover: null,
+      cv: undefined,
+      cover: undefined,
 
       setCV: (cv) => set({ cv }),
       setCover: (cover) => set({ cover }),
-      clearPDFs: () => set({ cv: null, cover: null }),
+      clearPDFs: () => set({ cv: undefined, cover: undefined }),
     }),
     {
       name: "jobpls-pdfs",

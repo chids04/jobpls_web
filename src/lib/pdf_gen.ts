@@ -63,7 +63,7 @@ export enum CV_Type {
 
 // can re use structs from rust end
 
-function escapeResumeFields(template: GenerationOutput) {
+function escapeFields(template: GenerationOutput) {
   template.full_name = template.full_name.escapeWith(typstEscaper);
   template.email = template.email.escapeWith(typstEscaper);
   template.residency = template.residency.escapeWith(typstEscaper);
@@ -124,7 +124,7 @@ function escapeResumeFields(template: GenerationOutput) {
 }
 
 export const genCV = async (template: GenerationOutput, cv_type: CV_Type) => {
-  escapeResumeFields(template);
+  escapeFields(template);
 
   const education_str =
     template.education?.map((e) => typstEducation(e)).join("\n") ?? "";

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { DUPLICATE_SUFFIX_BASE } from "@/lib/types";
 import { ResumeTemplate } from "@/store/useStore";
+import { useState } from "react";
 
 /* props for the templates list component */
 export type TemplatesListProps = {
@@ -55,14 +56,25 @@ export function TemplatesList({
   onDelete,
   onDuplicate,
 }: TemplatesListProps) {
+  const [showPDFModal, setShowPDFModal] = useState(false);
+
+  const onPDFImport = () => {};
+
   return (
     <div className="flex flex-col gap-6 max-w-4xl mx-auto px-4 py-6">
       {/* header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Resume Templates</h1>
-        <Button type="button" onClick={onCreate} className="text-black">
-          Create new template
-        </Button>
+
+        <div className="flex gap-2">
+          <Button type="button" onClick={onCreate} className="text-black">
+            Create new template
+          </Button>
+
+          <Button type="button" onClick={() => {}}>
+            Import from PDF
+          </Button>
+        </div>
       </div>
 
       {/* empty state */}
@@ -117,7 +129,8 @@ export function TemplatesList({
 
               <div className="text-sm text-zinc-200">
                 <div className="truncate">
-                  <span className="text-zinc-400">Name:</span> {tpl.resume.full_name || "-"}
+                  <span className="text-zinc-400">Name:</span>{" "}
+                  {tpl.resume.full_name || "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Email:</span>{" "}

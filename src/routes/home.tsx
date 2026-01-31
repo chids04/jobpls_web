@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 
 const mockJobDesc2 =
   "We're seeking a passionate and skilled Software Engineer to join our innovative team. You will be instrumental in designing, developing...";
+
 export const Route = createFileRoute("/home")({
   component: RouteComponent,
   ssr: false,
@@ -54,7 +55,7 @@ function RouteComponent() {
 
       <ArrowBigDown className="w-10 h-10" />
 
-      <h1 className="text-2xl py-20 text-center">
+      <h1 className="text-4xl py-20 text-center">
         select specific CV templates to suit your style
       </h1>
 
@@ -76,7 +77,7 @@ function RouteComponent() {
 
       <ArrowBigDown className="w-10 h-10" />
 
-      <h1 className="text-2xl py-10 text-center">enter a job description</h1>
+      <h1 className="text-4xl py-10 text-center">enter a job description</h1>
       <Textarea
         className="w-full max-h-40"
         contentEditable={false}
@@ -88,7 +89,7 @@ function RouteComponent() {
 
       <ArrowBigDown className="w-10 h-10" />
 
-      <h1 className="text-2xl p-10 text-center">
+      <h1 className="text-4xl p-10 text-center">
         recieve a personalised cv and cover letter in seconds
       </h1>
       <div className="flex flex-col items-center justify-center lg:flex-row gap-2">
@@ -109,9 +110,9 @@ function RouteComponent() {
 
       <Button
         onClick={() => navigate({ to: "/about-me" })}
-        className="text-4xl p-10 border-2"
+        className="text-4xl p-10  border-2"
       >
-        get started!
+        click to get started!
       </Button>
     </div>
   );
