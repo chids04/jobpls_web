@@ -50,7 +50,8 @@ export function AboutMeCarousel({ templates }: AboutMeCarouselProps) {
 
               <div className="text-sm text-zinc-200">
                 <div className="truncate">
-                  <span className="text-zinc-400">Name:</span> {tpl.resume?.full_name || "-"}
+                  <span className="text-zinc-400">Name:</span>{" "}
+                  {tpl.resume?.full_name || "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Email:</span>{" "}

@@ -121,13 +121,9 @@ function RootDocument() {
               </nav>
             </div>
 
-            <main className="flex-1 w-full px-3 sm:px-6 md:px-8 py-6">
-              <div className="mx-auto max-w-6xl">
-                <Outlet />
-              </div>
+            <main className="container mx-auto px-10 mt-5">
+              <Outlet />
             </main>
-
-            <div className="h-6" />
           </div>
 
           <Scripts />

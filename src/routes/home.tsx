@@ -38,7 +38,7 @@ function RouteComponent() {
   }, []);
 
   return (
-    <div className="container mx-auto p-10 flex flex-col items-center">
+    <div className="flex flex-col items-center">
       <h1 className="text-5xl font-bold text-center py-20">
         make the job search less painful
       </h1>

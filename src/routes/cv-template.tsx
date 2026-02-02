@@ -13,7 +13,7 @@ function RouteComponent() {
   const templatesArray = Object.values(templates);
 
   return (
-    <div className="container mx-auto p-10 flex flex-col md:flex-row items-center gap-10 md:gap-40 justify-center">
+    <div className="flex flex-col md:flex-row items-center gap-10 md:gap-40 justify-center">
       <div className="flex flex-col items-center justify-center gap-5">
         <h2 className="text-2xl font-bold text-center">
           select about me template

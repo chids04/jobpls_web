@@ -6,6 +6,7 @@ import {
   ResumeDataSchema,
 } from "./schemas";
 import { CV_Type } from "./pdf_gen";
+import { Buffer } from "node:buffer";
 
 import * as z from "zod";
 
@@ -61,6 +62,41 @@ export async function personaliseCV(
 
   return generatedResume as GenerationOutput;
 }
+
+export async function formatPDF(data: ArrayBuffer, mimeType: string) {
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [
+      {
+        inlineData: {
+          mimeType,
+          data: new Uint8Array(data).toBase64(),
+        },
+      },
+      {
+        text: TEMPLATE_FORMAT_PROMPT,
+      },
+    ],
+    config: {
+      responseMimeType: "application/json",
+      responseJsonSchema: z.toJSONSchema(ResumeDataSchema),
+    },
+  });
+
+  if (response.text == undefined) {
+    throw new Error("failed to generate llm response");
+  }
+
+  console.log(JSON.parse(response.text));
+
+  const generatedResume = ResumeDataSchema.parse(JSON.parse(response.text));
+
+  return generatedResume as Resume;
+}
+
+const TEMPLATE_FORMAT_PROMPT = String.raw`
+  Extract the details from the provided document(s) into the output schema defined in the prompt. Fields that you are not able to infer you may leave as an empty value. The output schema must be able to be immediatley parsed into the respective zod type of the output schema
+`;
 
 const GENERAL_CV_SYS_INSTR = String.raw`
 "You are an expert CV writing assistant for general employment roles (retail, warehouse, hospitality, admin). You generate tailored, professional CVs by analyzing candidate work history and job descriptions. You must use concise British English, straight to the point, dont over use words like "particularly", "extremely", "keen". Talk in the tone of a smart first class graduate but not an English professor. You must return ONLY raw JSON with no markdown formatting, no code blocks, no backticks. You must ensure that the JSON returned is able to be parsed immediately by the serde rust crate, error-free.All Values must be strings, all arrays of strings must be represented as comma seperated strings.

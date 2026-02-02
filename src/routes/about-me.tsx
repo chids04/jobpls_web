@@ -3,7 +3,7 @@ import { useState } from "react";
 import TemplatesList from "@/components/about-me/TemplatesList";
 import TemplateForm from "@/components/about-me/TemplateForm";
 import { useTemplateStore, ResumeTemplate } from "@/store/useStore";
-import { Education, Experience, Project } from "@/lib/schemas";
+import { Education, Experience, Project, Resume } from "@/lib/schemas";
 
 export const Route = createFileRoute("/about-me")({
   component: RouteComponent,
@@ -37,6 +37,19 @@ function RouteComponent() {
   const handleEdit = (template: ResumeTemplate) => {
     setEditingTemplateId(template.templateId);
     setFormInitial(template);
+    setIsCreating(true);
+  };
+
+  const handleCreateFromImport = (template: Resume) => {
+    setFormInitial({
+      templateId: "",
+      templateName: "",
+      resume: template,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    setEditingTemplateId(null);
     setIsCreating(true);
   };
 
@@ -142,6 +155,7 @@ function RouteComponent() {
       <TemplatesList
         templates={templatesArray}
         onCreate={handleCreate}
+        onImport={handleCreateFromImport}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onDuplicate={handleDuplicate}

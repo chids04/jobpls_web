@@ -2,11 +2,14 @@ import { Button } from "@/components/ui/button";
 import { DUPLICATE_SUFFIX_BASE } from "@/lib/types";
 import { ResumeTemplate } from "@/store/useStore";
 import { useState } from "react";
+import { ImportDialog } from "./ImportDialog";
+import { Resume } from "@/lib/schemas";
 
 /* props for the templates list component */
 export type TemplatesListProps = {
   templates: ResumeTemplate[];
   onCreate: () => void;
+  onImport: (template: Resume) => void;
   onEdit: (template: ResumeTemplate) => void;
   onDelete: (id: string) => void;
   onDuplicate: (template: ResumeTemplate) => void;
@@ -52,16 +55,13 @@ function makeDuplicateTemplate(
 export function TemplatesList({
   templates,
   onCreate,
+  onImport,
   onEdit,
   onDelete,
   onDuplicate,
 }: TemplatesListProps) {
-  const [showPDFModal, setShowPDFModal] = useState(false);
-
-  const onPDFImport = () => {};
-
   return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto px-4 py-6">
+    <div className="flex flex-col gap-6">
       {/* header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Resume Templates</h1>
@@ -71,9 +71,7 @@ export function TemplatesList({
             Create new template
           </Button>
 
-          <Button type="button" onClick={() => {}}>
-            Import from PDF
-          </Button>
+          <ImportDialog onTemplateCreated={onImport} />
         </div>
       </div>
 
@@ -84,15 +82,15 @@ export function TemplatesList({
           first Resume template.
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2  lg-grid-cols-3 gap-4">
           {templates.map((tpl) => (
             <div
               key={tpl.templateId}
-              className="rounded border border-zinc-700 bg-zinc-800 p-4 flex flex-col gap-2"
+              className="min-w-0 rounded border border-zinc-700 bg-zinc-800 p-4 flex flex-col gap-2"
             >
               <div className="flex items-center justify-between">
                 <div className="text-base font-medium">{tpl.templateName}</div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap justify-center gap-2">
                   <Button
                     type="button"
                     size="sm"
