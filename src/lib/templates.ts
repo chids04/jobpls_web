@@ -34,6 +34,10 @@ export const EXPERIENCE_TEMPLATE = String.raw`
 #v(0.3em)
 `;
 
+export const PARAGRAPH_TEMPLATE = String.raw`
+  #text(size: 11pt)[{PARA}]
+`;
+
 export const TECH_TEMPLATE_1 = String.raw`
 // CV Template - Typst Skeleton
 
@@ -191,6 +195,7 @@ export const COVER_TEMPLATE = String.raw`
   font: "New Computer Modern",
   size: 11pt,
 )
+
 #set par(
   justify: true,
   leading: 0.65em,
@@ -198,9 +203,10 @@ export const COVER_TEMPLATE = String.raw`
 
 // Your details (top left)
 #text(size: 11pt)[
-  *{FULL_NAME}*\
-  {E_MAIL}
+  *{FULL_NAME}*
 ]
+#v(0.1em)
+#link("mailto:{EMAIL}")[{EMAIL}]
 
 #v(1.5em)
 
@@ -211,14 +217,17 @@ export const COVER_TEMPLATE = String.raw`
 
 // Recipient details
 #text(size: 11pt)[
-  {HIRING_MANAGER}\
-  {COMPANY_NAME}\
+  {HIRING_MANAGER}
+]
+
+#text(size: 11pt)[
+  {COMPANY_NAME}
 ]
 
 #v(1.5em)
 
 // Salutation
-#text(size: 11pt)[Dear {SALUTATION},]
+#text(size: 11pt)[{SALUTATION},]
 
 #v(1em)
 
@@ -232,6 +241,4 @@ export const COVER_TEMPLATE = String.raw`
   Yours sincerely,\
   #v(1em)
   {FULL_NAME}
-]
-;
-`;
+]`;

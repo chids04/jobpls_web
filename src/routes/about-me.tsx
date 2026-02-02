@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import TemplatesList from "@/components/about-me/TemplatesList";
 import TemplateForm from "@/components/about-me/TemplateForm";
-import { useStore, ResumeTemplate } from "@/store/useStore";
-import { Education, Experience, Project } from "@/lib/schemas";
+import { useTemplateStore, ResumeTemplate } from "@/store/useStore";
+import { Education, Experience, Project, Resume } from "@/lib/schemas";
 
 export const Route = createFileRoute("/about-me")({
   component: RouteComponent,
@@ -12,15 +12,11 @@ export const Route = createFileRoute("/about-me")({
 
 // route component that renders templates list or the template form
 function RouteComponent() {
-  const {
-    templates,
-    addTemplate,
-    updateTemplate,
-    deleteTemplate,
-  } = useStore();
+  const { templates, addTemplate, updateTemplate, deleteTemplate } =
+    useTemplateStore();
 
-  const templatesArray = Object.values(templates).sort((a, b) => 
-    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  const templatesArray = Object.values(templates).sort(
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
   );
 
   // view state: list vs form
@@ -41,6 +37,19 @@ function RouteComponent() {
   const handleEdit = (template: ResumeTemplate) => {
     setEditingTemplateId(template.templateId);
     setFormInitial(template);
+    setIsCreating(true);
+  };
+
+  const handleCreateFromImport = (template: Resume) => {
+    setFormInitial({
+      templateId: "",
+      templateName: "",
+      resume: template,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    setEditingTemplateId(null);
     setIsCreating(true);
   };
 
@@ -90,17 +99,19 @@ function RouteComponent() {
         const updatedTemplate: ResumeTemplate = {
           ...existingTemplate,
           templateName: values.templateName,
-          full_name: values.full_name,
-          email: values.email,
-          github: values.github ?? undefined,
-          about_me: values.about_me,
-          residency: values.residency,
-          languages: values.languages,
-          frameworks: values.frameworks,
-          developer_tools: values.developer_tools,
-          projects: values.projects,
-          work_exp: values.work_exp,
-          education: values.education,
+          resume: {
+            full_name: values.full_name,
+            email: values.email,
+            github: values.github ?? undefined,
+            about_me: values.about_me,
+            residency: values.residency,
+            languages: values.languages,
+            frameworks: values.frameworks,
+            developer_tools: values.developer_tools,
+            projects: values.projects,
+            work_exp: values.work_exp,
+            education: values.education,
+          },
           updatedAt: now,
         };
         updateTemplate(updatedTemplate);
@@ -116,17 +127,19 @@ function RouteComponent() {
     const template: ResumeTemplate = {
       templateId,
       templateName: values.templateName,
-      full_name: values.full_name,
-      email: values.email,
-      github: values.github ?? undefined,
-      about_me: values.about_me,
-      residency: values.residency,
-      languages: values.languages,
-      frameworks: values.frameworks,
-      developer_tools: values.developer_tools,
-      projects: values.projects,
-      work_exp: values.work_exp,
-      education: values.education,
+      resume: {
+        full_name: values.full_name,
+        email: values.email,
+        github: values.github ?? undefined,
+        about_me: values.about_me,
+        residency: values.residency,
+        languages: values.languages,
+        frameworks: values.frameworks,
+        developer_tools: values.developer_tools,
+        projects: values.projects,
+        work_exp: values.work_exp,
+        education: values.education,
+      },
       createdAt: now,
       updatedAt: now,
     };
@@ -142,6 +155,7 @@ function RouteComponent() {
       <TemplatesList
         templates={templatesArray}
         onCreate={handleCreate}
+        onImport={handleCreateFromImport}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onDuplicate={handleDuplicate}

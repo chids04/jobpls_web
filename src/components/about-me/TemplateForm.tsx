@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  Project,
-  Experience,
-  Education,
-} from "@/lib/schemas";
+import { Project, Experience, Education } from "@/lib/schemas";
 import { ResumeTemplate } from "@/store/useStore";
 
 import { ModalType, ModalDisplay } from "@/components/about-me/ModalDisplay";
+import MockAboutMe from "@/mock/resume.json?raw";
+
+import { ResumeDataSchema } from "@/lib/schemas";
+
+import { DEBUG_MENU } from "@/lib/vars";
+import { z } from "zod";
+import { randomUUID } from "crypto";
 
 /* form values used when creating or editing templates */
 export type TemplateFormValues = {
@@ -72,6 +75,21 @@ export function TemplateForm({
   const [modalType, setModalType] = useState<ModalType>("project");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
+  const importData = () => {
+    try {
+      const resume = JSON.parse(MockAboutMe);
+
+      setFormData({
+        ...resume,
+        templateName: `Mock ${crypto.randomUUID()}`,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.log(error.issues);
+      }
+    }
+  };
+
   /* hydrate from initial when provided */
   useEffect(() => {
     if (!initial) {
@@ -81,22 +99,22 @@ export function TemplateForm({
 
     setFormData({
       templateName: initial.templateName || "",
-      full_name: initial.full_name || "",
-      about_me: initial.about_me || "",
-      email: initial.email || "",
-      github: initial.github || "",
-      languages: initial.languages || [],
-      frameworks: initial.frameworks || [],
-      developer_tools: initial.developer_tools || [],
-      projects: initial.projects || [],
-      work_exp: initial.work_exp || [],
-      education: initial.education || [],
-      residency: initial.residency || "",
+      full_name: initial.resume.full_name || "",
+      about_me: initial.resume.about_me || "",
+      email: initial.resume.email || "",
+      github: initial.resume.github || "",
+      languages: initial.resume.languages || [],
+      frameworks: initial.resume.frameworks || [],
+      developer_tools: initial.resume.developer_tools || [],
+      projects: initial.resume.projects || [],
+      work_exp: initial.resume.work_exp || [],
+      education: initial.resume.education || [],
+      residency: initial.resume.residency || "",
     });
 
-    setLanguagesText(initial.languages?.join(",") || "");
-    setFrameworksText(initial.frameworks?.join(",") || "");
-    setToolsText(initial.developer_tools?.join(",") || "");
+    setLanguagesText(initial.resume.languages?.join(",") || "");
+    setFrameworksText(initial.resume.frameworks?.join(",") || "");
+    setToolsText(initial.resume.developer_tools?.join(",") || "");
 
     setModal(false);
     setEditingIndex(null);
@@ -215,9 +233,7 @@ export function TemplateForm({
         break;
 
       case "work":
-        const newWork = formData.work_exp.filter(
-          (_, i) => i != removeIdx,
-        );
+        const newWork = formData.work_exp.filter((_, i) => i != removeIdx);
         setFormData((prev) => ({
           ...prev,
           work_exp: newWork,
@@ -303,7 +319,12 @@ export function TemplateForm({
   };
   /* render form */
   return (
-    <div className="flex flex-col gap-5 max-w-3xl mx-auto px-4 items-center py-6 border-2">
+    <div className="flex flex-col relative gap-5 max-w-3xl mx-auto px-4 items-center py-6 border-2">
+      {DEBUG_MENU && (
+        <div className="absolute top-2 right-2">
+          <Button onClick={importData}>import from json</Button>
+        </div>
+      )}
       {/* template name */}
       <div className="flex flex-col items-center gap-2 mb-5">
         <h3>template name</h3>
@@ -393,7 +414,7 @@ export function TemplateForm({
             variant="outline"
             onClick={() => {
               const list = parseList(languagesText);
-              setFormData(prev => ({ ...prev, languages: list }));
+              setFormData((prev) => ({ ...prev, languages: list }));
               setLanguagesText(list.join(", "));
             }}
           >
@@ -416,7 +437,7 @@ export function TemplateForm({
                 variant="destructive"
                 onClick={() => {
                   const next = formData.languages.filter((_, idx) => idx !== i);
-                  setFormData(prev => ({ ...prev, languages: next }));
+                  setFormData((prev) => ({ ...prev, languages: next }));
                   setLanguagesText(next.join(", "));
                 }}
               >
@@ -443,7 +464,7 @@ export function TemplateForm({
             variant="outline"
             onClick={() => {
               const list = parseList(frameworksText);
-              setFormData(prev => ({ ...prev, frameworks: list }));
+              setFormData((prev) => ({ ...prev, frameworks: list }));
               setFrameworksText(list.join(", "));
             }}
           >
@@ -462,8 +483,10 @@ export function TemplateForm({
                 size="sm"
                 variant="destructive"
                 onClick={() => {
-                  const next = formData.frameworks.filter((_, idx) => idx !== i);
-                  setFormData(prev => ({ ...prev, frameworks: next }));
+                  const next = formData.frameworks.filter(
+                    (_, idx) => idx !== i,
+                  );
+                  setFormData((prev) => ({ ...prev, frameworks: next }));
                   setFrameworksText(next.join(", "));
                 }}
               >
@@ -490,7 +513,7 @@ export function TemplateForm({
             variant="outline"
             onClick={() => {
               const list = parseList(toolsText);
-              setFormData(prev => ({ ...prev, developer_tools: list }));
+              setFormData((prev) => ({ ...prev, developer_tools: list }));
               setToolsText(list.join(", "));
             }}
           >
@@ -509,8 +532,10 @@ export function TemplateForm({
                 size="sm"
                 variant="destructive"
                 onClick={() => {
-                  const next = formData.developer_tools.filter((_, idx) => idx !== i);
-                  setFormData(prev => ({ ...prev, developer_tools: next }));
+                  const next = formData.developer_tools.filter(
+                    (_, idx) => idx !== i,
+                  );
+                  setFormData((prev) => ({ ...prev, developer_tools: next }));
                   setToolsText(next.join(", "));
                 }}
               >
@@ -684,4 +709,3 @@ export function TemplateForm({
 }
 
 export default TemplateForm;
-

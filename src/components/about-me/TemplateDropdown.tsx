@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CheckIcon, XIcon } from "lucide-react";
-import { useStore, ResumeTemplate } from "@/store/useStore";
+import { useTemplateStore, ResumeTemplate } from "@/store/useStore";
 
 interface TemplateDropdownProps {
   templates: ResumeTemplate[];
@@ -18,7 +18,7 @@ export function TemplateDropdown({
   templates,
   onSelect,
 }: TemplateDropdownProps) {
-  const { selectedTemplateId, setSelectedTemplateId } = useStore();
+  const { selectedTemplateId, setSelectedTemplateId } = useTemplateStore();
 
   const selectedTemplate = templates.find(
     (t) => t.templateId === selectedTemplateId,
@@ -91,13 +91,13 @@ export function TemplateDropdown({
 
       {selectedTemplate && (
         <div className="text-xs text-zinc-400 text-center max-w-xs">
-          <div>name: {selectedTemplate.full_name}</div>
-          <div>email: {selectedTemplate.email}</div>
-          <div>projects: {selectedTemplate.projects?.length || 0}</div>
+          <div>name: {selectedTemplate.resume.full_name}</div>
+          <div>email: {selectedTemplate.resume.email}</div>
+          <div>projects: {selectedTemplate.resume.projects?.length || 0}</div>
           <div>
-            work experience: {selectedTemplate.work_exp?.length || 0}
+            work experience: {selectedTemplate.resume.work_exp?.length || 0}
           </div>
-          <div>education: {selectedTemplate.education?.length || 0}</div>
+          <div>education: {selectedTemplate.resume.education?.length || 0}</div>
         </div>
       )}
     </div>

@@ -1,0 +1,85 @@
+{
+  "full_name": "Chidubem Osuala",
+  "email": "chidubemosuala@yahoo.com",
+  "github": "https://github.com/chids04?tab=repositories",
+  "languages": [
+    "Rust",
+    "C++",
+    "JavaScript",
+    "TypeScript",
+    "Tailwind",
+    "Solidity",
+    "Python"
+  ],
+  "frameworks": ["React", "Qt", "Astro", "Hardhat", "Foundry", "Tauri"],
+  "developer_tools": [
+    "Git",
+    "Visual Studio Code",
+    "WSL2",
+    "CoPilot",
+    "CMake",
+    "Cargo",
+    "Python Venv"
+  ],
+  "residency": "Reading, UK",
+  "about_me": "A highly motivated First-Class Computer Science graduate with a strong passion for building efficient and user-focused web applications. Possesses hands-on experience with modern frontend technologies including JavaScript, TypeScript, HTML, CSS, and React, alongside practical knowledge of API integration and version control systems. Eager to apply problem-solving skills and a proactive attitude to contribute to dynamic web development teams, continuously learning and delivering high-quality user experiences.",
+  "education": [
+    {
+      "start_date": "09/2022",
+      "end_date": "06/2025",
+      "title": "BSc Computer Science",
+      "grade": "1st Class",
+      "name": "University of Reading",
+      "location": "Reading, UK",
+      "modules": [
+        "Networking",
+        "Computer Architecture",
+        "Blockchain",
+        "AI and Machine Learning"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "title": "Decentralised Milestone Tracker",
+      "b1": "Engineered a full-stack web application using React, Astro, and TypeScript for the front end, and a Solidity smart contract for the backend.",
+      "b2": "Utilised Firebase as a NoSQL database for project data and IPFS for decentralised storage of files whilst using middleware to protect all critical API routes.",
+      "languages": ["React", "Typescript", "Solidity"],
+      "url": "https://csgitlab.reading.ac.uk/cs3ip24/0xm"
+    },
+    {
+      "title": "Game Mod Loader",
+      "b1": "Developed a GUI application to streamline launching game modifications for the Dolphin emulator.",
+      "b2": "Has a Rust backend with a React and Typescript front end, using Tauri for cross-platform support.",
+      "languages": ["Rust", "React", "Typescript"],
+      "url": "https://github.com/chids04/ch3x//_launcher"
+    }
+  ],
+  "work_exp": [
+    {
+      "start_date": "02/2025",
+      "end_date": "05/2025",
+      "title": "Games Tester",
+      "company": "Huntress",
+      "b1": "Identified, documented, and tracked software defects in games using a proprietary bug tracking system.",
+      "b2": "Collaborated effectively with colleagues to replicate issues and verify bug fixes."
+    },
+    {
+      "start_date": "07/2024",
+      "end_date": "09/2024",
+      "title": "Warehouse Operative",
+      "company": "Iron Mountain",
+      "b1": "Managed daily intake and processing of corporate records, ensuring 100% accuracy in logging and inventory management.",
+      "b2": "Maintained strict adherence to data protection protocols, safeguarding sensitive materials throughout storage and retrieval processes."
+    }
+  ],
+  "hiring_manager": "Hiring Manager",
+  "company_name": "React HQ",
+  "salutation": "Dear Hiring Manager",
+  "paragraphs": [
+    "I am writing to express my keen interest in the React Developer position at React HQ. As a First-Class Computer Science graduate, I am eager to apply my strong foundation in web technologies and a genuine passion for the React ecosystem to a role where I can contribute to innovative front-end solutions.",
+    "My academic background and personal projects demonstrate practical experience with React and TypeScript. The 'Decentralised Milestone Tracker' involved building a full-stack web application using React and Astro, while the 'Game Mod Loader' showcased my ability to develop cross-platform GUI applications with a React and TypeScript front end. These projects have equipped me with robust skills in component development, state management, and API integration.",
+    "I am impressed by React HQ's focus on advancing the React framework and delivering exceptional user experiences. My proactive approach to learning and problem-solving, coupled with a commitment to writing clean, efficient code, makes me confident I can contribute effectively to your team. I am keen to develop my expertise further within a company at the forefront of web development.",
+    "Thank you for considering my application. I am available for an interview at your earliest convenience to discuss how my skills and enthusiasm can benefit React HQ."
+  ]
+}

@@ -26,7 +26,9 @@ export function Modal({ isOpen, onClose, children, className }: ModalProps) {
     }
 
     return () => {
-      document.body.style.overflow = "unset";
+      if (document.body) {
+        document.body.style.overflow = "unset";
+      }
     };
   }, [isOpen]);
 

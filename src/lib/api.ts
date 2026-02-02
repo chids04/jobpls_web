@@ -36,3 +36,5 @@ export async function sendGenerate(req: GenerateReq): Promise<string> {
     throw error;
   }
 }
+
+async function formatCV(pdf: ArrayBuffer) {}

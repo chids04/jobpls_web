@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useStore } from "@/store/useStore";
+import { useTemplateStore } from "@/store/useStore";
 import { CVTemplate } from "@/lib/types";
 import {
   Carousel,
@@ -10,10 +10,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 
-import {
-  EmblaCarouselType,
-  EmblaEventType,
-} from "embla-carousel";
+import { EmblaCarouselType, EmblaEventType } from "embla-carousel";
 
 import { ImageWithPreview } from "@/components/ui/image-preview";
 
@@ -31,7 +28,7 @@ const items: CVTemplate[] = [
 export function CVTemplateSelection() {
   const [api, setApi] = useState<CarouselApi>();
   const [templates] = useState<CVTemplate[]>(items);
-  const { selectedCV, setSelectedCV } = useStore();
+  const { selectedCV, setSelectedCV } = useTemplateStore();
 
   // setup carousel api and event listeners
   useEffect(() => {
@@ -69,7 +66,10 @@ export function CVTemplateSelection() {
     };
   }, [api]);
 
-  const onReinit = (_emblaApi: EmblaCarouselType, eventName: EmblaEventType) => {
+  const onReinit = (
+    _emblaApi: EmblaCarouselType,
+    eventName: EmblaEventType,
+  ) => {
     console.log(`event name ${eventName} triggered`);
     if (selectedCV && api) {
       const scrollPos = templates.findIndex(

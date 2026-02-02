@@ -1,11 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { DUPLICATE_SUFFIX_BASE } from "@/lib/types";
 import { ResumeTemplate } from "@/store/useStore";
+import { useState } from "react";
+import { ImportDialog } from "./ImportDialog";
+import { Resume } from "@/lib/schemas";
 
 /* props for the templates list component */
 export type TemplatesListProps = {
   templates: ResumeTemplate[];
   onCreate: () => void;
+  onImport: (template: Resume) => void;
   onEdit: (template: ResumeTemplate) => void;
   onDelete: (id: string) => void;
   onDuplicate: (template: ResumeTemplate) => void;
@@ -51,18 +55,24 @@ function makeDuplicateTemplate(
 export function TemplatesList({
   templates,
   onCreate,
+  onImport,
   onEdit,
   onDelete,
   onDuplicate,
 }: TemplatesListProps) {
   return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto px-4 py-6">
+    <div className="flex flex-col gap-6">
       {/* header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Resume Templates</h1>
-        <Button type="button" onClick={onCreate} className="text-black">
-          Create new template
-        </Button>
+
+        <div className="flex gap-2">
+          <Button type="button" onClick={onCreate} className="text-black">
+            Create new template
+          </Button>
+
+          <ImportDialog onTemplateCreated={onImport} />
+        </div>
       </div>
 
       {/* empty state */}
@@ -72,15 +82,15 @@ export function TemplatesList({
           first Resume template.
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2  lg-grid-cols-3 gap-4">
           {templates.map((tpl) => (
             <div
               key={tpl.templateId}
-              className="rounded border border-zinc-700 bg-zinc-800 p-4 flex flex-col gap-2"
+              className="min-w-0 rounded border border-zinc-700 bg-zinc-800 p-4 flex flex-col gap-2"
             >
               <div className="flex items-center justify-between">
                 <div className="text-base font-medium">{tpl.templateName}</div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap justify-center gap-2">
                   <Button
                     type="button"
                     size="sm"
@@ -117,29 +127,30 @@ export function TemplatesList({
 
               <div className="text-sm text-zinc-200">
                 <div className="truncate">
-                  <span className="text-zinc-400">Name:</span> {tpl.full_name || "-"}
+                  <span className="text-zinc-400">Name:</span>{" "}
+                  {tpl.resume.full_name || "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Email:</span>{" "}
-                  {tpl.email || "-"}
+                  {tpl.resume.email || "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Languages:</span>{" "}
-                  {tpl.languages && tpl.languages.length > 0
-                    ? tpl.languages.join(", ")
+                  {tpl.resume.languages && tpl.resume.languages.length > 0
+                    ? tpl.resume.languages.join(", ")
                     : "-"}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Projects:</span>{" "}
-                  {tpl.projects?.length || 0}
+                  {tpl.resume.projects?.length || 0}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Work Experience:</span>{" "}
-                  {tpl.work_exp?.length || 0}
+                  {tpl.resume.work_exp?.length || 0}
                 </div>
                 <div className="truncate">
                   <span className="text-zinc-400">Education:</span>{" "}
-                  {tpl.education?.length || 0}
+                  {tpl.resume.education?.length || 0}
                 </div>
               </div>
             </div>
