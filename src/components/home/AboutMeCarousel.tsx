@@ -30,9 +30,6 @@ export function AboutMeCarousel() {
       JSON.parse(mockTemplates),
     );
 
-    console.log(mockTemplates);
-    console.log(resumeTemplates);
-
     setTemplates(resumeTemplates);
   }, []);
 

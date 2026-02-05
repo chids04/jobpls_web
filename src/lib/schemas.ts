@@ -66,8 +66,6 @@ export const GenerationOutputSchema = z.object({
   ...CoverDataSchema.shape,
 });
 
-console.log(GenerationOutputSchema);
-
 export type Project = z.infer<typeof ProjectSchema>;
 export type Education = z.infer<typeof EducationSchema>;
 export type Experience = z.infer<typeof ExperienceSchema>;
