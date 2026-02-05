@@ -6,6 +6,25 @@ import {
   Outlet,
 } from "@tanstack/react-router";
 
+const links = [
+  {
+    name: "home",
+    link: "/home",
+  },
+  {
+    name: "about me",
+    link: "/about-me",
+  },
+  {
+    name: "templates",
+    link: "/cv-template",
+  },
+  {
+    name: "generate",
+    link: "/generate",
+  },
+];
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Briefcase, CircleUser } from "lucide-react";
 
@@ -78,49 +97,20 @@ function RootDocument() {
             <div className="w-full px-3 sm:px-6 md:px-8">
               <nav className="w-full rounded-xl bg-zinc-800/80 shadow-lg ring-1 ring-black/10 backdrop-blur px-4 sm:px-6 py-2">
                 <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm sm:text-base">
-                  <li>
-                    <Link
-                      to="/home"
-                      className="hover:text-white text-zinc-300 transition-colors"
-                      activeProps={{ className: "font-bold text-xl" }}
-                    >
-                      home
-                    </Link>
-                  </li>
-                  <li className="text-zinc-500">|</li>
-                  <li>
-                    <Link
-                      to="/about-me"
-                      className="hover:text-white text-zinc-300 transition-colors"
-                      activeProps={{ className: "font-bold text-xl" }}
-                    >
-                      about me
-                    </Link>
-                  </li>
-                  <li className="text-zinc-500">|</li>
-                  <li>
-                    <Link
-                      to="/cv-template"
-                      className="hover:text-white text-zinc-300 transition-colors"
-                      activeProps={{ className: "font-bold text-xl" }}
-                    >
-                      cv template
-                    </Link>
-                  </li>
-                  <li className="text-zinc-500">|</li>
-                  <li>
-                    <Link
-                      to="/generate"
-                      className="hover:text-white text-zinc-300 transition-colors"
-                      activeProps={{ className: "font-bold text-xl" }}
-                    >
-                      generate
-                    </Link>
-                  </li>
+                  {links.map((link, index) => (
+                    <li key={index}>
+                      <Link
+                        to={link.link}
+                        className="hover:text-white text-zinc-300 transition-colors"
+                        activeProps={{ className: "font-bold text-xl" }}
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </nav>
             </div>
-
             <main className="container mx-auto px-10 mt-5">
               <Outlet />
             </main>
