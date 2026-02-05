@@ -13,7 +13,7 @@ import mockTemplates from "@/mock/mock_aboutme.json?raw";
 export function AboutMeCarousel() {
   const [templates, setTemplates] = useState<ResumeTemplate[]>([]);
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
-    AutoScroll({ stopOnInteraction: false }),
+    AutoScroll({ stopOnInteraction: false, startDelay: 0 }),
   ]);
 
   useEffect(() => {
