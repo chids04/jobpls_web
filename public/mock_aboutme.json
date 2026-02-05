@@ -1,93 +1,96 @@
-{
-  "full_name": "Chidubem Osuala",
-  "email": "chidubemosuala@yahoo.com",
-  "github": "https://github.com/chids04?tab=repositories",
-  "languages": [
-    "Rust",
-    "C++",
-    "JavaScript",
-    "TypeScript",
-    "Tailwind",
-    "Solidity",
-    "Python"
-  ],
-  "frameworks": ["React", "Qt", "Astro", "Hardhat", "Foundry", "Tauri"],
-  "developer_tools": [
-    "Git",
-    "Visual Studio Code",
-    "WSL2",
-    "CoPilot",
-    "CMake",
-    "Cargo",
-    "Python Venv"
-  ],
-  "residency": "Reading, UK",
-  "about_me": "A highly motivated First-Class Computer Science graduate with a strong passion for building efficient and user-focused web applications. Possesses hands-on experience with modern frontend technologies including JavaScript, TypeScript, HTML, CSS, and React, alongside practical knowledge of API integration and version control systems. Eager to apply problem-solving skills and a proactive attitude to contribute to dynamic web development teams, continuously learning and delivering high-quality user experiences.",
-  "education": [
-    {
-      "start_date": "09/2022",
-      "end_date": "06/2025",
-      "title": "BSc Computer Science",
-      "grade": "1st Class",
-      "name": "University of Reading",
-      "location": "Reading, UK",
-      "modules": [
-        "Networking",
-        "Computer Architecture",
-        "Blockchain",
-        "AI and Machine Learning"
-      ]
-    },
-    {
-      "start_date": "09/2020",
-      "end_date": "06/2022",
-      "title": "A-Levels",
-      "grade": "AAC",
-      "name": "Blue Coat Church of England School and Music",
-      "location": "Coventry, UK",
-      "modules": []
-    }
-  ],
-  "projects": [
-    {
-      "title": "Decentralised Milestone Tracker",
-      "b1": "Engineered a full-stack web application using React, Astro, and TypeScript for the front end, and a Solidity smart contract for the backend.",
-      "b2": "Utilised Firebase as a NoSQL database for project data and IPFS for decentralised storage of files whilst using middleware to protect all critical API routes.",
-      "languages": ["React", "Typescript", "Solidity"],
-      "url": "https://csgitlab.reading.ac.uk/cs3ip24/0xm"
-    },
-    {
-      "title": "Game Mod Loader",
-      "b1": "Developed a GUI application to streamline launching game modifications for the Dolphin emulator.",
-      "b2": "Has a Rust backend with a React and Typescript front end, using Tauri for cross-platform support.",
-      "languages": ["Rust", "React", "Typescript"],
-      "url": "https://github.com/chids04/ch3x_launcher"
-    }
-  ],
-  "work_exp": [
-    {
-      "start_date": "02/2025",
-      "end_date": "05/2025",
-      "title": "Games Tester",
-      "company": "Huntress",
-      "b1": "Identified, documented and tracked software defects in games using a proprietary bug tracking system.",
-      "b2": "Collaborated effectively with colleagues to replicate issues and verify bug fixes."
-    },
-    {
-      "start_date": "07/2024",
-      "end_date": "09/2024",
-      "title": "Warehouse Operative",
-      "company": "Iron Mountain",
-      "b1": "Carried out the daily intake and processing of hundreds of boxes containing confidential corporate records, maintaining a 100% accuracy rate in logging.",
-      "b2": "Adhered strictly to GDPR and data protection protocols, ensuring the secure handling and storage of sensitive material."
-    },
-    {
-      "start_date": "01/2024",
-      "end_date": "05/2024",
-      "title": "Traffic Steward",
-      "company": "CSP",
-      "b1": "Directed the safe and efficient flow of over 200 vehicles during peak event times, minimising congestion and delays.",
-      "b2": "Resolved traffic flow issues promptly by making quick, logical decisions to make sure motorists and pedestrians are safe."
-    }
-  ]
-}
+[
+  {
+    "template_name": "chids",
+    "full_name": "Chidubem Osuala",
+    "email": "chidubemosuala@yahoo.com",
+    "github": "https://github.com/chids04?tab=repositories",
+    "languages": [
+      "Rust",
+      "C++",
+      "JavaScript",
+      "TypeScript",
+      "Tailwind",
+      "Solidity",
+      "Python"
+    ],
+    "frameworks": ["React", "Qt", "Astro", "Hardhat", "Foundry", "Tauri"],
+    "developer_tools": [
+      "Git",
+      "Visual Studio Code",
+      "WSL2",
+      "CoPilot",
+      "CMake",
+      "Cargo",
+      "Python Venv"
+    ],
+    "residency": "Reading, UK",
+    "about_me": "A highly motivated First-Class Computer Science graduate with a strong passion for building efficient and user-focused web applications. Possesses hands-on experience with modern frontend technologies including JavaScript, TypeScript, HTML, CSS, and React, alongside practical knowledge of API integration and version control systems. Eager to apply problem-solving skills and a proactive attitude to contribute to dynamic web development teams, continuously learning and delivering high-quality user experiences.",
+    "education": [
+      {
+        "start_date": "09/2022",
+        "end_date": "06/2025",
+        "title": "BSc Computer Science",
+        "grade": "1st Class",
+        "name": "University of Reading",
+        "location": "Reading, UK",
+        "modules": [
+          "Networking",
+          "Computer Architecture",
+          "Blockchain",
+          "AI and Machine Learning"
+        ]
+      },
+      {
+        "start_date": "09/2020",
+        "end_date": "06/2022",
+        "title": "A-Levels",
+        "grade": "AAC",
+        "name": "Blue Coat Church of England School and Music",
+        "location": "Coventry, UK",
+        "modules": []
+      }
+    ],
+    "projects": [
+      {
+        "title": "Decentralised Milestone Tracker",
+        "b1": "Engineered a full-stack web application using React, Astro, and TypeScript for the front end, and a Solidity smart contract for the backend.",
+        "b2": "Utilised Firebase as a NoSQL database for project data and IPFS for decentralised storage of files whilst using middleware to protect all critical API routes.",
+        "languages": ["React", "Typescript", "Solidity"],
+        "url": "https://csgitlab.reading.ac.uk/cs3ip24/0xm"
+      },
+      {
+        "title": "Game Mod Loader",
+        "b1": "Developed a GUI application to streamline launching game modifications for the Dolphin emulator.",
+        "b2": "Has a Rust backend with a React and Typescript front end, using Tauri for cross-platform support.",
+        "languages": ["Rust", "React", "Typescript"],
+        "url": "https://github.com/chids04/ch3x_launcher"
+      }
+    ],
+    "work_exp": [
+      {
+        "start_date": "02/2025",
+        "end_date": "05/2025",
+        "title": "Games Tester",
+        "company": "Huntress",
+        "b1": "Identified, documented and tracked software defects in games using a proprietary bug tracking system.",
+        "b2": "Collaborated effectively with colleagues to replicate issues and verify bug fixes."
+      },
+      {
+        "start_date": "07/2024",
+        "end_date": "09/2024",
+        "title": "Warehouse Operative",
+        "company": "Iron Mountain",
+        "b1": "Carried out the daily intake and processing of hundreds of boxes containing confidential corporate records, maintaining a 100% accuracy rate in logging.",
+        "b2": "Adhered strictly to GDPR and data protection protocols, ensuring the secure handling and storage of sensitive material."
+      },
+      {
+        "start_date": "01/2024",
+        "end_date": "05/2024",
+        "title": "Traffic Steward",
+        "company": "CSP",
+        "b1": "Directed the safe and efficient flow of over 200 vehicles during peak event times, minimising congestion and delays.",
+        "b2": "Resolved traffic flow issues promptly by making quick, logical decisions to make sure motorists and pedestrians are safe."
+      }
+    ]
+  }
+]

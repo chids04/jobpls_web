@@ -49,7 +49,8 @@ function RouteComponent() {
         store different templates to apply for a wide range of jobs
       </h1>
 
-      <AboutMeCarousel templates={mockAboutMe} />
+      {/*<AboutMeCarousel templates={mockAboutMe} />*/}
+      <AboutMeCarousel />
 
       <div className="my-10"></div>
 

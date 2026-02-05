@@ -7,12 +7,8 @@ import { ResumeTemplate } from "@/store/useStore";
 
 import { ModalType, ModalDisplay } from "@/components/about-me/ModalDisplay";
 import MockAboutMe from "@/mock/resume.json?raw";
-
-import { ResumeDataSchema } from "@/lib/schemas";
-
 import { DEBUG_MENU } from "@/lib/vars";
 import { z } from "zod";
-import { randomUUID } from "crypto";
 
 /* form values used when creating or editing templates */
 export type TemplateFormValues = {

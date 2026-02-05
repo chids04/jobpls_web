@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { DUPLICATE_SUFFIX_BASE } from "@/lib/types";
 import { ResumeTemplate } from "@/store/useStore";
-import { useState } from "react";
 import { ImportDialog } from "./ImportDialog";
 import { Resume } from "@/lib/schemas";
 

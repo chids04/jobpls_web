@@ -6,7 +6,6 @@ import {
   ResumeDataSchema,
 } from "./schemas";
 import { CV_Type } from "./pdf_gen";
-import { Buffer } from "node:buffer";
 
 import * as z from "zod";
 

@@ -1,12 +1,6 @@
 import { $typst } from "@myriaddreamin/typst.ts";
 
-import {
-  Education,
-  Project,
-  Experience,
-  Resume,
-  GenerationOutput,
-} from "./schemas";
+import { Education, Project, Experience, GenerationOutput } from "./schemas";
 import {
   COVER_TEMPLATE,
   EDU_TEMPLATE,
@@ -16,7 +10,6 @@ import {
   PROJECT_TEMPLATE,
   TECH_TEMPLATE_1,
 } from "./templates";
-import { setDefaultAutoSelectFamily } from "node:net";
 
 // i will download these binaries  myself in prod, and will server it statiically
 $typst.setCompilerInitOptions({
@@ -64,14 +57,14 @@ export enum CV_Type {
 // can re use structs from rust end
 
 function escapeFields(template: GenerationOutput) {
-  template.full_name = template.full_name.escapeWith(typstEscaper);
-  template.email = template.email.escapeWith(typstEscaper);
-  template.residency = template.residency.escapeWith(typstEscaper);
+  template.full_name = template.full_name?.escapeWith(typstEscaper);
+  template.email = template.email?.escapeWith(typstEscaper);
+  template.residency = template.residency?.escapeWith(typstEscaper);
   if (template.github) {
     template.github = template.github.escapeWith(typstEscaper);
   }
 
-  template.about_me = template.about_me.escapeWith(typstEscaper);
+  template.about_me = template.about_me?.escapeWith(typstEscaper);
 
   if (template.languages) {
     template.languages = template.languages.map((s) =>
@@ -90,28 +83,28 @@ function escapeFields(template: GenerationOutput) {
   }
 
   template.education?.forEach((e) => {
-    e.title = e.title.escapeWith(typstEscaper);
-    e.grade = e.grade.escapeWith(typstEscaper);
-    e.name = e.name.escapeWith(typstEscaper);
-    e.location = e.location.escapeWith(typstEscaper);
+    e.title = e.title?.escapeWith(typstEscaper);
+    e.grade = e.grade?.escapeWith(typstEscaper);
+    e.name = e.name?.escapeWith(typstEscaper);
+    e.location = e.location?.escapeWith(typstEscaper);
     if (e.modules) {
       e.modules = e.modules.map((s) => s.escapeWith(typstEscaper));
     }
   });
 
   template.projects?.forEach((p) => {
-    p.title = p.title.escapeWith(typstEscaper);
-    p.b1 = p.b1.escapeWith(typstEscaper);
-    p.b2 = p.b2.escapeWith(typstEscaper);
-    p.url = p.url.escapeWith(typstEscaper);
-    p.languages = p.languages.map((s) => s.escapeWith(typstEscaper));
+    p.title = p.title?.escapeWith(typstEscaper);
+    p.b1 = p.b1?.escapeWith(typstEscaper);
+    p.b2 = p.b2?.escapeWith(typstEscaper);
+    p.url = p.url?.escapeWith(typstEscaper);
+    p.languages = p.languages?.map((s) => s.escapeWith(typstEscaper));
   });
 
   template.work_exp?.forEach((w) => {
-    w.title = w.title.escapeWith(typstEscaper);
-    w.company = w.company.escapeWith(typstEscaper);
-    w.b1 = w.b1.escapeWith(typstEscaper);
-    w.b2 = w.b2.escapeWith(typstEscaper);
+    w.title = w.title?.escapeWith(typstEscaper);
+    w.company = w.company?.escapeWith(typstEscaper);
+    w.b1 = w.b1?.escapeWith(typstEscaper);
+    w.b2 = w.b2?.escapeWith(typstEscaper);
   });
 
   template.hiring_manager = template.hiring_manager.escapeWith(typstEscaper);
@@ -139,11 +132,14 @@ export const genCV = async (template: GenerationOutput, cv_type: CV_Type) => {
       const proj_str =
         template.projects?.map((p) => typstProject(p)).join("\n") ?? "";
 
-      cv_typst = TECH_TEMPLATE_1.replaceAll("{FULL_NAME}", template.full_name)
-        .replaceAll(`{EMAIL}`, template.email)
+      cv_typst = TECH_TEMPLATE_1.replaceAll(
+        "{FULL_NAME}",
+        template.full_name ?? "",
+      )
+        .replaceAll(`{EMAIL}`, template.email ?? "")
         .replaceAll("{GITHUB}", template.github ?? "")
-        .replaceAll("{RESIDENCY}", template.residency)
-        .replaceAll("{ABOUT_ME}", template.about_me)
+        .replaceAll("{RESIDENCY}", template.residency ?? "")
+        .replaceAll("{ABOUT_ME}", template.about_me ?? "")
 
         .replaceAll("{LANGUAGES}", template.languages?.join(", ") ?? "")
         .replaceAll("{FRAMEWORKS}", template.frameworks?.join(", ") ?? "")
@@ -159,11 +155,11 @@ export const genCV = async (template: GenerationOutput, cv_type: CV_Type) => {
     case CV_Type.GeneralCV:
       cv_typst = GENERAL_TEMPLATE_1.replaceAll(
         "{FULL_NAME}",
-        template.full_name,
+        template.full_name ?? "",
       )
-        .replaceAll("{EMAIL}", template.email)
-        .replaceAll("{RESIDENCY}", template.residency)
-        .replaceAll("{SUMMARY}", template.about_me)
+        .replaceAll("{EMAIL}", template.email ?? "")
+        .replaceAll("{RESIDENCY}", template.residency ?? "")
+        .replaceAll("{SUMMARY}", template.about_me ?? "")
         .replaceAll("//{EDU_SECTION}", education_str)
         .replaceAll("//{WORK_SECTION}", work_exp);
   }
@@ -182,9 +178,9 @@ export const genCover = async (template: GenerationOutput) => {
 
   const cover_typst = COVER_TEMPLATE.replaceAll(
     "{FULL_NAME}",
-    template.full_name,
+    template.full_name ?? "",
   )
-    .replaceAll("{EMAIL}", template.email)
+    .replaceAll("{EMAIL}", template.email ?? "")
     .replace("{DATE}", date)
     .replace("{PARAGRAPHS}", paragraph_str)
     .replace("{SALUTATION}", template.salutation)
@@ -226,26 +222,26 @@ function coverDateFormat(date: Date) {
 }
 
 const typstEducation = (e: Education) => {
-  return EDU_TEMPLATE.replace("{EDU_TITLE}", e.title)
-    .replace("{EDU_GRADE}", e.grade)
+  return EDU_TEMPLATE.replace("{EDU_TITLE}", e.title ?? "")
+    .replace("{EDU_GRADE}", e.grade ?? "")
     .replace("{EDU_YEAR}", `${e.start_date} - ${e.end_date}`)
-    .replace("{EDU_NAME}", e.name)
-    .replace("{EDU_LOCATION}", e.location)
+    .replace("{EDU_NAME}", e.name ?? "")
+    .replace("{EDU_LOCATION}", e.location ?? "")
     .replace("{EDU_MODULES}", e.modules?.join(",") ?? "");
 };
 
 const typstProject = (p: Project) => {
-  return PROJECT_TEMPLATE.replace("{P_N}", p.title)
-    .replace("{P_TECH}", p.languages.join(", "))
-    .replaceAll("{P_URL}", p.url)
-    .replace("{P_B1}", p.b1)
-    .replace("{P_B2}", p.b2);
+  return PROJECT_TEMPLATE.replace("{P_N}", p.title ?? "")
+    .replace("{P_TECH}", p.languages?.join(", ") ?? "")
+    .replaceAll("{P_URL}", p.url ?? "")
+    .replace("{P_B1}", p.b1 ?? "")
+    .replace("{P_B2}", p.b2 ?? "");
 };
 
 const typstExperience = (w: Experience) => {
-  return EXPERIENCE_TEMPLATE.replace("{J_T}", w.title)
-    .replace("{J_C}", w.company)
+  return EXPERIENCE_TEMPLATE.replace("{J_T}", w.title ?? "")
+    .replace("{J_C}", w.company ?? "")
     .replace("{J_D}", `${w.start_date} - ${w.end_date}`)
-    .replace("{J_B1}", w.b1)
-    .replace("{J_B2}", w.b2);
+    .replace("{J_B1}", w.b1 ?? "")
+    .replace("{J_B2}", w.b2 ?? "");
 };

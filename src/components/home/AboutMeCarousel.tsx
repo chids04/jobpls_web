@@ -1,85 +1,55 @@
-import { useState } from "react";
-import Autoplay from "embla-carousel-autoplay";
+import { useState, useEffect } from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import AutoScroll from "embla-carousel-auto-scroll";
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from "@/components/ui/carousel";
-import { ResumeTemplate } from "@/store/useStore";
+import { AboutMeItem } from "./AboutMeItem";
+import { ResumeTemplate, ResumeTemplateSchema } from "@/lib/schemas";
 
-interface AboutMeCarouselProps {
-  templates: ResumeTemplate[];
-}
-export function AboutMeCarousel({ templates }: AboutMeCarouselProps) {
-  const [, setApi] = useState<CarouselApi>();
+import { z } from "zod";
+
+import styles from "./AboutMeCarousel.module.css";
+import mockTemplates from "@/mock/mock_aboutme.json?raw";
+
+export function AboutMeCarousel() {
+  const [templates, setTemplates] = useState<ResumeTemplate[]>([]);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
+    AutoScroll({ stopOnInteraction: false }),
+  ]);
+
+  useEffect(() => {
+    if (emblaApi) {
+      emblaApi.reInit();
+      emblaApi.plugins().autoScroll?.play();
+    }
+  }, [emblaApi, templates]);
+
+  useEffect(() => {
+    const ResumeTemplateSchemaList = z.array(ResumeTemplateSchema);
+
+    const resumeTemplates = ResumeTemplateSchemaList.parse(
+      JSON.parse(mockTemplates),
+    );
+
+    console.log(mockTemplates);
+    console.log(resumeTemplates);
+
+    setTemplates(resumeTemplates);
+  }, []);
 
   return (
-    <Carousel
-      setApi={setApi}
-      className="w-full"
-      opts={{
-        align: "center",
-        loop: true,
-      }}
-      plugins={[
-        AutoScroll({
-          speed: 2,
-        }),
-        Autoplay({
-          delay: 1000,
-        }),
-      ]}
-    >
-      <CarouselContent className="-ml-30">
-        {templates.map((tpl, i) => (
-          <CarouselItem
-            className="flex flex-col items-center justify-center  pl-20 ml-10 md:basis-1/2 lg:basis-1/3"
-            key={i}
-          >
-            <div className="rounded border border-zinc-700 bg-zinc-800 p-4 flex flex-col gap-2 max-w-sm">
-              <div className="flex items-center justify-between">
-                <div className="text-base font-medium">{tpl.templateName}</div>
-              </div>
-
-              <div className="text-xs text-zinc-400">
-                Created {tpl.createdAt.toLocaleString()}
-              </div>
-
-              <div className="text-sm text-zinc-200">
-                <div className="truncate">
-                  <span className="text-zinc-400">Name:</span>{" "}
-                  {tpl.resume?.full_name || "-"}
-                </div>
-                <div className="truncate">
-                  <span className="text-zinc-400">Email:</span>{" "}
-                  {tpl.resume?.email || "-"}
-                </div>
-                <div className="truncate">
-                  <span className="text-zinc-400">Languages:</span>{" "}
-                  {tpl.resume?.languages && tpl.resume.languages.length > 0
-                    ? tpl.resume.languages.join(", ")
-                    : "-"}
-                </div>
-                <div className="truncate">
-                  <span className="text-zinc-400">Projects:</span>{" "}
-                  {tpl.resume?.projects?.length || 0}
-                </div>
-                <div className="truncate">
-                  <span className="text-zinc-400">Work Experience:</span>{" "}
-                  {tpl.resume?.work_exp?.length || 0}
-                </div>
-                <div className="truncate">
-                  <span className="text-zinc-400">Education:</span>{" "}
-                  {tpl.resume?.education?.length || 0}
-                </div>
-              </div>
+    <div className="embla container">
+      <div className={styles.embla__viewport} ref={emblaRef}>
+        <div className={styles.embla__container}>
+          {templates.map((template) => (
+            <div
+              key={template.templateId}
+              className={`${styles.embla__slide} flex-[0_0_60%] md:flex-[0_0_33%]`}
+            >
+              <AboutMeItem template={template}></AboutMeItem>
             </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-    </Carousel>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
