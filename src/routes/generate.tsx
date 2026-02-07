@@ -1,24 +1,21 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { useMutation } from "@tanstack/react-query";
 
 import { Separator } from "@/components/ui/separator";
 
 import { usePDFStore, useTemplateStore } from "@/store/useStore";
-
-import { SERVER_URL } from "@/lib/types";
 import { GenerationOutputSchema, Resume } from "@/lib/schemas";
-import { sendGenerate } from "@/lib/api";
-import { ExternalLinkIcon, DownloadIcon } from "lucide-react";
 import { CV_Type, genCV, genCover } from "@/lib/pdf_gen";
-import { personaliseCV } from "@/lib/prompts";
 import clsx from "clsx";
 
 import MockGeminiOutput from "@/mock/GenerationOutput.json?raw";
 import { GeneratedDocs } from "@/components/generate/GeneratedDocs";
+import { personaliseCV } from "@/lib/prompts";
+import { MissingApi } from "@/components/ui/MissingApi";
 
 // generate page allows users to gen their cv and add a short pre-prompt
 
@@ -30,6 +27,7 @@ export const Route = createFileRoute("/generate")({
 function GeneratePage() {
   const {
     selectedCV,
+    apiKey,
     templates,
     selectedTemplateId,
     jobDesc,
@@ -40,9 +38,12 @@ function GeneratePage() {
 
   const { setCV, setCover } = usePDFStore();
 
+  const [openMissingDialog, setMissingOpenDialog] = useState(false);
+
   const selectedTemplate = selectedTemplateId
     ? templates[selectedTemplateId]
     : null;
+
   const isReady = !!(
     selectedCV &&
     selectedTemplate &&
@@ -82,6 +83,12 @@ function GeneratePage() {
   };
 
   useEffect(() => {
+    if (apiKey == "" || apiKey == null) {
+      setMissingOpenDialog(true);
+    }
+  }, []);
+
+  useEffect(() => {
     setLocalJobDesc(jobDesc);
     setLocalSpecialInstr(specialInstr);
   }, [jobDesc, specialInstr]);
@@ -112,23 +119,23 @@ function GeneratePage() {
     setStatusMessage("Amending documents for the job....", true, false);
 
     let aiCV;
-    // try {
-    //   aiCV = await personaliseCV(
-    //     resume,
-    //     localJobDesc,
-    //     localSpecialInstr,
-    //     CV_Type.TechCV,
-    //   );
-    // } catch (error: any) {
-    //   console.log(error);
-    //   setStatusMessage(error?.message || "An unknown error occurred", false);
-    // }
+    try {
+      aiCV = await personaliseCV(
+        resume,
+        localJobDesc,
+        localSpecialInstr,
+        CV_Type.TechCV,
+      );
+    } catch (error: any) {
+      console.log(error);
+      setStatusMessage(error?.message || "An unknown error occurred", false);
+    }
 
-    // console.log(aiCV);
+    console.log(aiCV);
 
-    // if (aiCV == undefined) {
-    //   return;
-    // }
+    if (aiCV == undefined) {
+      return;
+    }
 
     setStatusMessage("finished amending documents", true, false);
 
@@ -196,6 +203,7 @@ function GeneratePage() {
 
   return (
     <div className="flex flex-col gap-5 items-center">
+      <MissingApi isOpen={openMissingDialog} setIsOpen={setMissingOpenDialog} />
       <div className="flex flex-col md:flex-row gap-5 items-center justify-center w-full">
         <div className="flex flex-col max-w-lg w-full gap-5 items-center justify-center">
           <div className="flex flex-col gap-2 w-full max-w-md">

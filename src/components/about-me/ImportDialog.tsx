@@ -10,28 +10,40 @@ import {
 import { StatusAlert, AlertVariant } from "@/components/ui/StatusAlert";
 
 import { Button } from "@/components/ui/button";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatPDF } from "@/lib/prompts";
 import { Resume } from "@/lib/schemas";
 
+import { MissingApi } from "@/components/ui/MissingApi";
+import { useTemplateStore } from "@/store/useStore";
+
 interface ImportDialogProps {
   onTemplateCreated: (template: Resume) => void;
+  isDialogOpen: boolean;
+  onDialogOpenChange: (open: boolean) => void;
 }
 
-export function ImportDialog({ onTemplateCreated }: ImportDialogProps) {
+export function ImportDialog({
+  onTemplateCreated,
+  isDialogOpen,
+  onDialogOpenChange,
+}: ImportDialogProps) {
   const [status, setStatus] = useState<{ msg: string; variant: AlertVariant }>({
     msg: "",
     variant: "success",
   });
 
+  const { apiKey } = useTemplateStore();
+
+  const [showMissingApi, setShowMissingApi] = useState(false);
+
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useState(() => {
-    setStatus({
-      msg: "",
-      variant: "success",
-    });
-  });
+  useEffect(() => {
+    if (!apiKey) {
+      setShowMissingApi(true);
+    }
+  }, []);
 
   const onPDFLoaded = async (fileReader: FileReader, mimeType: string) => {
     if (fileReader.result) {
@@ -90,11 +102,9 @@ export function ImportDialog({ onTemplateCreated }: ImportDialogProps) {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button>Import</Button>
-      </DialogTrigger>
+    <Dialog open={isDialogOpen} onOpenChange={onDialogOpenChange}>
       <DialogContent>
+        <MissingApi isOpen={showMissingApi} setIsOpen={setShowMissingApi} />
         <DialogHeader>
           <DialogTitle>Import From File</DialogTitle>
           <DialogDescription asChild>

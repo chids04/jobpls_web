@@ -1,31 +1,23 @@
+import { z } from "zod";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { ResumeTemplate, ResumeTemplateSchema } from "@/lib/schemas";
-import { CVTemplate, GeneratedPdfs, CurrentJobState } from "@/lib/types";
-import { z } from "zod";
 
-const AppStateSchema = z.object({
+import { ResumeTemplate, ResumeTemplateSchema } from "@/lib/schemas";
+import { CVTemplate, CurrentJobState } from "@/lib/types";
+
+const AppStateDataSchema = z.object({
   templates: z.record(z.string(), ResumeTemplateSchema),
   selectedTemplateId: z.string().nullable(),
   selectedCV: z.any().nullable(),
-  jobDesc: z.string().optional(),
-  specialInstr: z.string().optional(),
+  jobDesc: z.string().catch(""),
+  specialInstr: z.string().catch(""),
   currentJob: z.any().nullable(),
+  apiKey: z.string().nullable(),
 });
 
-export type { ResumeTemplate };
+type AppStateData = z.infer<typeof AppStateDataSchema>;
 
-type AppState = {
-  templates: Record<string, ResumeTemplate>;
-  selectedTemplateId: string | null;
-
-  selectedCV: CVTemplate | null;
-
-  jobDesc: string;
-  specialInstr: string;
-
-  currentJob: CurrentJobState | null;
-
+type AppActions = {
   addTemplate: (template: ResumeTemplate) => void;
   updateTemplate: (template: ResumeTemplate) => void;
   deleteTemplate: (id: string) => void;
@@ -34,7 +26,35 @@ type AppState = {
   setJobDesc: (desc: string) => void;
   setSpecialInstr: (instr: string) => void;
   setCurrentJob: (job: CurrentJobState | null) => void;
+  setApiKey: (key: string) => void;
 };
+
+type AppState = AppStateData & AppActions;
+
+export type { ResumeTemplate };
+
+// type AppState = {
+//   templates: Record<string, ResumeTemplate>;
+//   selectedTemplateId: string | null;
+
+//   selectedCV: CVTemplate | null;
+
+//   jobDesc: string;
+//   specialInstr: string;
+
+//   currentJob: CurrentJobState | null;
+
+//   apiKey: string | null;
+
+//   addTemplate: (template: ResumeTemplate) => void;
+//   updateTemplate: (template: ResumeTemplate) => void;
+//   deleteTemplate: (id: string) => void;
+//   setSelectedTemplateId: (id: string | null) => void;
+//   setSelectedCV: (cv: CVTemplate | null) => void;
+//   setJobDesc: (desc: string) => void;
+//   setSpecialInstr: (instr: string) => void;
+//   setCurrentJob: (job: CurrentJobState | null) => void;
+// };
 
 type PdfStore = {
   cv: string | undefined;
@@ -78,6 +98,7 @@ export const useTemplateStore = create<AppState>()(
       jobDesc: "",
       specialInstr: "",
       currentJob: null,
+      apiKey: null,
 
       addTemplate: (template) =>
         set((state) => ({
@@ -97,6 +118,7 @@ export const useTemplateStore = create<AppState>()(
       setJobDesc: (desc) => set({ jobDesc: desc }),
       setSpecialInstr: (instr) => set({ specialInstr: instr }),
       setCurrentJob: (job) => set({ currentJob: job }),
+      setApiKey: (key) => set({ apiKey: key }),
     }),
     {
       name: "jobpls-storage",
@@ -118,7 +140,7 @@ export const useTemplateStore = create<AppState>()(
           if (error) {
             console.error("hydration failed", error);
           } else if (rehydratedState) {
-            const result = AppStateSchema.safeParse(rehydratedState);
+            const result = AppStateDataSchema.safeParse(rehydratedState);
             if (!result.success) {
               console.error(
                 "failed to parse saved state, possibly corrupted",

@@ -73,12 +73,9 @@ function RootDocument() {
           <HeadContent />
         </head>
         <body className="min-h-screen bg-zinc-900 text-zinc-100 antialiased dark">
-          <CircleUser
-            className="fixed top-0 right-0 mt-4 mr-4 w-10 h-10 z-50"
-            onClick={() => {
-              console.log("clicked");
-            }}
-          />
+          <Link to={"/account"}>
+            <CircleUser className="fixed top-0 right-0 mt-4 mr-4 w-10 h-10 z-50" />
+          </Link>
 
           <div className="flex min-h-screen flex-col">
             <header className="w-full pt-8 pb-4 flex justify-center">
@@ -93,6 +90,8 @@ function RootDocument() {
                 />
               </div>
             </header>
+
+            {/*nav bar*/}
 
             <div className="w-full px-3 sm:px-6 md:px-8">
               <nav className="w-full rounded-xl bg-zinc-800/80 shadow-lg ring-1 ring-black/10 backdrop-blur px-4 sm:px-6 py-2">

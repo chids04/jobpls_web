@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as CvTemplateRouteImport } from './routes/cv-template'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as AboutMeRouteImport } from './routes/about-me'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -30,6 +31,11 @@ const CvTemplateRoute = CvTemplateRouteImport.update({
   path: '/cv-template',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutMeRoute = AboutMeRouteImport.update({
   id: '/about-me',
   path: '/about-me',
@@ -44,6 +50,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about-me': typeof AboutMeRoute
+  '/account': typeof AccountRoute
   '/cv-template': typeof CvTemplateRoute
   '/generate': typeof GenerateRoute
   '/home': typeof HomeRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about-me': typeof AboutMeRoute
+  '/account': typeof AccountRoute
   '/cv-template': typeof CvTemplateRoute
   '/generate': typeof GenerateRoute
   '/home': typeof HomeRoute
@@ -59,21 +67,36 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about-me': typeof AboutMeRoute
+  '/account': typeof AccountRoute
   '/cv-template': typeof CvTemplateRoute
   '/generate': typeof GenerateRoute
   '/home': typeof HomeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about-me' | '/cv-template' | '/generate' | '/home'
+  fullPaths:
+    | '/'
+    | '/about-me'
+    | '/account'
+    | '/cv-template'
+    | '/generate'
+    | '/home'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about-me' | '/cv-template' | '/generate' | '/home'
-  id: '__root__' | '/' | '/about-me' | '/cv-template' | '/generate' | '/home'
+  to: '/' | '/about-me' | '/account' | '/cv-template' | '/generate' | '/home'
+  id:
+    | '__root__'
+    | '/'
+    | '/about-me'
+    | '/account'
+    | '/cv-template'
+    | '/generate'
+    | '/home'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutMeRoute: typeof AboutMeRoute
+  AccountRoute: typeof AccountRoute
   CvTemplateRoute: typeof CvTemplateRoute
   GenerateRoute: typeof GenerateRoute
   HomeRoute: typeof HomeRoute
@@ -102,6 +125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CvTemplateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about-me': {
       id: '/about-me'
       path: '/about-me'
@@ -122,6 +152,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutMeRoute: AboutMeRoute,
+  AccountRoute: AccountRoute,
   CvTemplateRoute: CvTemplateRoute,
   GenerateRoute: GenerateRoute,
   HomeRoute: HomeRoute,

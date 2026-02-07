@@ -3,6 +3,7 @@ import { DUPLICATE_SUFFIX_BASE } from "@/lib/types";
 import { ResumeTemplate } from "@/store/useStore";
 import { ImportDialog } from "./ImportDialog";
 import { Resume } from "@/lib/schemas";
+import { useState } from "react";
 
 /* props for the templates list component */
 export type TemplatesListProps = {
@@ -59,6 +60,8 @@ export function TemplatesList({
   onDelete,
   onDuplicate,
 }: TemplatesListProps) {
+  const [openImportDialog, setOpenImportDialog] = useState(false);
+
   return (
     <div className="flex flex-col gap-6">
       {/* header */}
@@ -69,8 +72,19 @@ export function TemplatesList({
           <Button type="button" onClick={onCreate} className="text-black">
             Create new template
           </Button>
+          <Button
+            type="button"
+            onClick={() => setOpenImportDialog(true)}
+            className="text-black"
+          >
+            Import
+          </Button>
 
-          <ImportDialog onTemplateCreated={onImport} />
+          <ImportDialog
+            onTemplateCreated={onImport}
+            isDialogOpen={openImportDialog}
+            onDialogOpenChange={setOpenImportDialog}
+          />
         </div>
       </div>
 
