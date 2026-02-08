@@ -4,18 +4,18 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { StatusAlert, AlertVariant } from "@/components/ui/StatusAlert";
+import { Status, StatusVariant } from "@/components/ui/Status";
 
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { formatPDF } from "@/lib/prompts";
-import { Resume } from "@/lib/schemas";
+import { Resume, ResumeDataSchema } from "@/lib/schemas";
 
 import { MissingApi } from "@/components/ui/MissingApi";
 import { useTemplateStore } from "@/store/useStore";
+import { useMutation } from "@tanstack/react-query";
 
 interface ImportDialogProps {
   onTemplateCreated: (template: Resume) => void;
@@ -28,16 +28,60 @@ export function ImportDialog({
   isDialogOpen,
   onDialogOpenChange,
 }: ImportDialogProps) {
-  const [status, setStatus] = useState<{ msg: string; variant: AlertVariant }>({
+  const [status, setStatus] = useState<{
+    msg: ReactNode;
+    variant: StatusVariant;
+  }>({
     msg: "",
     variant: "success",
   });
-
   const { apiKey } = useTemplateStore();
-
   const [showMissingApi, setShowMissingApi] = useState(false);
-
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const geminiMutation = useMutation({
+    mutationFn: ({
+      apiKey,
+      data,
+      mimeType,
+    }: {
+      apiKey: string;
+      data: ArrayBuffer;
+      mimeType: string;
+    }) => {
+      return formatPDF(apiKey, data, mimeType);
+    },
+
+    onSuccess: (response) => {
+      if (response.text == undefined) {
+        console.log(response);
+        setStatus({
+          msg: "Failed to import PDF, please try again later",
+          variant: "error",
+        });
+
+        return;
+      }
+
+      const generatedResume = ResumeDataSchema.safeParse(
+        JSON.parse(response.text),
+      );
+
+      if (generatedResume.error) {
+        console.log(generatedResume.error);
+        setStatus({
+          msg: "Failed to import PDF, please try again later",
+          variant: "error",
+        });
+      } else {
+        setStatus({
+          msg: "Successfully imported PDF!",
+          variant: "success",
+        });
+        onTemplateCreated(generatedResume.data);
+      }
+    },
+  });
 
   useEffect(() => {
     if (!apiKey) {
@@ -46,50 +90,34 @@ export function ImportDialog({
   }, []);
 
   const onPDFLoaded = async (fileReader: FileReader, mimeType: string) => {
+    if (!apiKey) {
+      setShowMissingApi(true);
+      return;
+    }
+
     if (fileReader.result) {
-      try {
-        setStatus({
-          msg: "converting file to template",
-          variant: "loading",
-        });
+      setStatus({
+        msg: "extracting details from pdf....",
+        variant: "loading",
+      });
 
-        const resume = await formatPDF(
-          fileReader.result as ArrayBuffer,
-          mimeType,
-        );
-
-        setStatus({
-          msg: "successfully created pdf template",
-          variant: "success",
-        });
-
-        console.log(resume);
-        onTemplateCreated(resume);
-      } catch (error) {
-        console.log(error);
-        setStatus({
-          msg: "Failed to convert file to template, try a different file",
-          variant: "destructive",
-        });
-      }
+      geminiMutation.mutate({
+        apiKey,
+        data: fileReader.result as ArrayBuffer,
+        mimeType,
+      });
     }
   };
 
   const handleFileChosen = (file: Blob) => {
     const fileReader = new FileReader();
 
-    fileReader.onload = () => {
-      const pdf_data = fileReader.result;
-      console.log(pdf_data);
-      console.log(file.type);
-    };
-
     fileReader.onload = () => onPDFLoaded(fileReader, file.type);
 
     fileReader.onerror = (e) => {
       setStatus({
         msg: `failed to load document: ${e.target?.error}`,
-        variant: "destructive",
+        variant: "error",
       });
     };
 
@@ -115,16 +143,16 @@ export function ImportDialog({
                   type="file"
                   ref={inputRef}
                   onChange={(e) => {
-                    handleFileChosen(e.target.files[0]);
+                    if (e.target.files) {
+                      handleFileChosen(e.target.files[0]);
+                    }
                   }}
+                  className="hidden"
                 ></input>
               </div>
 
               {status.msg && (
-                <StatusAlert
-                  variant={status.variant}
-                  description={status.msg}
-                />
+                <Status variant={status.variant} message={status.msg} />
               )}
             </div>
           </DialogDescription>

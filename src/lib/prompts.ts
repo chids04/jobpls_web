@@ -9,7 +9,56 @@ import { CV_Type } from "./pdf_gen";
 
 import * as z from "zod";
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+export const createPrompt = (
+  resume: Resume,
+  job_desc: string,
+  special_instr: string,
+  cv_type: CV_Type,
+) => {
+  let prompt;
+  let sysInstr;
+
+  switch (cv_type) {
+    case CV_Type.TechCV:
+      prompt = TECH_CV_PROMPT_2;
+      sysInstr = TECH_CV_SYS_INSTR_2;
+      break;
+    case CV_Type.GeneralCV:
+      prompt = GENERAL_CV_PROMPT_2;
+      sysInstr = GENERAL_CV_SYS_INSTR_2;
+      break;
+    default:
+      prompt = GENERAL_CV_PROMPT_2;
+      sysInstr = GENERAL_CV_SYS_INSTR_2;
+  }
+
+  prompt = prompt
+    .replace("{CV}", JSON.stringify(resume))
+    .replace("{JOB_DESC}", job_desc)
+    .replace("{SPECIAL_INSTR}", special_instr);
+
+  return [prompt, sysInstr];
+};
+
+export const sendPrompt = async (
+  apiKey: string,
+  prompt: string,
+  systemInstruction: string,
+) => {
+  const ai = new GoogleGenAI({ apiKey });
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: prompt,
+    config: {
+      systemInstruction,
+      responseMimeType: "application/json",
+      responseJsonSchema: z.toJSONSchema(GenerationOutputSchema),
+    },
+  });
+
+  return response;
+};
 
 export async function personaliseCV(
   resume: Resume,
@@ -62,7 +111,13 @@ export async function personaliseCV(
   return generatedResume as GenerationOutput;
 }
 
-export async function formatPDF(data: ArrayBuffer, mimeType: string) {
+export async function formatPDF(
+  apiKey: string,
+  data: ArrayBuffer,
+  mimeType: string,
+) {
+  const ai = new GoogleGenAI({ apiKey });
+
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: [
@@ -82,15 +137,7 @@ export async function formatPDF(data: ArrayBuffer, mimeType: string) {
     },
   });
 
-  if (response.text == undefined) {
-    throw new Error("failed to generate llm response");
-  }
-
-  console.log(JSON.parse(response.text));
-
-  const generatedResume = ResumeDataSchema.parse(JSON.parse(response.text));
-
-  return generatedResume as Resume;
+  return response;
 }
 
 const TEMPLATE_FORMAT_PROMPT = String.raw`

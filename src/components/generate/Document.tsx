@@ -43,7 +43,7 @@ export function Document({ url: blob_url, name }: DocumentProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => downloadPDF("blob_url", "resume.pd")}
+          onClick={() => downloadPDF("blob_url", name)}
           className="text-green-400 border-green-400 hover:bg-green-400 hover:text-green-900"
         >
           <DownloadIcon className="w-4 h-4 mr-1" />

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@tanstack/react-router";
@@ -8,14 +8,14 @@ import { useMutation } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
 
 import { usePDFStore, useTemplateStore } from "@/store/useStore";
-import { GenerationOutputSchema, Resume } from "@/lib/schemas";
+import { GenerationOutput, GenerationOutputSchema } from "@/lib/schemas";
 import { CV_Type, genCV, genCover } from "@/lib/pdf_gen";
-import clsx from "clsx";
 
-import MockGeminiOutput from "@/mock/GenerationOutput.json?raw";
 import { GeneratedDocs } from "@/components/generate/GeneratedDocs";
-import { personaliseCV } from "@/lib/prompts";
+import { createPrompt, sendPrompt } from "@/lib/prompts";
 import { MissingApi } from "@/components/ui/MissingApi";
+import { GenerateContentResponse } from "@google/genai";
+import { Status, StatusVariant } from "@/components/ui/Status";
 
 // generate page allows users to gen their cv and add a short pre-prompt
 
@@ -37,49 +37,94 @@ function GeneratePage() {
   } = useTemplateStore();
 
   const { setCV, setCover } = usePDFStore();
-
   const [openMissingDialog, setMissingOpenDialog] = useState(false);
 
-  const selectedTemplate = selectedTemplateId
-    ? templates[selectedTemplateId]
-    : null;
-
-  const isReady = !!(
-    selectedCV &&
-    selectedTemplate &&
-    jobDesc.trim().length > 0
-  );
-
-  const missingItems: string[] = [];
-  if (!selectedCV) missingItems.push("CV template");
-  if (!selectedTemplate) missingItems.push("About Me template");
-  if (jobDesc.trim().length === 0) missingItems.push("Job description");
-
-  // local state for tab-independent editing
   const [localJobDesc, setLocalJobDesc] = useState("");
   const [localSpecialInstr, setLocalSpecialInstr] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  const [pollUrl, setPollingUrl] = useState<string>("");
-  const [error, setError] = useState("");
 
   const [pdfUrls, setPdfUrls] = useState<{
     cvUrl: string | undefined;
     coverUrl: string | undefined;
   }>({ cvUrl: undefined, coverUrl: undefined });
 
-  const [status, setStatus] = useState({
-    success: true,
+  const [status, setStatus] = useState<{
+    variant: StatusVariant;
+    msg: ReactNode;
+  }>({
+    variant: "default",
     msg: "",
   });
 
-  const setStatusMessage = (msg: string, success: boolean, timeout = true) => {
-    setStatus({ msg, success });
+  const selectedTemplate = selectedTemplateId
+    ? templates[selectedTemplateId]
+    : null;
 
-    timeout &&
-      setTimeout(() => {
-        setStatus({ msg: "", success: true });
-      }, 2000);
+  const geminiMutation = useMutation({
+    mutationFn: ({
+      prompt,
+      systemInstruction,
+      apiKey,
+    }: {
+      prompt: string;
+      systemInstruction: string;
+      apiKey: string;
+    }) => {
+      return sendPrompt(apiKey ?? "", prompt, systemInstruction);
+    },
+
+    onMutate: () => {
+      setStatusMessage("Fitting documents for the job.....", "loading");
+    },
+
+    onSuccess: (response) => {
+      handleLLMResponse(response);
+    },
+
+    onError: (error) => {
+      console.log(error);
+      setStatusMessage("Failed to generate documents", "error");
+    },
+  });
+
+  const handleLLMResponse = async (response: GenerateContentResponse) => {
+    setStatusMessage(
+      "Generated documents, creating PDF for download....",
+      "loading",
+    );
+
+    if (response.text) {
+      const resume = GenerationOutputSchema.safeParse(
+        JSON.parse(response.text),
+      );
+
+      if (!resume.success) {
+        console.log("error when parsing zod schema", resume.error);
+        setStatusMessage(
+          "Failed to extract LLM response, please try again later",
+          "error",
+        );
+      } else {
+        await createPDF(resume.data, "cv");
+        await createPDF(resume.data, "cover");
+        setStatusMessage("Documents ready!", "success");
+      }
+    } else {
+      console.log("response.text missing from gemini response");
+      setStatusMessage(
+        "Failed to extract LLM response, please try again later",
+        "error",
+      );
+    }
+  };
+
+  const missingItems: string[] = [];
+  if (!selectedCV) missingItems.push("CV template");
+  if (!selectedTemplate) missingItems.push("About Me template");
+  if (jobDesc.trim().length === 0) missingItems.push("Job description");
+
+  const setStatusMessage = (msg: ReactNode, variant: StatusVariant) => {
+    setStatus({ msg, variant });
   };
 
   useEffect(() => {
@@ -99,99 +144,82 @@ function GeneratePage() {
     setHasUnsavedChanges(hasChanges);
   }, [localJobDesc, localSpecialInstr, jobDesc, specialInstr]);
 
+  const createPDF = async (
+    llmResponse: GenerationOutput,
+    docType: "cv" | "cover",
+  ) => {
+    try {
+      let pdf;
+
+      if (docType == "cv") {
+        pdf = await genCV(llmResponse, CV_Type.TechCV);
+      } else {
+        pdf = await genCover(llmResponse);
+      }
+
+      if (!pdf) {
+        throw new Error("failed to generate pdf");
+      }
+      const pdfBlob = new Blob([pdf.slice(0)], {
+        type: "application/pdf",
+      });
+
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+
+      if (docType == "cv") {
+        setPdfUrls((prev) => ({
+          ...prev,
+          cvUrl: pdfUrl,
+        }));
+
+        const pdf_b64 = await blobToBase64(pdfBlob);
+        setCV(pdf_b64);
+      } else {
+        setPdfUrls((prev) => ({
+          ...prev,
+          coverUrl: pdfUrl,
+        }));
+
+        const pdf_b64 = await blobToBase64(pdfBlob);
+        setCover(pdf_b64);
+      }
+    } catch (error) {
+      console.log(error);
+
+      setStatusMessage(`Error generating PDF, please try again later`, "error");
+    }
+  };
+
   const handleGenerate = async () => {
     if (!selectedCV || !selectedTemplate) {
-      setError(`missing: ${missingItems.join(", ")}`);
+      setStatusMessage(`missing: ${missingItems.join(", ")}`, "error");
       return;
     }
 
     if (!localJobDesc.trim()) {
-      setError("Please enter a job description");
+      setStatusMessage("Please enter a job description", "error");
       return;
     }
 
-    setError("");
+    if (!apiKey) {
+      setMissingOpenDialog(true);
+      return;
+    }
 
+    // save job description and special instructions
     saveToStore();
 
-    const resume: Resume = selectedTemplate.resume;
+    const [prompt, systemInstruction] = createPrompt(
+      selectedTemplate.resume,
+      localJobDesc,
+      localSpecialInstr,
+      CV_Type.TechCV,
+    );
 
-    setStatusMessage("Amending documents for the job....", true, false);
-
-    let aiCV;
-    try {
-      aiCV = await personaliseCV(
-        resume,
-        localJobDesc,
-        localSpecialInstr,
-        CV_Type.TechCV,
-      );
-    } catch (error: any) {
-      console.log(error);
-      setStatusMessage(error?.message || "An unknown error occurred", false);
-    }
-
-    console.log(aiCV);
-
-    if (aiCV == undefined) {
-      return;
-    }
-
-    setStatusMessage("finished amending documents", true, false);
-
-    aiCV = GenerationOutputSchema.parse(JSON.parse(MockGeminiOutput));
-
-    let cvUrl;
-    let coverUrl;
-
-    try {
-      setStatusMessage("Generating CV...", true, false);
-
-      const cv = await genCV(aiCV, CV_Type.TechCV);
-
-      if (!cv) {
-        throw new Error("failed to generate cover pdf");
-      }
-      const cv_blob = new Blob([cv.slice(0)], {
-        type: "application/pdf",
-      });
-
-      cvUrl = URL.createObjectURL(cv_blob);
-    } catch (error) {
-      setStatusMessage(
-        `cv pdf generation error occured ${error}`,
-        false,
-        false,
-      );
-      console.log(error);
-    }
-
-    try {
-      const cover = await genCover(aiCV);
-
-      if (!cover) {
-        throw new Error("pdf gen failed");
-      }
-      const cover_blob = new Blob([cover.slice(0)], {
-        type: "application/pdf",
-      });
-
-      coverUrl = URL.createObjectURL(cover_blob);
-    } catch (error) {
-      setStatusMessage(
-        `cover pdf generation error occured ${error}`,
-        false,
-        false,
-      );
-      console.log(error);
-    }
-
-    setCV(cvUrl);
-    setCover(coverUrl);
-
-    setPdfUrls({
-      cvUrl,
-      coverUrl,
+    geminiMutation.mutate({
+      prompt,
+      systemInstruction,
+      apiKey,
     });
   };
 
@@ -199,6 +227,15 @@ function GeneratePage() {
   const saveToStore = () => {
     setJobDesc(localJobDesc);
     setSpecialInstr(localSpecialInstr);
+  };
+
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   };
 
   return (
@@ -247,7 +284,6 @@ function GeneratePage() {
 
         {selectedCV && selectedTemplate ? (
           <div className="flex flex-col items-center w-full gap-10">
-            <div></div>
             <div className="flex flex-col w-full items-center border-b-accent border-2 p-2">
               <h1 className="text-xl">
                 {"selected cv - "}
@@ -261,8 +297,8 @@ function GeneratePage() {
               </Link>
             </div>
 
-            <div className="flex flex-col items-center w-full  border-b-accent border-2 p-2">
-              <h1 className="text-xl">
+            <div className="flex flex-col items-center justify-center w-full  border-b-accent border-2 p-2">
+              <h1 className="text-xl text-center">
                 {"selected about me - "}
                 <span className="font-bold">
                   {selectedTemplate.templateName}
@@ -299,18 +335,7 @@ function GeneratePage() {
 
       <Separator />
 
-      {status.msg && (
-        <div
-          className={clsx(
-            "flex flex-col rounded-lg justify-center items-center p-4",
-            status.success === false
-              ? "bg-red-900 border-red-800 border-2 text-red-500"
-              : "bg-green-900 border-green-800 border-2 text-green-500",
-          )}
-        >
-          <p>{status.msg}</p>
-        </div>
-      )}
+      {status.msg && <Status variant={status.variant} message={status.msg} />}
 
       <GeneratedDocs cv={pdfUrls.cvUrl} cover={pdfUrls.coverUrl} />
     </div>
