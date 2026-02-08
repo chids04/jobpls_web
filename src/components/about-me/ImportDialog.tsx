@@ -56,7 +56,7 @@ export function ImportDialog({
       if (response.text == undefined) {
         console.log(response);
         setStatus({
-          msg: "Failed to import PDF, please try again later",
+          msg: "failed to import document, please try again later",
           variant: "error",
         });
 
@@ -70,7 +70,7 @@ export function ImportDialog({
       if (generatedResume.error) {
         console.log(generatedResume.error);
         setStatus({
-          msg: "Failed to import PDF, please try again later",
+          msg: "failed to import document, please try again later",
           variant: "error",
         });
       } else {
@@ -81,12 +81,39 @@ export function ImportDialog({
         onTemplateCreated(generatedResume.data);
       }
     },
+
+    onError: (error) => {
+      if (error.message.includes("429")) {
+        setStatus({
+          msg: "rate limit hit, please try again later",
+          variant: "error",
+        });
+      } else if (error.message.includes("Unsupported MIME type")) {
+        setStatus({
+          msg: "unsupported document format",
+          variant: "error",
+        });
+      } else {
+        console.log(error);
+        setStatus({
+          msg: "server error: please try again later",
+          variant: "error",
+        });
+      }
+    },
   });
 
   useEffect(() => {
     if (!apiKey) {
       setShowMissingApi(true);
     }
+  }, []);
+
+  useEffect(() => {
+    setStatus({
+      msg: "",
+      variant: "success",
+    });
   }, []);
 
   const onPDFLoaded = async (fileReader: FileReader, mimeType: string) => {
@@ -97,7 +124,7 @@ export function ImportDialog({
 
     if (fileReader.result) {
       setStatus({
-        msg: "extracting details from pdf....",
+        msg: "extracting details from document....",
         variant: "loading",
       });
 
@@ -134,11 +161,11 @@ export function ImportDialog({
       <DialogContent>
         <MissingApi isOpen={showMissingApi} setIsOpen={setShowMissingApi} />
         <DialogHeader>
-          <DialogTitle>Import From File</DialogTitle>
+          <DialogTitle className="mb-4">import from file</DialogTitle>
           <DialogDescription asChild>
             <div>
               <div className="flex gap-2 items-center mb-4">
-                <Button onClick={selectPDF}>select pdf</Button>
+                <Button onClick={selectPDF}>select document</Button>
                 <input
                   type="file"
                   ref={inputRef}
@@ -150,6 +177,10 @@ export function ImportDialog({
                   className="hidden"
                 ></input>
               </div>
+
+              <p className="text-sm text-slate-400 mb-4 leading-normal">
+                This uses an AI model to extract details from your document.
+              </p>
 
               {status.msg && (
                 <Status variant={status.variant} message={status.msg} />
