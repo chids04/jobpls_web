@@ -1,10 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import {
-  GenerationOutput,
-  GenerationOutputSchema,
-  Resume,
-  ResumeDataSchema,
-} from "./schemas";
+import { GenerationOutputSchema, Resume, ResumeDataSchema } from "./schemas";
 import { CV_Type } from "./pdf_gen";
 
 import * as z from "zod";
@@ -60,57 +55,6 @@ export const sendPrompt = async (
   return response;
 };
 
-export async function personaliseCV(
-  resume: Resume,
-  job_desc: string,
-  special_instr: string,
-  cv_type: CV_Type,
-) {
-  let prompt;
-  let sysInstr;
-
-  switch (cv_type) {
-    case CV_Type.TechCV:
-      prompt = TECH_CV_PROMPT_2;
-      sysInstr = TECH_CV_SYS_INSTR_2;
-      break;
-    case CV_Type.GeneralCV:
-      prompt = GENERAL_CV_PROMPT_2;
-      sysInstr = GENERAL_CV_SYS_INSTR_2;
-      break;
-    default:
-      prompt = GENERAL_CV_PROMPT_2;
-      sysInstr = GENERAL_CV_SYS_INSTR_2;
-  }
-
-  prompt = prompt
-    .replace("{CV}", JSON.stringify(resume))
-    .replace("{JOB_DESC}", job_desc)
-    .replace("{SPECIAL_INSTR}", special_instr);
-
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-    config: {
-      systemInstruction: sysInstr,
-      responseMimeType: "application/json",
-      responseJsonSchema: z.toJSONSchema(GenerationOutputSchema),
-    },
-  });
-
-  console.log(response);
-
-  if (response.text == undefined) {
-    throw new Error("failed to generate llm response");
-  }
-
-  const generatedResume = GenerationOutputSchema.parse(
-    JSON.parse(response.text),
-  );
-
-  return generatedResume as GenerationOutput;
-}
-
 export async function formatPDF(
   apiKey: string,
   data: ArrayBuffer,
@@ -124,6 +68,7 @@ export async function formatPDF(
       {
         inlineData: {
           mimeType,
+          //@ts-ignore
           data: new Uint8Array(data).toBase64(),
         },
       },
