@@ -40,6 +40,14 @@ function getQueryClient() {
 
 export const Route = createRootRoute({
   component: RootComponent,
+  notFoundComponent: () => (
+    <div className="p-3 text-center">
+      <h1 className="text-4xl font-bold">you shouldn't be here</h1>
+      <Link to="/" className="text-blue-500 underline text-2xl p-5">
+        go home
+      </Link>
+    </div>
+  ),
 });
 
 function RootDocument() {
