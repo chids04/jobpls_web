@@ -48,11 +48,6 @@ function GeneratePage() {
   const [localSpecialInstr, setLocalSpecialInstr] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const [createOpts, setCreateOpts] = useState<{
-    hasCv: boolean;
-    hasCover: boolean;
-  }>();
-
   const [pdfUrls, setPdfUrls] = useState<{
     cvUrl: string | undefined;
     coverUrl: string | undefined;
@@ -103,7 +98,6 @@ function GeneratePage() {
     },
 
     onError: (error) => {
-      console.log(error);
       setStatusMessage("Failed to generate documents", "error");
     },
   });
@@ -120,7 +114,6 @@ function GeneratePage() {
       );
 
       if (!resume.success) {
-        console.log("error when parsing zod schema", resume.error);
         setStatusMessage(
           "Failed to extract LLM response, please try again later",
           "error",
@@ -135,7 +128,6 @@ function GeneratePage() {
         setStatusMessage("Documents ready!", "success");
       }
     } else {
-      console.log("response.text missing from gemini response");
       setStatusMessage(
         "Failed to extract LLM response, please try again later",
         "error",
@@ -209,8 +201,6 @@ function GeneratePage() {
         setCover(pdf_b64);
       }
     } catch (error) {
-      console.log(error);
-
       setStatusMessage(`Error generating PDF, please try again later`, "error");
     }
   };

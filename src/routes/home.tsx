@@ -29,7 +29,6 @@ function RouteComponent() {
         setMockAboutMe(response.data as ResumeTemplate[]);
       } catch (e) {
         if (axios.isAxiosError(e)) {
-          console.log(e);
         }
       }
     };

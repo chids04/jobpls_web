@@ -193,7 +193,6 @@ export const genCV = async (template: GenerationOutput, cv_type: CV_Type) => {
         .replace("{PROJECTS}", projSection)
         .replace("{WORK}", workSection)
 
-      console.log(cv_typst)
       break;
 
     case CV_Type.GeneralCV:
@@ -231,8 +230,6 @@ export const genCover = async (template: GenerationOutput) => {
     .replace("{SALUTATION}", template.salutation)
     .replace("{HIRING_MANAGER}", template.hiring_manager)
     .replace("{COMPANY_NAME}", template.company_name);
-
-  console.log(cover_typst);
 
   const pdf = await $typst.pdf({ mainContent: cover_typst });
 

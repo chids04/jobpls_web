@@ -128,7 +128,6 @@ export const useTemplateStore = create<AppState>()(
             : undefined,
       })),
       onRehydrateStorage: (_state) => {
-        console.log("hydration starting");
         return (rehydratedState, error) => {
           if (error) {
             console.error("hydration failed", error);
@@ -140,7 +139,6 @@ export const useTemplateStore = create<AppState>()(
                 result.error,
               );
             } else {
-              console.log("succesfully restored and validated state");
             }
           }
         };
