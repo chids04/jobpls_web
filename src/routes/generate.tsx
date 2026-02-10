@@ -16,6 +16,7 @@ import { createPrompt, sendPrompt } from "@/lib/prompts";
 import { MissingApi } from "@/components/ui/MissingApi";
 import { GenerateContentResponse } from "@google/genai";
 import { Status, StatusVariant } from "@/components/ui/Status";
+import { DocGenOptions } from "@/components/generate/DocGenOptions";
 
 import { z } from "zod";
 import mockResume from "@/mock/resume.json?raw";
@@ -37,15 +38,20 @@ function GeneratePage() {
     specialInstr,
     setJobDesc,
     setSpecialInstr,
+    docGenOptions,
   } = useTemplateStore();
 
   const { setCV, setCover } = usePDFStore();
 
   const [openMissingDialog, setMissingOpenDialog] = useState(false);
-
   const [localJobDesc, setLocalJobDesc] = useState("");
   const [localSpecialInstr, setLocalSpecialInstr] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const [createOpts, setCreateOpts] = useState<{
+    hasCv: boolean;
+    hasCover: boolean;
+  }>();
 
   const [pdfUrls, setPdfUrls] = useState<{
     cvUrl: string | undefined;
@@ -120,8 +126,12 @@ function GeneratePage() {
           "error",
         );
       } else {
-        await createPDF(resume.data, "cv");
-        await createPDF(resume.data, "cover");
+        if (docGenOptions.hasCV) {
+          await createPDF(resume.data, "cv");
+        }
+        if (docGenOptions.hasCover) {
+          await createPDF(resume.data, "cover");
+        }
         setStatusMessage("Documents ready!", "success");
       }
     } else {
@@ -182,18 +192,18 @@ function GeneratePage() {
       const pdfUrl = URL.createObjectURL(pdfBlob);
 
       if (docType == "cv") {
-        setPdfUrls({
+        setPdfUrls((prev) => ({
+          ...prev,
           cvUrl: pdfUrl,
-          coverUrl: undefined,
-        });
+        }));
 
         const pdf_b64 = await blobToBase64(pdfBlob);
         setCV(pdf_b64);
       } else {
-        setPdfUrls({
-          cvUrl: undefined,
+        setPdfUrls((prev) => ({
+          ...prev,
           coverUrl: pdfUrl,
-        });
+        }));
 
         const pdf_b64 = await blobToBase64(pdfBlob);
         setCover(pdf_b64);
@@ -208,6 +218,14 @@ function GeneratePage() {
   const handleGenerate = async () => {
     if (selectedCV === null || !selectedTemplate) {
       setStatusMessage(`missing: ${missingItems.join(", ")}`, "error");
+      return;
+    }
+
+    if (!docGenOptions.hasCV && !docGenOptions.hasCover) {
+      setStatusMessage(
+        "Please select at least one document to generate",
+        "error",
+      );
       return;
     }
 
@@ -350,6 +368,8 @@ function GeneratePage() {
               </div>
             )}
           </div>
+
+          <DocGenOptions />
 
           <Button
             onClick={handleGenerate}
