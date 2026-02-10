@@ -98,79 +98,36 @@ export const TECH_TEMPLATE_1 = String.raw`
 `;
 
 export const GENERAL_TEMPLATE_1 = String.raw`
-// General Employment CV Template - Typst
-#set page(
-  paper: "a4",
-  margin: (x: 2cm, y: 2cm),
-)
-#set text(
-  font: "New Computer Modern",
-  size: 11pt,
-)
-#set par(justify: true)
+  #set page(
+    paper: "a4",
+    margin: (x: 1.5cm, y: 1.5cm),
+  )
 
-// Header with name and contact info
-#align(center)[
-  #text(size: 16pt, weight: "bold")[Chidubem Osuala]
+  #set text(
+    font: "New Computer Modern",
+    size: 10pt,
+  )
+
+  #set par(justify: true)
+
+  #align(center)[
+    #text(size: 14pt, weight: "bold")[{FULL_NAME}]
+
+    {EMAIL} #h(1em) {RESIDENCY}
+  ]
+
+  #v(0.5em)
+
+  {ABOUT_ME}
+
   #v(0.3em)
-  #text(size: 11pt)[
-    Email: #link("mailto:chidubemosuala@yahoo.com")[chidubemosuala\@yahoo.com] #h(2em) British Citizen
-  ]
-]
 
-#v(0.4em)
+  {EDUCATION}
 
-// Professional Summary Section
-#text(size: 12pt, weight: "bold")[PROFESSIONAL SUMMARY]
-#line(length: 100%, stroke: 0.5pt)
-#v(0.3em)
-#text(size: 11pt)[{SUMMARY}]
+  #v(0.3em)
 
-#v(0.4em)
+  {WORK}
 
-// Skills Section
-#text(size: 12pt, weight: "bold")[SKILLS]
-#line(length: 100%, stroke: 0.5pt)
-#v(0.15em)
-#text(size: 11pt)[{SKILLS}]
-
-#v(0.4em)
-
-// Work Experience Section
-#text(size: 12pt, weight: "bold")[WORK EXPERIENCE]
-#line(length: 100%, stroke: 0.5pt)
-#v(0.3em)
-
-//{WORK_SECTION}
-
-#v(0.4em)
-
-// Education Section
-#text(size: 12pt, weight: "bold")[EDUCATION]
-#line(length: 100%, stroke: 0.5pt)
-#v(0.3em)
-
-//{EDU_SECTION}
-
-#v(0.4em)
-
-// References Section
-#text(size: 12pt, weight: "bold")[REFERENCES]
-#line(length: 100%, stroke: 0.5pt)
-#v(0.25em)
-
-#grid(
-  columns: (1fr, 1fr),
-  gutter: 1em,
-  [
-    *Richard Mitchell* #v(0.8em, weak: true) Academic Tutor at University\
-    r.j.mitchell\@reading.ac.uk
-  ],
-  [
-    *Jonathan Yates* #v(0.8em, weak: true)Supervisor \@ Iron Mountain\
-    jonathan.yates\@ironmountain.com
-  ]
-)
 `;
 
 export const COVER_PARA = String.raw`

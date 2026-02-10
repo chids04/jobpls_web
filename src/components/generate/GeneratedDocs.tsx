@@ -14,19 +14,23 @@ export function GeneratedDocs({ cv, cover }: GeneratedDocsProps) {
       const base64data = base64String.split(",")[1] || base64String;
       // @ts-ignore - Baseline 2025 feature
       const bytes = Uint8Array.fromBase64(base64data.replace(/\s/g, ""));
-      return URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+      return URL.createObjectURL(
+        new Blob([bytes], { type: "application/pdf" }),
+      );
     } catch (e) {
       console.error("Base64 conversion failed", e);
       return "";
     }
   };
 
-  // If a prop is passed, use it (Blob URL). Otherwise, decode store (Base64).
-  const finalCv = cv || (pdfs.cv ? base64toUrl(pdfs.cv) : undefined);
-  const finalCover = cover || (pdfs.cover ? base64toUrl(pdfs.cover) : undefined);
-
-  // Show "Generated" if EITHER doc is fresh (passed via props)
   const isFresh = !!cv || !!cover;
+
+  const finalCv = isFresh ? cv : pdfs.cv ? base64toUrl(pdfs.cv) : undefined;
+  const finalCover = isFresh
+    ? cover
+    : pdfs.cover
+      ? base64toUrl(pdfs.cover)
+      : undefined;
 
   if (!finalCv && !finalCover) return null;
 

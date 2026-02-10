@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 import { ResumeTemplate, ResumeTemplateSchema } from "@/lib/schemas";
-import { CVTemplate, CurrentJobState } from "@/lib/types";
+import { CVTemplate, CV_Type, CurrentJobState } from "@/lib/types";
 
 const AppStateDataSchema = z.object({
   templates: z.record(z.string(), ResumeTemplateSchema),
@@ -22,7 +22,7 @@ type AppActions = {
   updateTemplate: (template: ResumeTemplate) => void;
   deleteTemplate: (id: string) => void;
   setSelectedTemplateId: (id: string | null) => void;
-  setSelectedCV: (cv: CVTemplate | null) => void;
+  setSelectedCV: (cv: CV_Type | null) => void;
   setJobDesc: (desc: string) => void;
   setSpecialInstr: (instr: string) => void;
   setCurrentJob: (job: CurrentJobState | null) => void;
@@ -32,29 +32,6 @@ type AppActions = {
 type AppState = AppStateData & AppActions;
 
 export type { ResumeTemplate };
-
-// type AppState = {
-//   templates: Record<string, ResumeTemplate>;
-//   selectedTemplateId: string | null;
-
-//   selectedCV: CVTemplate | null;
-
-//   jobDesc: string;
-//   specialInstr: string;
-
-//   currentJob: CurrentJobState | null;
-
-//   apiKey: string | null;
-
-//   addTemplate: (template: ResumeTemplate) => void;
-//   updateTemplate: (template: ResumeTemplate) => void;
-//   deleteTemplate: (id: string) => void;
-//   setSelectedTemplateId: (id: string | null) => void;
-//   setSelectedCV: (cv: CVTemplate | null) => void;
-//   setJobDesc: (desc: string) => void;
-//   setSpecialInstr: (instr: string) => void;
-//   setCurrentJob: (job: CurrentJobState | null) => void;
-// };
 
 type PdfStore = {
   cv: string | undefined;

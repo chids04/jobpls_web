@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTemplateStore } from "@/store/useStore";
-import { CVTemplate } from "@/lib/types";
+import { CV_Type, CVTemplate } from "@/lib/types";
 import {
   Carousel,
   CarouselContent,
@@ -18,10 +18,12 @@ const items: CVTemplate[] = [
   {
     name: "tech cv template",
     link: "tech_template.webp",
+    variant: CV_Type.TechCV,
   },
   {
     name: "general cv template",
     link: "general_template.webp",
+    variant: CV_Type.GeneralCV,
   },
 ];
 
@@ -38,7 +40,7 @@ export function CVTemplateSelection() {
 
     if (api && selectedCV) {
       const scrollPos = templates.findIndex(
-        (template) => template.name === selectedCV.name,
+        (template) => template.variant === selectedCV,
       );
 
       if (scrollPos > -1) {
@@ -47,11 +49,11 @@ export function CVTemplateSelection() {
     }
 
     // handle selection changes
-    const handleSelect = () => {
-      const currentIndex = api.selectedScrollSnap();
+    const handleSelect = (emblaApi: EmblaCarouselType) => {
+      const currentIndex = emblaApi.selectedScrollSnap();
       const selectedTemplate = templates[currentIndex];
       if (selectedTemplate) {
-        setSelectedCV(selectedTemplate);
+        setSelectedCV(selectedTemplate.variant);
       }
     };
 
@@ -66,24 +68,20 @@ export function CVTemplateSelection() {
     };
   }, [api]);
 
-  const onReinit = (
-    _emblaApi: EmblaCarouselType,
-    eventName: EmblaEventType,
-  ) => {
-    console.log(`event name ${eventName} triggered`);
-    if (selectedCV && api) {
+  const onReinit = (emblaApi: EmblaCarouselType) => {
+    if (selectedCV && emblaApi) {
       const scrollPos = templates.findIndex(
         (template) => template.name === selectedCV.name,
       );
 
       if (scrollPos > -1) {
-        api.scrollTo(scrollPos, true);
+        emblaApi.scrollTo(scrollPos, true);
       }
     }
   };
 
   const currentIndex = selectedCV
-    ? templates.findIndex((t) => t.name === selectedCV.name)
+    ? templates.findIndex((t) => t.variant === selectedCV)
     : 0;
 
   return (

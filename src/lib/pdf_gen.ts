@@ -14,6 +14,7 @@ import {
   SKILLS_TEMPLATE,
   TECH_TEMPLATE_1,
 } from "./templates";
+import { CV_Type } from "./types";
 
 // i will download these binaries  myself in prod, and will server it statiically
 $typst.setCompilerInitOptions({
@@ -57,14 +58,9 @@ const typstEscaper = (text: string): string => {
     .replaceAll("<", String.raw`\<`);
 };
 
-export enum CV_Type {
-  TechCV,
-  GeneralCV,
-}
-
 // can re use structs from rust end
 
-function escapeFields(template: GenerationOutput) {
+export function escapeFields(template: GenerationOutput) {
   template.full_name = template.full_name?.escapeWith(typstEscaper);
   template.email = template.email?.escapeWith(typstEscaper);
   template.residency = template.residency?.escapeWith(typstEscaper);
@@ -129,6 +125,11 @@ export const genCV = async (template: GenerationOutput, cv_type: CV_Type) => {
   escapeFields(template);
 
   // both templates have an education and work experience section
+  const mailToEmail = template.email?.replaceAll(String("\\"), "");
+  const emailSection = template.email ? EMAIL_TEMPLATE
+    .replace("{EMAIL}", template.email ?? "")
+    .replace("{EMAILTO}", mailToEmail ?? "") : "";
+
   const aboutMeSection = template.about_me
     ? typstHeader("ABOUT ME", template.about_me)
     : "";
@@ -158,11 +159,6 @@ export const genCV = async (template: GenerationOutput, cv_type: CV_Type) => {
         ? typstHeader("PROJECTS", proj_str)
         : "";
 
-      const mailToEmail = template.email?.replaceAll(String("\\"), "");
-
-      const emailSection = template.email ? EMAIL_TEMPLATE
-        .replace("{EMAIL}", template.email ?? "")
-        .replace("{EMAILTO}", mailToEmail ?? "") : "";
 
       const githubSection = template.github ? GITHUB_TEMPLATE
         .replaceAll("{GITHUB}",template.github) : "";
@@ -205,11 +201,12 @@ export const genCV = async (template: GenerationOutput, cv_type: CV_Type) => {
         "{FULL_NAME}",
         template.full_name ?? "",
       )
-        .replaceAll("{EMAIL}", template.email ?? "")
+        .replace("{EMAIL}", emailSection)
         .replaceAll("{RESIDENCY}", template.residency ?? "")
-        .replaceAll("{SUMMARY}", template.about_me ?? "")
-        .replaceAll("//{EDU_SECTION}", education_str)
-        .replaceAll("//{WORK_SECTION}", work_exp);
+        .replaceAll("{ABOUT_ME}", aboutMeSection)
+        .replaceAll("{EDUCATION}", educationSection)
+        .replaceAll("{WORK}", workSection);
+
   }
 
   const pdf = await $typst.pdf({ mainContent: cv_typst });
