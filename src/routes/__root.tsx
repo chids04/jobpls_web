@@ -89,7 +89,7 @@ function RootDocument() {
           </ul>
         </nav>
       </div>
-      <main className="container mx-auto px-10 mt-5 text-zinc-100">
+      <main className="container mx-auto px-10 mt-5 text-zinc-100 mb-5">
         <Outlet />
       </main>
     </div>

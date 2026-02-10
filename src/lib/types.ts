@@ -19,10 +19,16 @@ export interface CurrentJobState {
   pollUrl: string;
 }
 
+export enum CV_Type {
+  TechCV,
+  GeneralCV,
+}
+
 // cv template type
 export interface CVTemplate {
   name: string;
   link: string;
+  variant: CV_Type;
 }
 
 export enum ModalType {

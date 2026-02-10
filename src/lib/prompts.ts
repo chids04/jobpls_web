@@ -1,8 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { GenerationOutputSchema, Resume, ResumeDataSchema } from "./schemas";
-import { CV_Type } from "./pdf_gen";
 
 import * as z from "zod";
+import { CV_Type } from "./types";
 
 export const createPrompt = (
   resume: Resume,

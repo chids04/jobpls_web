@@ -1,93 +1,69 @@
 {
-  "full_name": "Chidubem Osuala",
-  "email": "chidubemosuala@yahoo.com",
-  "github": "https://github.com/chids04?tab=repositories",
-  "languages": [
-    "Rust",
-    "C++",
-    "JavaScript",
-    "TypeScript",
-    "Tailwind",
-    "Solidity",
-    "Python"
-  ],
-  "frameworks": ["React", "Qt", "Astro", "Hardhat", "Foundry", "Tauri"],
-  "developer_tools": [
-    "Git",
-    "Visual Studio Code",
-    "WSL2",
-    "CoPilot",
-    "CMake",
-    "Cargo",
-    "Python Venv"
-  ],
-  "residency": "Reading, UK",
-  "about_me": "A highly motivated First-Class Computer Science graduate with a strong passion for building efficient and user-focused web applications. Possesses hands-on experience with modern frontend technologies including JavaScript, TypeScript, HTML, CSS, and React, alongside practical knowledge of API integration and version control systems. Eager to apply problem-solving skills and a proactive attitude to contribute to dynamic web development teams, continuously learning and delivering high-quality user experiences.",
+  "full_name": "John Doe",
+  "email": "johndoe@example.com",
+  "github": "https://github.com/johndoe",
+  "languages": ["JavaScript", "TypeScript", "Python", "Java"],
+  "frameworks": ["React", "Next.js", "Node.js", "Express", "TailwindCSS"],
+  "developer_tools": ["Git", "Docker", "VS Code", "Postman", "Figma"],
+  "residency": "London, UK",
+  "about_me": "Passionate software engineer with 3+ years of experience building scalable web applications. Committed to writing clean, maintainable code and solving complex problems.",
   "education": [
     {
-      "start_date": "09/2022",
-      "end_date": "06/2025",
-      "title": "BSc Computer Science",
-      "grade": "1st Class",
-      "name": "University of Reading",
-      "location": "Reading, UK",
-      "modules": [
-        "Networking",
-        "Computer Architecture",
-        "Blockchain",
-        "AI and Machine Learning"
-      ]
-    },
-    {
-      "start_date": "09/2020",
+      "start_date": "09/2018",
       "end_date": "06/2022",
-      "title": "A-Levels",
-      "grade": "AAC",
-      "name": "Blue Coat Church of England School and Music",
-      "location": "Coventry, UK",
-      "modules": []
+      "title": "BSc Computer Science",
+      "grade": "First Class Honours",
+      "name": "University of Tech",
+      "location": "London, UK",
+      "modules": [
+        "Data Structures & Algorithms",
+        "Web Development",
+        "Database Systems",
+        "Artificial Intelligence"
+      ]
     }
   ],
   "projects": [
     {
-      "title": "Decentralised Milestone Tracker",
-      "b1": "Engineered a full-stack web application using React, Astro, and TypeScript for the front end, and a Solidity smart contract for the backend.",
-      "b2": "Utilised Firebase as a NoSQL database for project data and IPFS for decentralised storage of files whilst using middleware to protect all critical API routes.",
-      "languages": ["React", "Typescript", "Solidity"],
-      "url": "https://csgitlab.reading.ac.uk/cs3ip24/0xm"
+      "title": "E-commerce Platform",
+      "b1": "Developed a full-stack e-commerce application using Next.js and Stripe for payments.",
+      "b2": "Implemented user authentication, product search, and a responsive shopping cart.",
+      "languages": ["TypeScript", "Next.js", "Stripe API"],
+      "url": "https://github.com/johndoe/ecommerce"
     },
     {
-      "title": "Game Mod Loader",
-      "b1": "Developed a GUI application to streamline launching game modifications for the Dolphin emulator.",
-      "b2": "Has a Rust backend with a React and Typescript front end, using Tauri for cross-platform support.",
-      "languages": ["Rust", "React", "Typescript"],
-      "url": "https://github.com/chids04/ch3x_launcher"
+      "title": "Task Management App",
+      "b1": "Built a real-time task manager with drag-and-drop functionality using React and Firebase.",
+      "b2": "Collaborated with a team of 3 developers to deliver the MVP within 4 weeks.",
+      "languages": ["React", "Firebase", "TailwindCSS"],
+      "url": "https://github.com/johndoe/task-manager"
     }
   ],
   "work_exp": [
     {
-      "start_date": "02/2025",
-      "end_date": "05/2025",
-      "title": "Games Tester",
-      "company": "Huntress",
-      "b1": "Identified, documented and tracked software defects in games using a proprietary bug tracking system.",
-      "b2": "Collaborated effectively with colleagues to replicate issues and verify bug fixes."
+      "start_date": "07/2022",
+      "end_date": "Ongoing",
+      "title": "Software Engineer",
+      "company": "Tech Solutions Inc.",
+      "b1": "Leading the frontend development of the company's main client dashboard.",
+      "b2": "Improved site performance by 40% through code splitting and image optimization."
     },
     {
-      "start_date": "07/2024",
-      "end_date": "09/2024",
-      "title": "Warehouse Operative",
-      "company": "Iron Mountain",
-      "b1": "Carried out the daily intake and processing of hundreds of boxes containing confidential corporate records, maintaining a 100% accuracy rate in logging.",
-      "b2": "Adhered strictly to GDPR and data protection protocols, ensuring the secure handling and storage of sensitive material."
-    },
-    {
-      "start_date": "01/2024",
-      "end_date": "05/2024",
-      "title": "Traffic Steward",
-      "company": "CSP",
-      "b1": "Directed the safe and efficient flow of over 200 vehicles during peak event times, minimising congestion and delays.",
-      "b2": "Resolved traffic flow issues promptly by making quick, logical decisions to make sure motorists and pedestrians are safe."
+      "start_date": "06/2021",
+      "end_date": "Ongoing",
+      "title": "Junior Developer Intern",
+      "company": "StartUp Hub",
+      "b1": "Assisted in the migration of legacy code to a modern React architecture.",
+      "b2": "Participated in daily stand-ups and code reviews to ensure code quality."
     }
+  ],
+  "hiring_manager": "Sarah Smith",
+  "company_name": "Innovate Corp",
+  "salutation": "Dear Ms. Smith,",
+  "paragraphs": [
+    "I am writing to express my strong interest in the Software Engineer position at Innovate Corp. With my background in building scalable web applications and my passion for modern technologies, I am excited about the opportunity to contribute to your engineering team.",
+    "During my time at Tech Solutions Inc., I have honed my skills in React and TypeScript, delivering high-quality user interfaces that improved customer satisfaction. I am confident that my experience in performance optimization and collaborative development would be a valuable asset to your upcoming projects.",
+    "I am particularly drawn to Innovate Corp's commitment to pushing the boundaries of what is possible in the tech industry. I am eager to bring my problem-solving skills and dedication to your dynamic team.",
+    "Thank you for considering my application. I look forward to the possibility of discussing how my skills and experiences align with the goals of Innovate Corp."
   ]
 }

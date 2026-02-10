@@ -2,11 +2,17 @@ import { z } from "zod";
 
 export const MM_YYYY_REGEX = /^(0[1-9]|1[0-2])\/\d{4}$/;
 export const DateFormSchema = z.object({
-  start_date: z.string().regex(MM_YYYY_REGEX, "Must be in MM/YYYY format"),
-  end_date: z.union([
-    z.string().regex(MM_YYYY_REGEX, "Must be in MM/YYYY format"),
-    z.literal("Ongoing"),
-  ]),
+  start_date: z
+    .string()
+    .trim()
+    .regex(MM_YYYY_REGEX, "Must be in MM/YYYY format")
+    .catch(""),
+  end_date: z
+    .union([
+      z.string().regex(MM_YYYY_REGEX, "Must be in MM/YYYY format"),
+      z.literal("Ongoing"),
+    ])
+    .catch(""),
 });
 
 export const ProjectSchema = z.object({

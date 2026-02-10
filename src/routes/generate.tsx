@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { usePDFStore, useTemplateStore } from "@/store/useStore";
 import { GenerationOutput, GenerationOutputSchema } from "@/lib/schemas";
-import { CV_Type, genCV, genCover } from "@/lib/pdf_gen";
+import { escapeFields, genCV, genCover } from "@/lib/pdf_gen";
 
 import { GeneratedDocs } from "@/components/generate/GeneratedDocs";
 import { createPrompt, sendPrompt } from "@/lib/prompts";
@@ -17,6 +17,9 @@ import { MissingApi } from "@/components/ui/MissingApi";
 import { GenerateContentResponse } from "@google/genai";
 import { Status, StatusVariant } from "@/components/ui/Status";
 
+import { z } from "zod";
+import mockResume from "@/mock/resume.json?raw";
+import { CV_Type } from "@/lib/types";
 // generate page allows users to gen their cv and add a short pre-prompt
 
 export const Route = createFileRoute("/generate")({
@@ -37,6 +40,7 @@ function GeneratePage() {
   } = useTemplateStore();
 
   const { setCV, setCover } = usePDFStore();
+
   const [openMissingDialog, setMissingOpenDialog] = useState(false);
 
   const [localJobDesc, setLocalJobDesc] = useState("");
@@ -59,6 +63,17 @@ function GeneratePage() {
   const selectedTemplate = selectedTemplateId
     ? templates[selectedTemplateId]
     : null;
+
+  const getCVName = (type: CV_Type | null) => {
+    switch (type) {
+      case CV_Type.TechCV:
+        return "Technical CV";
+      case CV_Type.GeneralCV:
+        return "General CV";
+      default:
+        return "None";
+    }
+  };
 
   const geminiMutation = useMutation({
     mutationFn: ({
@@ -119,7 +134,7 @@ function GeneratePage() {
   };
 
   const missingItems: string[] = [];
-  if (!selectedCV) missingItems.push("CV template");
+  if (selectedCV === null) missingItems.push("CV template");
   if (!selectedTemplate) missingItems.push("About Me template");
   if (jobDesc.trim().length === 0) missingItems.push("Job description");
 
@@ -152,7 +167,7 @@ function GeneratePage() {
       let pdf;
 
       if (docType == "cv") {
-        pdf = await genCV(llmResponse, CV_Type.TechCV);
+        pdf = await genCV(llmResponse, selectedCV ?? CV_Type.TechCV);
       } else {
         pdf = await genCover(llmResponse);
       }
@@ -167,18 +182,18 @@ function GeneratePage() {
       const pdfUrl = URL.createObjectURL(pdfBlob);
 
       if (docType == "cv") {
-        setPdfUrls((prev) => ({
-          ...prev,
+        setPdfUrls({
           cvUrl: pdfUrl,
-        }));
+          coverUrl: undefined,
+        });
 
         const pdf_b64 = await blobToBase64(pdfBlob);
         setCV(pdf_b64);
       } else {
-        setPdfUrls((prev) => ({
-          ...prev,
+        setPdfUrls({
+          cvUrl: undefined,
           coverUrl: pdfUrl,
-        }));
+        });
 
         const pdf_b64 = await blobToBase64(pdfBlob);
         setCover(pdf_b64);
@@ -191,7 +206,7 @@ function GeneratePage() {
   };
 
   const handleGenerate = async () => {
-    if (!selectedCV || !selectedTemplate) {
+    if (selectedCV === null || !selectedTemplate) {
       setStatusMessage(`missing: ${missingItems.join(", ")}`, "error");
       return;
     }
@@ -213,7 +228,7 @@ function GeneratePage() {
       selectedTemplate.resume,
       localJobDesc,
       localSpecialInstr,
-      CV_Type.TechCV,
+      selectedCV,
     );
 
     geminiMutation.mutate({
@@ -282,55 +297,72 @@ function GeneratePage() {
           </div>
         </div>
 
-        {selectedCV && selectedTemplate ? (
-          <div className="flex flex-col items-center w-full gap-10">
-            <div className="flex flex-col w-full items-center border-b-accent border-2 p-2">
-              <h1 className="text-xl">
-                {"selected cv - "}
-                <span className="font-bold">{selectedCV.name}</span>
-              </h1>
-              <Link
-                className="hover:text-blue-400 text-blue-300 hover:underline"
-                to="/cv-template"
-              >
-                click to change
-              </Link>
-            </div>
-
-            <div className="flex flex-col items-center justify-center w-full  border-b-accent border-2 p-2">
-              <h1 className="text-xl text-center">
-                {"selected about me - "}
-                <span className="font-bold">
-                  {selectedTemplate.templateName}
-                </span>
-              </h1>
-              <Link
-                className="hover:text-blue-400 text-blue-300 hover:underline"
-                to="/about-me"
-              >
-                click to edit
-              </Link>
-            </div>
-
-            <Button
-              onClick={handleGenerate}
-              className="w-fit hover:text-black"
-              //disabled={!isReady || generateMutation.isPending}
-            >
-              generate
-            </Button>
+        <div className="flex flex-col items-center w-full gap-10">
+          <div className="flex flex-col items-center justify-center w-full border-b-accent border-2 p-2">
+            {selectedCV !== null ? (
+              <>
+                <h1 className="text-xl">
+                  {"selected cv - "}
+                  <span className="font-bold">{getCVName(selectedCV)}</span>
+                </h1>
+                <Link
+                  className="hover:text-blue-400 text-blue-300 hover:underline"
+                  to="/cv-template"
+                >
+                  click to change
+                </Link>
+              </>
+            ) : (
+              <div className="flex flex-col items-center bg-red-700/40 border-red-900 p-2 border-2 text-red-400 w-full">
+                <h3>no CV template selected</h3>
+                <Link
+                  className="text-blue-400 hover:underline"
+                  to="/cv-template"
+                >
+                  click to select a cv template
+                </Link>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="flex flex-col items-center bg-red-700/40 border-red-900 p-2 border-2 text-red-400">
-            <h3>no templates found</h3>
-            <Link className="text-blue-400 hover:underline" to="/about-me">
-              click to create an about me
-            </Link>
-            <Link className="text-blue-400 hover:underline" to="/cv-template">
-              click to select a cv template
-            </Link>
+
+          <div className="flex flex-col items-center justify-center w-full border-b-accent border-2 p-2">
+            {selectedTemplate ? (
+              <>
+                <h1 className="text-xl text-center">
+                  {"selected about me - "}
+                  <span className="font-bold">
+                    {selectedTemplate.templateName}
+                  </span>
+                </h1>
+                <Link
+                  className="hover:text-blue-400 text-blue-300 hover:underline"
+                  to="/about-me"
+                >
+                  click to edit
+                </Link>
+              </>
+            ) : (
+              <div className="flex flex-col items-center bg-red-700/40 border-red-900 p-2 border-2 text-red-400 w-full">
+                <h3>no About Me template found</h3>
+                <Link className="text-blue-400 hover:underline" to="/about-me">
+                  click to create an about me
+                </Link>
+              </div>
+            )}
           </div>
-        )}
+
+          <Button
+            onClick={handleGenerate}
+            className="w-fit hover:text-black"
+            disabled={
+              selectedCV === null ||
+              !selectedTemplate ||
+              geminiMutation.isPending
+            }
+          >
+            generate
+          </Button>
+        </div>
       </div>
 
       <Separator />
