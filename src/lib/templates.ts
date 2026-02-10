@@ -1,3 +1,21 @@
+export const HEADER_TEMPLATE = String.raw`
+  #text(size: 12pt, weight: "bold")[{HEADER}]
+  #line(length: 100%, stroke: 0.5pt)
+  #v(0.3em)
+  {CONTENT}
+`;
+
+export const SKILLS_TEMPLATE = String.raw`
+#text(size: 9pt, weight: "bold")[{TITLE}] #h(0em) #text(size: 9pt)[{CONTENT}]
+  `;
+export const EMAIL_TEMPLATE = String.raw`
+Email: #link("mailto:{EMAILTO}")[{EMAIL}]
+`;
+
+export const GITHUB_TEMPLATE = String.raw`
+GitHub: #link("{GITHUB}")[{GITHUB}]
+`;
+
 export const EDU_TEMPLATE = String.raw`
 #grid(
   columns: (1fr, auto),
@@ -7,8 +25,8 @@ export const EDU_TEMPLATE = String.raw`
   columns: (1fr, auto),
   [_{EDU_NAME}_], [_{EDU_LOCATION}_]
 )
-#text(size: 8pt, weight: "bold")[Notable Modules:]
-#text(size: 8pt)[{EDU_MODULES}]
+#text(size: 9pt, weight: "bold")[Notable Modules:]
+#text(size: 9pt)[{EDU_MODULES}]
 #v(0.3em);
 `;
 
@@ -39,70 +57,44 @@ export const PARAGRAPH_TEMPLATE = String.raw`
 `;
 
 export const TECH_TEMPLATE_1 = String.raw`
-// CV Template - Typst Skeleton
+  #set page(
+    paper: "a4",
+    margin: (x: 1.5cm, y: 1.5cm),
+  )
 
-#set page(
-  paper: "a4",
-  margin: (x: 1.5cm, y: 1.5cm),
-)
+  #set text(
+    font: "New Computer Modern",
+    size: 10pt,
+  )
 
-#set text(
-  font: "New Computer Modern",
-  size: 10pt,
-)
+  #set par(justify: true)
 
-#set par(justify: true)
+  #align(center)[
+    #text(size: 14pt, weight: "bold")[{FULL_NAME}]
 
-// Header with name and contact info
-#align(center)[
-  #text(size: 14pt, weight: "bold")[{FULL_NAME}]
-
-  #text(size: 10pt)[
-    Email: #link("mailto:{EMAIL}")[{EMAIL}] #h(1em) GitHub: #link("{GITHUB}")[{GITHUB}] #h(1em) {RESIDENCY}
+    {EMAIL} #h(1em) {GITHUB} #h(1em) {RESIDENCY}
   ]
-]
 
-#v(0.5em)
+  #v(0.5em)
 
-// Professional Summary Section
-#text(size: 12pt, weight: "bold")[ABOUT ME]
-#line(length: 100%, stroke: 0.5pt)
-#v(0.3em)
+  {ABOUT_ME}
 
-#text(size: 10pt)[{ABOUT_ME}]
+  #v(0.3em)
 
+  {SKILLS}
 
-#v(0.5em)
+  #v(0.3em)
 
-// Technical Skills Section
-#text(size: 12pt, weight: "bold")[TECHNICAL SKILLS]
-#line(length: 100%, stroke: 0.5pt)
-#v(0.3em)
+  {EDUCATION}
 
-#text(size: 10pt, weight: "bold")[{LANGUAGES}]
+  #v(0.3em)
 
-#v(0.5em)
+  {PROJECTS}
 
-// Education Section
-#text(size: 12pt, weight: "bold")[EDUCATION]
-#line(length: 100%, stroke: 0.5pt)
-#v(0.3em)
+  #v(0.3em)
 
-//{EDU_SECTION}
+  {WORK}
 
-// Projects Section
-#text(size: 12pt, weight: "bold")[PROJECTS]
-#line(length: 100%, stroke: 0.5pt)
-#v(0.3em)
-
-//{PROJ_SECTION}
-
-// Work Experience Section
-#text(size: 12pt, weight: "bold")[WORK EXPERIENCE]
-#line(length: 100%, stroke: 0.5pt)
-#v(0.3em)
-
-//{WORK_SECTION}
 `;
 
 export const GENERAL_TEMPLATE_1 = String.raw`

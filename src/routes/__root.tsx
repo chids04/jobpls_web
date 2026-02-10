@@ -52,7 +52,7 @@ export const Route = createRootRoute({
 
 function RootDocument() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen mb-10 flex-col">
       <Link to={"/account"}>
         <CircleUser className="fixed top-0 right-0 mt-4 mr-4 w-10 h-10 z-50 text-zinc-100" />
       </Link>

@@ -17,6 +17,9 @@ import { MissingApi } from "@/components/ui/MissingApi";
 import { GenerateContentResponse } from "@google/genai";
 import { Status, StatusVariant } from "@/components/ui/Status";
 
+import { z } from "zod";
+import mockResume from "@/mock/resume.json?raw";
+import { mock } from "node:test";
 // generate page allows users to gen their cv and add a short pre-prompt
 
 export const Route = createFileRoute("/generate")({
@@ -191,6 +194,17 @@ function GeneratePage() {
   };
 
   const handleGenerate = async () => {
+    const resume = GenerationOutputSchema.safeParse(JSON.parse(mockResume));
+
+    if (resume.error) {
+      z.treeifyError(resume.error);
+      console.log(z.treeifyError(resume.error));
+    } else {
+      await createPDF(resume.data!, "cv");
+    }
+
+    return;
+
     if (!selectedCV || !selectedTemplate) {
       setStatusMessage(`missing: ${missingItems.join(", ")}`, "error");
       return;
