@@ -54,7 +54,6 @@ export function ImportDialog({
 
     onSuccess: (response) => {
       if (response.text == undefined) {
-        console.log(response);
         setStatus({
           msg: "failed to import document, please try again later",
           variant: "error",
@@ -68,7 +67,6 @@ export function ImportDialog({
       );
 
       if (generatedResume.error) {
-        console.log(generatedResume.error);
         setStatus({
           msg: "failed to import document, please try again later",
           variant: "error",
@@ -94,7 +92,6 @@ export function ImportDialog({
           variant: "error",
         });
       } else {
-        console.log(error);
         setStatus({
           msg: "server error: please try again later",
           variant: "error",

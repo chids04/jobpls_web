@@ -81,7 +81,6 @@ export function TemplateForm({
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.log(error.issues);
       }
     }
   };

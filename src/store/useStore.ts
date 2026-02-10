@@ -13,6 +13,10 @@ const AppStateDataSchema = z.object({
   specialInstr: z.string().catch(""),
   currentJob: z.any().nullable(),
   apiKey: z.string().nullable(),
+  docGenOptions: z.object({
+    hasCV: z.boolean(),
+    hasCover: z.boolean(),
+  }),
 });
 
 type AppStateData = z.infer<typeof AppStateDataSchema>;
@@ -27,6 +31,13 @@ type AppActions = {
   setSpecialInstr: (instr: string) => void;
   setCurrentJob: (job: CurrentJobState | null) => void;
   setApiKey: (key: string) => void;
+  setDocGenOptions: ({
+    hasCV,
+    hasCover,
+  }: {
+    hasCV: boolean;
+    hasCover: boolean;
+  }) => void;
 };
 
 type AppState = AppStateData & AppActions;
@@ -76,6 +87,10 @@ export const useTemplateStore = create<AppState>()(
       specialInstr: "",
       currentJob: null,
       apiKey: null,
+      docGenOptions: {
+        hasCV: true,
+        hasCover: true,
+      },
 
       addTemplate: (template) =>
         set((state) => ({
@@ -96,6 +111,7 @@ export const useTemplateStore = create<AppState>()(
       setSpecialInstr: (instr) => set({ specialInstr: instr }),
       setCurrentJob: (job) => set({ currentJob: job }),
       setApiKey: (key) => set({ apiKey: key }),
+      setDocGenOptions: (options) => set({ docGenOptions: options }),
     }),
     {
       name: "jobpls-storage",
@@ -112,7 +128,6 @@ export const useTemplateStore = create<AppState>()(
             : undefined,
       })),
       onRehydrateStorage: (_state) => {
-        console.log("hydration starting");
         return (rehydratedState, error) => {
           if (error) {
             console.error("hydration failed", error);
@@ -124,7 +139,6 @@ export const useTemplateStore = create<AppState>()(
                 result.error,
               );
             } else {
-              console.log("succesfully restored and validated state");
             }
           }
         };
