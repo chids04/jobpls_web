@@ -82,7 +82,7 @@ export const useTemplateStore = create<AppState>()(
     (set) => ({
       templates: {},
       selectedTemplateId: null,
-      selectedCV: null,
+      selectedCV: CV_Type.TechCV,
       jobDesc: "",
       specialInstr: "",
       currentJob: null,

@@ -16,12 +16,12 @@ import { ImageWithPreview } from "@/components/ui/image-preview";
 
 const items: CVTemplate[] = [
   {
-    name: "tech cv template",
+    name: "technical cv",
     link: "tech_template.webp",
     variant: CV_Type.TechCV,
   },
   {
-    name: "general cv template",
+    name: "general cv",
     link: "general_template.webp",
     variant: CV_Type.GeneralCV,
   },
@@ -85,7 +85,7 @@ export function CVTemplateSelection() {
     : 0;
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center px-10 gap-4">
       <h2 className="text-xl font-semibold">choose cv template</h2>
       <div className="mx-auto max-w-xs">
         <Carousel setApi={setApi} className="w-full max-w-xs">

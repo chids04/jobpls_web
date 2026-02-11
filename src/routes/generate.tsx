@@ -307,7 +307,7 @@ function GeneratePage() {
 
         <div className="flex flex-col items-center w-full gap-10">
           <div className="flex flex-col items-center justify-center w-full border-b-accent border-2 p-2">
-            {selectedCV !== null ? (
+            {selectedCV !== null || selectedCV != undefined ? (
               <>
                 <h1 className="text-xl">
                   {"selected cv - "}
