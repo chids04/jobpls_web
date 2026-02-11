@@ -4,9 +4,10 @@ import { Document } from "./Document";
 interface GeneratedDocsProps {
   cv?: string;
   cover?: string;
+  documentRef: React.Ref<HTMLDivElement>;
 }
 
-export function GeneratedDocs({ cv, cover }: GeneratedDocsProps) {
+export function GeneratedDocs({ cv, cover, documentRef }: GeneratedDocsProps) {
   const pdfs = usePDFStore();
 
   const base64toUrl = (base64String: string) => {
@@ -35,7 +36,10 @@ export function GeneratedDocs({ cv, cover }: GeneratedDocsProps) {
   if (!finalCv && !finalCover) return null;
 
   return (
-    <div className="flex flex-col items-center gap-4 p-6 bg-green-700/20 border-green-900 border-2 rounded-lg">
+    <div
+      ref={documentRef}
+      className="flex flex-col items-center gap-4 p-6 bg-green-700/20 border-green-900 border-2 rounded-lg"
+    >
       <h3 className="text-lg font-semibold text-green-400 text-center">
         {isFresh ? "generated documents" : "previously generated documents"}
       </h3>
