@@ -74,7 +74,7 @@ function RootDocument() {
 
       <div className="w-full px-3 sm:px-6 md:px-8 sticky top-10 z-10">
         <nav className="w-full rounded-xl bg-zinc-800/80 shadow-lg ring-1 ring-black/10 backdrop-blur px-4 sm:px-6 py-2">
-          <ul className="flex flex-wrap items-center justify-center gap-x-1 text-sm sm:text-base font-medium">
+          <ul className="flex flex-wrap items-center justify-center gap-x-1 gap-y-3 text-sm sm:text-base font-medium">
             {links.map((link, index) => (
               <li key={index}>
                 <Link
