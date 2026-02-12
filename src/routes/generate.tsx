@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@tanstack/react-router";
@@ -61,6 +61,8 @@ function GeneratePage() {
     msg: "",
   });
 
+  const documentOutputRef = useRef<HTMLDivElement>(null);
+
   const selectedTemplate = selectedTemplateId
     ? templates[selectedTemplateId]
     : null;
@@ -98,6 +100,7 @@ function GeneratePage() {
     },
 
     onError: (error) => {
+      console.log(error);
       setStatusMessage("Failed to generate documents", "error");
     },
   });
@@ -126,12 +129,19 @@ function GeneratePage() {
           await createPDF(resume.data, "cover");
         }
         setStatusMessage("Documents ready!", "success");
+        scrollToOutput();
       }
     } else {
       setStatusMessage(
         "Failed to extract LLM response, please try again later",
         "error",
       );
+    }
+  };
+
+  const scrollToOutput = () => {
+    if (documentOutputRef.current) {
+      documentOutputRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -307,7 +317,7 @@ function GeneratePage() {
 
         <div className="flex flex-col items-center w-full gap-10">
           <div className="flex flex-col items-center justify-center w-full border-b-accent border-2 p-2">
-            {selectedCV !== null ? (
+            {selectedCV !== null || selectedCV != undefined ? (
               <>
                 <h1 className="text-xl">
                   {"selected cv - "}
@@ -379,7 +389,11 @@ function GeneratePage() {
 
       {status.msg && <Status variant={status.variant} message={status.msg} />}
 
-      <GeneratedDocs cv={pdfUrls.cvUrl} cover={pdfUrls.coverUrl} />
+      <GeneratedDocs
+        cv={pdfUrls.cvUrl}
+        cover={pdfUrls.coverUrl}
+        documentRef={documentOutputRef}
+      />
     </div>
   );
 }

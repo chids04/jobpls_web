@@ -131,16 +131,23 @@ Rules: Factual, specific, and easy to read. One A4 page max per document.
 `;
 
 const TECH_CV_PROMPT = String.raw`
-Generate a JSON object for a CV and Cover Letter using BASE_CV_DATA and JOB_DESCRIPTION. Ensure instructions in EXTRA_NOTES are followed.
+Generate a JSON object for a CV and Cover Letter using BASE_CV_DATA and JOB_DESCRIPTION.
+Ensure instructions in EXTRA_NOTES are followed before all other instructions below.
+
+Use the JOB_DESCRIPTION to ensure that the object properties in the generated JSON is relevant for the job.
+Ensure the 'about me' json property is closely relevant for the role and links the CV with the job description.
+Do not hallucinate any data but make achievements sound better than they are. You should sound passionate about the role but dont overuse technical jargon. The returned data must read like a human wrote it and not an AI with perfect British Engligh.
+Ensure that the data returned will go well in a CV and will stand out amongst others.
+
 
 ## CV Guidelines
 - **Selection**: Pick 1-3 most relevant education entries, 1-3 projects, and 1-3 work experiences. Sort by most recent/relevant first.
 - **Modules**: For education, select max 5 most relevant modules.
-- **Bullets**: Start with strong verbs (Built, Implemented, Designed). Max 2 bullets per entry (≤ 20 words each).
+- **Bullets**: Start with strong verbs (Built, Implemented, Designed). Max 2 bullets per entry (≤ 20 words each). Mention the role being applied for in both the CV and cover letter
 - **Quantify**: Mention concrete tools and results (e.g., "Improved load time by 40%").
 
 ## Cover Letter Guidelines
-- **Authenticity**: Maintain a formal yet human tone.
+- **Authenticity**: Maintain a formal yet human tone. Sound like a confident graduate
 - **Company-Specific**: Demonstrate understanding of the company's work or values.
 - **Conciseness**: Max 4 paragraphs. Must fit on one A4 page.
 

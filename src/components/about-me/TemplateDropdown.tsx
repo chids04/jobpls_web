@@ -53,7 +53,7 @@ export function TemplateDropdown({
     <div className="flex flex-col items-center gap-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="min-w-[200px] justify-between">
+          <Button variant="outline" className="min-w-[200px]">
             {selectedTemplate?.templateName || "select a template"}
           </Button>
         </DropdownMenuTrigger>

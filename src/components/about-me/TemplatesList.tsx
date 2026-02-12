@@ -65,19 +65,19 @@ export function TemplatesList({
   return (
     <div className="flex flex-col gap-6">
       {/* header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row gap-2 items-center justify-between">
         <h1 className="text-xl font-semibold">Resume Templates</h1>
 
         <div className="flex gap-2">
           <Button type="button" onClick={onCreate} className="text-black">
-            Create new template
+            create new
           </Button>
           <Button
             type="button"
             onClick={() => setOpenImportDialog(true)}
             className="text-black"
           >
-            Import
+            import from file
           </Button>
 
           <ImportDialog

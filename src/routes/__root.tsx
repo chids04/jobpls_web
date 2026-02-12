@@ -72,15 +72,17 @@ function RootDocument() {
 
       {/*nav bar*/}
 
-      <div className="w-full px-3 sm:px-6 md:px-8">
+      <div className="w-full px-3 sm:px-6 md:px-8 sticky top-10 z-10">
         <nav className="w-full rounded-xl bg-zinc-800/80 shadow-lg ring-1 ring-black/10 backdrop-blur px-4 sm:px-6 py-2">
-          <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm sm:text-base">
+          <ul className="flex flex-wrap items-center justify-center gap-x-1 text-sm sm:text-base font-medium">
             {links.map((link, index) => (
               <li key={index}>
                 <Link
                   to={link.link}
-                  className="hover:text-white text-zinc-300 transition-colors"
-                  activeProps={{ className: "font-bold text-xl" }}
+                  className="px-4 py-2 hover:text-white text-zinc-400 transition-all duration-200 rounded-lg"
+                  activeProps={{
+                    className: "text-white bg-zinc-700/50",
+                  }}
                 >
                   {link.name}
                 </Link>
