@@ -122,6 +122,17 @@ export function escapeFields(template: GenerationOutput) {
 
 // prettier-ignore
 export const genCV = async (template: GenerationOutput, cv_type: CV_Type) => {
+  // need to save links and not escape them
+  // currently only projects contain links and the github contain links
+
+
+  const proj_str =
+    template.projects?.map((p) => typstProject(p)).join(PROJECT_SPACING) ??
+    "";
+
+  const githubSection = template.github ? GITHUB_TEMPLATE
+    .replaceAll("{GITHUB}",template.github) : "";
+
   escapeFields(template);
 
   // both templates have an education and work experience section
@@ -151,19 +162,11 @@ export const genCV = async (template: GenerationOutput, cv_type: CV_Type) => {
 
   switch (cv_type) {
     case CV_Type.TechCV:
-      const proj_str =
-        template.projects?.map((p) => typstProject(p)).join(PROJECT_SPACING) ??
-        "";
 
       const projSection = template.projects
         ? typstHeader("PROJECTS", proj_str)
         : "";
 
-
-      const githubSection = template.github ? GITHUB_TEMPLATE
-        .replaceAll("{GITHUB}",template.github) : "";
-
-      //
       const skills: string[] = [];
 
       template.languages &&
@@ -273,11 +276,18 @@ const typstEducation = (e: Education) => {
 };
 
 const typstProject = (p: Project) => {
-  return PROJECT_TEMPLATE.replace("{P_N}", p.title ?? "")
-    .replace("{P_TECH}", p.languages?.join(", ") ?? "")
+  return PROJECT_TEMPLATE.replace(
+    "{P_N}",
+    p.title?.escapeWith(typstEscaper) ?? "",
+  )
+    .replace(
+      "{P_TECH}",
+      p.languages?.map((lang) => lang.escapeWith(typstEscaper)).join(", ") ??
+        "",
+    )
     .replaceAll("{P_URL}", p.url ?? "")
-    .replace("{P_B1}", p.b1 ?? "")
-    .replace("{P_B2}", p.b2 ?? "");
+    .replace("{P_B1}", p.b1?.escapeWith(typstEscaper) ?? "")
+    .replace("{P_B2}", p.b2?.escapeWith(typstEscaper) ?? "");
 };
 
 const typstExperience = (w: Experience) => {
