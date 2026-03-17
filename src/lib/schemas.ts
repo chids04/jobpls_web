@@ -40,7 +40,7 @@ export const ExperienceSchema = DateFormSchema.extend({
 
 export const ResumeDataSchema = z.object({
   full_name: z.string().optional(),
-  email: z.email().optional(),
+  email: z.string().optional(),
   github: z.string().optional(),
   languages: z.array(z.string()).optional(),
   frameworks: z.array(z.string()).optional(),
