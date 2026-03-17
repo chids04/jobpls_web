@@ -281,18 +281,30 @@ function GeneratePage() {
               <label className="text-sm text-slate-400">
                 extra instructions to follow during generation
               </label>
-              {hasUnsavedChanges && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={saveToStore}
-                  className="
+              <div className="flex gap-2">
+                {localSpecialInstr && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setLocalSpecialInstr("")}
+                    className="text-xs text-slate-500 hover:text-red-400 h-7 px-2"
+                  >
+                    Clear
+                  </Button>
+                )}
+                {hasUnsavedChanges && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={saveToStore}
+                    className="
                   text-xs
-                  text-yellow-400 border-yellow-500 hover:bg-yellow-500 hover:text-black"
-                >
-                  💾 Save Changes
-                </Button>
-              )}
+                  text-yellow-400 border-yellow-500 hover:bg-yellow-500 hover:text-black h-7"
+                  >
+                    💾 Save Changes
+                  </Button>
+                )}
+              </div>
             </div>
             <Textarea
               className={`max-w-md min-h-28 max-h-32 ${hasUnsavedChanges ? "border-yellow-500" : ""}`}
@@ -305,6 +317,16 @@ function GeneratePage() {
           <div className="flex flex-col gap-2 w-full max-w-md">
             <div className="flex items-center justify-between">
               <label className="text-sm text-slate-400">job description</label>
+              {localJobDesc && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLocalJobDesc("")}
+                  className="text-xs text-slate-500 hover:text-red-400 h-7 px-2"
+                >
+                  Clear
+                </Button>
+              )}
             </div>
             <Textarea
               className="max-w-md min-h-48 max-h-64"

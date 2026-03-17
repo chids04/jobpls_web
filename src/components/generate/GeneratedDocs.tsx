@@ -12,11 +12,16 @@ export function GeneratedDocs({ cv, cover, documentRef }: GeneratedDocsProps) {
 
   const base64toUrl = (base64String: string) => {
     try {
-      const base64data = base64String.split(",")[1] || base64String;
-      // @ts-ignore - Baseline 2025 feature
-      const bytes = Uint8Array.fromBase64(base64data.replace(/\s/g, ""));
+      // the base64 string from FileReader.readAsDataURL already includes the data:application/pdf;base64, prefix
+      // we can just use fetch to convert it to a blob
+      const byteCharacters = atob(base64String.split(",")[1] || base64String);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
       return URL.createObjectURL(
-        new Blob([bytes], { type: "application/pdf" }),
+        new Blob([byteArray], { type: "application/pdf" }),
       );
     } catch (e) {
       console.error("Base64 conversion failed", e);

@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { DUPLICATE_SUFFIX_BASE } from "@/lib/types";
 import { ResumeTemplate } from "@/store/useStore";
 import { ImportDialog } from "./ImportDialog";
-import { Resume } from "@/lib/schemas";
-import { useState } from "react";
+import { Resume, ResumeDataSchema, ResumeTemplateSchema } from "@/lib/schemas";
+import { useRef, useState } from "react";
 
 /* props for the templates list component */
 export type TemplatesListProps = {
@@ -61,6 +61,48 @@ export function TemplatesList({
   onDuplicate,
 }: TemplatesListProps) {
   const [openImportDialog, setOpenImportDialog] = useState(false);
+  const jsonInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = (template: ResumeTemplate) => {
+    const dataStr = JSON.stringify(template, null, 2);
+    const dataUri =
+      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+    const exportFileDefaultName = `${template.templateName.replace(/\s+/g, "_")}_template.json`;
+
+    const linkElement = document.createElement("a");
+    linkElement.setAttribute("href", dataUri);
+    linkElement.setAttribute("download", exportFileDefaultName);
+    linkElement.click();
+  };
+
+  const handleJsonImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = JSON.parse(e.target?.result as string);
+        // try parsing as full template first, then as just resume data
+        const templateResult = ResumeTemplateSchema.safeParse(json);
+        if (templateResult.success) {
+          onImport(templateResult.data.resume);
+        } else {
+          const resumeResult = ResumeDataSchema.safeParse(json);
+          if (resumeResult.success) {
+            onImport(resumeResult.data);
+          } else {
+            alert("Invalid JSON format for resume template");
+          }
+        }
+      } catch (err) {
+        alert("Error parsing JSON file");
+      }
+      // reset input
+      if (jsonInputRef.current) jsonInputRef.current.value = "";
+    };
+    reader.readAsText(file);
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -79,6 +121,21 @@ export function TemplatesList({
           >
             import from file
           </Button>
+
+          <Button
+            type="button"
+            onClick={() => jsonInputRef.current?.click()}
+            className="text-black"
+          >
+            import JSON
+          </Button>
+          <input
+            type="file"
+            ref={jsonInputRef}
+            onChange={handleJsonImport}
+            accept=".json"
+            className="hidden"
+          />
 
           <ImportDialog
             onTemplateCreated={onImport}
@@ -122,6 +179,14 @@ export function TemplatesList({
                     }}
                   >
                     Duplicate
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleExport(tpl)}
+                  >
+                    Export
                   </Button>
                   <Button
                     type="button"
