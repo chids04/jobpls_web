@@ -39,7 +39,10 @@ function GeneratePage() {
     setJobDesc,
     setSpecialInstr,
     docGenOptions,
+    userTier,
   } = useTemplateStore();
+
+  const [requestedModel, setRequestedModel] = useState("gemini-2.5-flash");
 
   const { setCV, setCover } = usePDFStore();
 
@@ -79,7 +82,7 @@ function GeneratePage() {
   };
 
   const geminiMutation = useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       prompt,
       systemInstruction,
       apiKey,
@@ -88,7 +91,20 @@ function GeneratePage() {
       systemInstruction: string;
       apiKey: string;
     }) => {
-      return sendPrompt(apiKey ?? "", prompt, systemInstruction);
+      if (userTier === "pro") {
+        const response = await axios.post("/api/generate", {
+          prompt,
+          systemInstruction,
+          requestedModel,
+        }, {
+          headers: {
+            "x-user-id": "mock_user_123", // swap with clerk id later
+          }
+        });
+        return response.data;
+      } else {
+        return sendPrompt(apiKey ?? "", prompt, systemInstruction);
+      }
     },
 
     onMutate: () => {
@@ -105,15 +121,18 @@ function GeneratePage() {
     },
   });
 
-  const handleLLMResponse = async (response: GenerateContentResponse) => {
+  const handleLLMResponse = async (response: any) => {
     setStatusMessage(
       "Generated documents, creating PDF for download....",
       "loading",
     );
 
-    if (response.text) {
+    // unify genai and worker response formats
+    const responseText = response.text || (response.candidates?.[0]?.content?.parts?.[0]?.text);
+
+    if (responseText) {
       const resume = GenerationOutputSchema.safeParse(
-        JSON.parse(response.text),
+        JSON.parse(responseText),
       );
 
       if (!resume.success) {
@@ -370,6 +389,23 @@ function GeneratePage() {
           </div>
 
           <DocGenOptions />
+
+          {userTier === "pro" && (
+            <div className="flex flex-col items-center gap-2 border-2 p-2 w-full">
+              <label className="text-sm font-bold">Select Model (Pro Only)</label>
+              <select 
+                className="bg-zinc-800 border-2 p-1 rounded w-full"
+                value={requestedModel}
+                onChange={(e) => setRequestedModel(e.target.value)}
+              >
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Fast)</option>
+                <option value="gemini-2.0-pro">Gemini 2.0 Pro (Balanced)</option>
+                <option value="gemini-2.0-ultra">Gemini 2.0 Ultra (Max Intelligence)</option>
+                <option value="gemini-3.0-flash">Gemini 3.0 Flash (Next-Gen Fast)</option>
+                <option value="gemini-3.0-pro">Gemini 3.0 Pro (Next-Gen Balanced)</option>
+              </select>
+            </div>
+          )}
 
           <Button
             onClick={handleGenerate}

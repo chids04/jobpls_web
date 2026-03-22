@@ -13,6 +13,7 @@ const AppStateDataSchema = z.object({
   specialInstr: z.string().catch(""),
   currentJob: z.any().nullable(),
   apiKey: z.string().nullable(),
+  userTier: z.enum(["free", "pro"]).default("free"),
   docGenOptions: z.object({
     hasCV: z.boolean(),
     hasCover: z.boolean(),
@@ -31,6 +32,7 @@ type AppActions = {
   setSpecialInstr: (instr: string) => void;
   setCurrentJob: (job: CurrentJobState | null) => void;
   setApiKey: (key: string) => void;
+  setUserTier: (tier: "free" | "pro") => void;
   setDocGenOptions: ({
     hasCV,
     hasCover,
@@ -87,6 +89,7 @@ export const useTemplateStore = create<AppState>()(
       specialInstr: "",
       currentJob: null,
       apiKey: null,
+      userTier: "free",
       docGenOptions: {
         hasCV: true,
         hasCover: true,
@@ -111,6 +114,7 @@ export const useTemplateStore = create<AppState>()(
       setSpecialInstr: (instr) => set({ specialInstr: instr }),
       setCurrentJob: (job) => set({ currentJob: job }),
       setApiKey: (key) => set({ apiKey: key }),
+      setUserTier: (tier) => set({ userTier: tier }),
       setDocGenOptions: (options) => set({ docGenOptions: options }),
     }),
     {

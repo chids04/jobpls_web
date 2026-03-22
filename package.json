@@ -9,6 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.61.4",
     "@google/genai": "^1.38.0",
     "@myriaddreamin/typst-ts-web-compiler": "^0.7.0-rc2",
     "@myriaddreamin/typst.ts": "^0.7.0-rc2",

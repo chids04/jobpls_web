@@ -10,3 +10,7 @@ count.txt
 .output
 .vinxi
 todos.json
+
+# cloudflare prod stuff
+.dev.vars
+/docs

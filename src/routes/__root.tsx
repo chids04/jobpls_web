@@ -1,4 +1,5 @@
 import { Link, createRootRoute, Outlet } from "@tanstack/react-router";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 
 const links = [
   {
@@ -53,9 +54,21 @@ export const Route = createRootRoute({
 function RootDocument() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Link to={"/account"}>
-        <CircleUser className="fixed top-0 right-0 mt-4 mr-4 w-10 h-10 z-50 text-zinc-100" />
-      </Link>
+      <div className="fixed top-0 right-0 mt-4 mr-4 z-50 flex items-center gap-4">
+        <SignedOut>
+          <SignInButton mode="modal">
+            <button className="bg-zinc-100 text-zinc-900 px-4 py-2 rounded-lg font-medium hover:bg-zinc-300 transition-colors">
+              Sign In
+            </button>
+          </SignInButton>
+        </SignedOut>
+        <SignedIn>
+          <UserButton afterSignOutUrl="/" />
+        </SignedIn>
+        <Link to={"/account"}>
+          <CircleUser className="w-10 h-10 text-zinc-100" />
+        </Link>
+      </div>
 
       <header className="w-full pt-8 pb-4 flex justify-center">
         <div className="relative inline-block">
