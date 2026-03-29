@@ -1,12 +1,7 @@
-// functions/api/webhook.ts
-// handles incoming stripe webhook events.
-
-export async function onRequestPost(context: any) {
-  const { request, env } = context;
-
+export async function onRequestPost(request: any, env: any) {
   // in a real app, you MUST verify the stripe signature here using the webhook secret.
   // for now, we will focus on the logic.
-  
+
   try {
     const event: any = await request.json();
 
@@ -21,17 +16,17 @@ export async function onRequestPost(context: any) {
       }
 
       // update the user record to 'pro' tier in D1.
+      // note: BetterAuth user table is named 'user'
       await env.DB.prepare(
-        "update users set tier = 'pro', stripe_customer_id = ? where id = ?"
+        "update user set tier = 'pro', stripe_customer_id = ? where id = ?",
       )
-      .bind(stripeCustomerId, userId)
-      .run();
+        .bind(stripeCustomerId, userId)
+        .run();
 
       return new Response(JSON.stringify({ success: true }), { status: 200 });
     }
 
     return new Response(JSON.stringify({ received: true }), { status: 200 });
-
   } catch (e: any) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }

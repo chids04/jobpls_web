@@ -1,31 +1,29 @@
 import { GoogleGenAI } from "@google/genai";
-import { GenerationOutputSchema } from "@/lib/schemas";
+import { GenerationOutputSchema } from "../../src/lib/schemas";
 import { z } from "zod";
+import { createAuth } from "@/lib/auth";
 
 export async function onRequestPost(context: any) {
   const { request, env } = context;
+  const auth = createAuth(env.DB);
 
-  // 1. verify auth (simple check for header, you'll need to verify clerk jwt here)
-  const authHeader = request.headers.get("Authorization");
+  // 1. verify BetterAuth session
+  const session = await auth.api.getSession({ headers: request.headers });
 
-  const userId = request.headers.get("x-user-id"); // in prod, extract from verified jwt
-
-  if (!userId) {
+  if (!session) {
     return new Response(JSON.stringify({ error: "unauthorized" }), {
       status: 401,
     });
   }
 
+  const userTier = session.user.tier || "free";
+
   try {
     const body = await request.json();
     const { prompt, systemInstruction, requestedModel } = body;
 
-    // 2. check user tier in D1
-    const user = await env.DB.prepare("select tier from users where id = ?")
-      .bind(userId)
-      .first();
-
-    if (!user || user.tier !== "pro") {
+    // 2. check user tier
+    if (userTier !== "pro") {
       return new Response(
         JSON.stringify({
           error: "pro tier required for server-side generation",
@@ -39,7 +37,7 @@ export async function onRequestPost(context: any) {
     // pro tier can use any gemini-2.* or gemini-3.* model
     let modelToUse = "gemini-2.5-flash";
 
-    if (user && user.tier === "pro") {
+    if (userTier === "pro") {
       const isAllowedProModel =
         requestedModel &&
         (requestedModel.startsWith("gemini-2.") ||
@@ -47,10 +45,7 @@ export async function onRequestPost(context: any) {
       modelToUse = isAllowedProModel ? requestedModel : "gemini-2.0-pro"; // default pro model
     }
 
-    const apiKey =
-      user && user.tier === "pro"
-        ? env.GEMINI_MASTER_KEY
-        : request.headers.get("x-api-key") || env.GEMINI_MASTER_KEY;
+    const apiKey = env.GEMINI_MASTER_KEY;
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: "server misconfigured: missing api key" }),

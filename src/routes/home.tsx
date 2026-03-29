@@ -1,12 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ResumeTemplate } from "@/store/useStore";
 import { AboutMeCarousel } from "@/components/home/AboutMeCarousel";
-import { useEffect, useState } from "react";
-import axios from "axios";
 import { ImageWithPreview } from "@/components/ui/image-preview";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "@tanstack/react-router";
-
 import { ArrowBigDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -20,21 +16,6 @@ export const Route = createFileRoute("/home")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const [mockAboutMe, setMockAboutMe] = useState<ResumeTemplate[]>([]);
-
-  useEffect(() => {
-    const getMockData = async () => {
-      try {
-        const response = await axios.get("/home_data/mock_aboutme.json");
-        setMockAboutMe(response.data as ResumeTemplate[]);
-      } catch (e) {
-        if (axios.isAxiosError(e)) {
-        }
-      }
-    };
-
-    getMockData();
-  }, []);
 
   return (
     <div className="flex flex-col items-center">

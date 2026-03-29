@@ -1,5 +1,5 @@
 import { Link, createRootRoute, Outlet } from "@tanstack/react-router";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import { useSession, signOut } from "@/lib/auth-client";
 
 const links = [
   {
@@ -21,7 +21,7 @@ const links = [
 ];
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Briefcase, CircleUser } from "lucide-react";
+import { Briefcase, CircleUser, LogOut } from "lucide-react";
 
 // Create QueryClient singleton to prevent hydration mismatch
 let queryClient: QueryClient | undefined;
@@ -52,19 +52,32 @@ export const Route = createRootRoute({
 });
 
 function RootDocument() {
+  const { data: session, isPending } = useSession();
+
   return (
     <div className="flex min-h-screen flex-col">
       <div className="fixed top-0 right-0 mt-4 mr-4 z-50 flex items-center gap-4">
-        <SignedOut>
-          <SignInButton mode="modal">
-            <button className="bg-zinc-100 text-zinc-900 px-4 py-2 rounded-lg font-medium hover:bg-zinc-300 transition-colors">
+        {!isPending && !session && (
+          <Link to="/account">
+            <button className="bg-zinc-700 text-zinc-300 px-4 py-2 rounded-lg font-medium hover:bg-zinc-800 transition-colors border-2 border-zinc-600">
               Sign In
             </button>
-          </SignInButton>
-        </SignedOut>
-        <SignedIn>
-          <UserButton afterSignOutUrl="/" />
-        </SignedIn>
+          </Link>
+        )}
+        {!isPending && session?.user && (
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-zinc-400 hidden sm:inline">
+              {session.user.email}
+            </span>
+            <button
+              onClick={() => signOut()}
+              className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        )}{" "}
         <Link to={"/account"}>
           <CircleUser className="w-10 h-10 text-zinc-100" />
         </Link>

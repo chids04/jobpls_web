@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 import { Separator } from "@/components/ui/separator";
 
@@ -92,15 +93,19 @@ function GeneratePage() {
       apiKey: string;
     }) => {
       if (userTier === "pro") {
-        const response = await axios.post("/api/generate", {
-          prompt,
-          systemInstruction,
-          requestedModel,
-        }, {
-          headers: {
-            "x-user-id": "mock_user_123", // swap with clerk id later
-          }
-        });
+        const response = await axios.post(
+          "/api/generate",
+          {
+            prompt,
+            systemInstruction,
+            requestedModel,
+          },
+          {
+            headers: {
+              "x-user-id": "mock_user_123", // swap with clerk id later
+            },
+          },
+        );
         return response.data;
       } else {
         return sendPrompt(apiKey ?? "", prompt, systemInstruction);
@@ -128,12 +133,11 @@ function GeneratePage() {
     );
 
     // unify genai and worker response formats
-    const responseText = response.text || (response.candidates?.[0]?.content?.parts?.[0]?.text);
+    const responseText =
+      response.text || response.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (responseText) {
-      const resume = GenerationOutputSchema.safeParse(
-        JSON.parse(responseText),
-      );
+      const resume = GenerationOutputSchema.safeParse(JSON.parse(responseText));
 
       if (!resume.success) {
         setStatusMessage(
@@ -392,17 +396,29 @@ function GeneratePage() {
 
           {userTier === "pro" && (
             <div className="flex flex-col items-center gap-2 border-2 p-2 w-full">
-              <label className="text-sm font-bold">Select Model (Pro Only)</label>
-              <select 
+              <label className="text-sm font-bold">
+                Select Model (Pro Only)
+              </label>
+              <select
                 className="bg-zinc-800 border-2 p-1 rounded w-full"
                 value={requestedModel}
                 onChange={(e) => setRequestedModel(e.target.value)}
               >
-                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Fast)</option>
-                <option value="gemini-2.0-pro">Gemini 2.0 Pro (Balanced)</option>
-                <option value="gemini-2.0-ultra">Gemini 2.0 Ultra (Max Intelligence)</option>
-                <option value="gemini-3.0-flash">Gemini 3.0 Flash (Next-Gen Fast)</option>
-                <option value="gemini-3.0-pro">Gemini 3.0 Pro (Next-Gen Balanced)</option>
+                <option value="gemini-2.5-flash">
+                  Gemini 2.5 Flash (Fast)
+                </option>
+                <option value="gemini-2.0-pro">
+                  Gemini 2.0 Pro (Balanced)
+                </option>
+                <option value="gemini-2.0-ultra">
+                  Gemini 2.0 Ultra (Max Intelligence)
+                </option>
+                <option value="gemini-3.0-flash">
+                  Gemini 3.0 Flash (Next-Gen Fast)
+                </option>
+                <option value="gemini-3.0-pro">
+                  Gemini 3.0 Pro (Next-Gen Balanced)
+                </option>
               </select>
             </div>
           )}
