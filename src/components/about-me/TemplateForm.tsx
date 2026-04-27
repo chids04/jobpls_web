@@ -41,7 +41,7 @@ export function TemplateForm({
   initial = null,
   onCancel,
   onSave,
-  saveLabel = "Save template",
+  saveLabel = "save template",
 }: TemplateFormProps) {
   /* local form state */
   const [modalItem, setModalItem] = useState<
@@ -314,7 +314,7 @@ export function TemplateForm({
   };
   /* render form */
   return (
-    <div className="flex flex-col relative gap-5 max-w-3xl mx-auto px-4 items-center py-6 border-2">
+    <div className="flex flex-col gap-5  px-4 max-w-4xl items-center py-6 border-2 mx-auto w-full">
       {DEBUG_MENU && (
         <div className="absolute top-2 right-2">
           <Button onClick={importData}>import from json</Button>

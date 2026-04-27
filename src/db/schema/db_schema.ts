@@ -1,15 +1,10 @@
-import {
-  AnySQLiteColumn,
-  int,
-  sqliteTable,
-  text,
-} from "drizzle-orm/sqlite-core";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 import { user } from "./auth_schema";
 
-export const templatesTable = sqliteTable("templates_table", {
-  id: int().primaryKey({ autoIncrement: true }),
-  templateName: text().notNull(),
-  templateContent: text().notNull(),
-  userId: int().references((): AnySQLiteColumn => user.id),
+export const templates = sqliteTable("templates", {
+  id: text("id").primaryKey(),
+  templateName: text("templateName").notNull(),
+  templateContent: text("templateContent").notNull(),
+  userId: text("userId").references(() => user.id),
 });

@@ -14,6 +14,7 @@ const AppStateDataSchema = z.object({
   currentJob: z.any().nullable(),
   apiKey: z.string().nullable(),
   userTier: z.enum(["free", "pro"]).default("free"),
+  cloudSync: z.boolean().default(true),
   docGenOptions: z.object({
     hasCV: z.boolean(),
     hasCover: z.boolean(),
@@ -33,6 +34,7 @@ type AppActions = {
   setCurrentJob: (job: CurrentJobState | null) => void;
   setApiKey: (key: string) => void;
   setUserTier: (tier: "free" | "pro") => void;
+  setCloudSync: (sync: boolean) => void;
   setDocGenOptions: ({
     hasCV,
     hasCover,
@@ -90,6 +92,7 @@ export const useTemplateStore = create<AppState>()(
       currentJob: null,
       apiKey: null,
       userTier: "free",
+      cloudSync: true,
       docGenOptions: {
         hasCV: true,
         hasCover: true,
@@ -115,6 +118,7 @@ export const useTemplateStore = create<AppState>()(
       setCurrentJob: (job) => set({ currentJob: job }),
       setApiKey: (key) => set({ apiKey: key }),
       setUserTier: (tier) => set({ userTier: tier }),
+      setCloudSync: (sync) => set({ cloudSync: sync }),
       setDocGenOptions: (options) => set({ docGenOptions: options }),
     }),
     {

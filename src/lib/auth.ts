@@ -1,10 +1,10 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { getDb } from "@/db";
+import { createDb } from "@/db";
 import { z } from "zod";
 
 const createAuth = (d1?: D1Database) => {
-  const db = d1 ? getDb(d1) : ({} as any);
+  const db = d1 ? createDb(d1) : ({} as any);
 
   return betterAuth({
     database: drizzleAdapter(db, {

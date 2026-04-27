@@ -4,9 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
+    "db:seed": "curl -X POST http://localhost:3000/api/dev/seed",
     "build": "vite build && cp dist/index.html dist/404.html",
-    "generate-types": "wrangler types",
-    "type-check": "generate-types && tsc",
+    "generate-types": "npx wrangler types",
+    "type-check": "npx wrangler types && tsc",
     "serve": "vite preview",
     "test": "vitest run"
   },
@@ -51,6 +52,8 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.30.2",
+    "@deox/drizzle-d1-utils": "^0.0.3",
+    "@libsql/client": "^0.17.2",
     "@tanstack/router-vite-plugin": "^1.158.4",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.9.1",

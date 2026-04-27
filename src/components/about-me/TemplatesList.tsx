@@ -4,6 +4,7 @@ import { ResumeTemplate } from "@/store/useStore";
 import { ImportDialog } from "./ImportDialog";
 import { Resume } from "@/lib/schemas";
 import { useState } from "react";
+import { Cloud, CloudOff } from "lucide-react";
 
 /* props for the templates list component */
 export type TemplatesListProps = {
@@ -13,6 +14,7 @@ export type TemplatesListProps = {
   onEdit: (template: ResumeTemplate) => void;
   onDelete: (id: string) => void;
   onDuplicate: (template: ResumeTemplate) => void;
+  cloudSyncEnabled?: boolean;
 };
 
 function generateUniqueTemplateName(
@@ -59,6 +61,7 @@ export function TemplatesList({
   onEdit,
   onDelete,
   onDuplicate,
+  cloudSyncEnabled = false,
 }: TemplatesListProps) {
   const [openImportDialog, setOpenImportDialog] = useState(false);
 
@@ -99,10 +102,21 @@ export function TemplatesList({
           {templates.map((tpl) => (
             <div
               key={tpl.templateId}
-              className="min-w-0 rounded border border-zinc-700 bg-zinc-800 p-4 flex flex-col gap-2"
+              className="min-w-0 rounded border border-zinc-700 bg-zinc-800 p-4 flex flex-col gap-2 relative"
             >
               <div className="flex items-center justify-between">
-                <div className="text-base font-medium">{tpl.templateName}</div>
+                <div className="text-base font-medium flex items-center gap-2">
+                  {tpl.templateName}
+                  {cloudSyncEnabled && (
+                    <div className="text-zinc-500">
+                      {tpl.isSynced ? (
+                        <Cloud className="size-4 text-green-500" />
+                      ) : (
+                        <CloudOff className="size-4 text-zinc-500" />
+                      )}
+                    </div>
+                  )}
+                </div>
                 <div className="flex flex-wrap justify-center gap-2">
                   <Button
                     type="button"

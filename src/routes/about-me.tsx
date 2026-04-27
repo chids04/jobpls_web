@@ -1,39 +1,116 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import TemplatesList from "@/components/about-me/TemplatesList";
 import TemplateForm from "@/components/about-me/TemplateForm";
 import { useTemplateStore, ResumeTemplate } from "@/store/useStore";
 import { Education, Experience, Project, Resume } from "@/lib/schemas";
+import axios from "axios";
+import { useSession } from "@/lib/auth-client";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Status, StatusVariant } from "@/components/ui/Status";
 
 export const Route = createFileRoute("/about-me")({
   component: RouteComponent,
   ssr: false,
 });
 
-// route component that renders templates list or the template form
 function RouteComponent() {
-  const { templates, addTemplate, updateTemplate, deleteTemplate } =
+  const { data: session } = useSession();
+  const { templates, addTemplate, updateTemplate, deleteTemplate, cloudSync } =
     useTemplateStore();
+
+  const isPro = session?.user?.tier === "pro";
+  const canSync = isPro && cloudSync;
+
+  const [status, setStatus] = useState<{
+    variant: StatusVariant;
+    msg: ReactNode;
+  }>({
+    variant: "default",
+    msg: "",
+  });
+
+  const setStatusMessage = (msg: ReactNode, variant: StatusVariant) => {
+    setStatus({ msg, variant });
+  };
 
   const templatesArray = Object.values(templates).sort(
     (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
   );
 
-  // view state: list vs form
   const [isCreating, setIsCreating] = useState(false);
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(
     null,
   );
   const [formInitial, setFormInitial] = useState<ResumeTemplate | null>(null);
 
-  // start creating a new template
+  // Fetch cloud templates
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["cloudTemplates"],
+    queryFn: async () => {
+      setStatusMessage("", "success");
+      if (!canSync) return [];
+      const response = await axios.get("/api/templates");
+      return response.data;
+    },
+    enabled: canSync,
+  });
+
+  useEffect(() => {
+    if (data) {
+      console.log(data);
+
+      setStatusMessage("", "success");
+    } else if (isLoading) {
+      setStatusMessage("Loading templates", "loading");
+    } else if (isError) {
+      setStatusMessage(`Error loading templates ${error.message}`, "error");
+    }
+  }, [data, isLoading, isError]);
+
+  const syncMutation = useMutation({
+    mutationFn: async (template: ResumeTemplate) => {
+      if (!canSync) return;
+      return axios.post("/api/templates", template);
+    },
+    onMutate: () => {
+      setStatusMessage("Syncing template to cloud...", "loading");
+    },
+    onSuccess: () => {
+      setStatusMessage("Cloud sync successful", "success");
+      setTimeout(() => setStatusMessage("", "default"), 3000);
+    },
+    onError: (error) => {
+      console.error("Cloud sync failed", error);
+      setStatusMessage("Cloud sync failed", "error");
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (!canSync) return;
+      return axios.delete(`/api/templates?id=${id}`);
+    },
+    onMutate: () => {
+      setStatusMessage("Deleting from cloud...", "loading");
+    },
+    onSuccess: () => {
+      setStatusMessage("Deleted from cloud", "success");
+      setTimeout(() => setStatusMessage("", "default"), 3000);
+    },
+    onError: (error) => {
+      console.error("Cloud delete failed", error);
+      setStatusMessage("Failed to delete from cloud", "error");
+    },
+  });
+
   const handleCreate = () => {
     setEditingTemplateId(null);
     setFormInitial(null);
     setIsCreating(true);
   };
 
-  // start editing an existing template
   const handleEdit = (template: ResumeTemplate) => {
     setEditingTemplateId(template.templateId);
     setFormInitial(template);
@@ -48,35 +125,42 @@ function RouteComponent() {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-
     setEditingTemplateId(null);
     setIsCreating(true);
   };
 
-  // delete a template with confirmation
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const t = templates[id];
     const confirmText = t
       ? `Delete template "${t.templateName}"? This cannot be undone.`
       : "Delete this template? This cannot be undone.";
     if (!confirm(confirmText)) return;
+
+    if (canSync) {
+      deleteMutation.mutate(id);
+    }
     deleteTemplate(id);
   };
 
-  // duplicate a template (already has a unique name and id from list component)
-  const handleDuplicate = (duplicate: ResumeTemplate) => {
-    addTemplate(duplicate);
+  const handleDuplicate = async (duplicate: ResumeTemplate) => {
+    if (canSync) {
+      syncMutation.mutate(duplicate, {
+        onSuccess: () => {
+          addTemplate({ ...duplicate, isSynced: true });
+        },
+      });
+    } else {
+      addTemplate(duplicate);
+    }
   };
 
-  // cancel creation or editing, go back to list
   const handleCancel = () => {
     setIsCreating(false);
     setEditingTemplateId(null);
     setFormInitial(null);
   };
 
-  // save handler for create/update
-  const handleSave = (values: {
+  const handleSave = async (values: {
     templateName: string;
     full_name: string;
     email: string;
@@ -91,85 +175,111 @@ function RouteComponent() {
     education: Education[];
   }) => {
     const now = new Date();
+    let finalTemplate: ResumeTemplate;
 
     if (editingTemplateId) {
-      // update existing template
       const existingTemplate = templates[editingTemplateId];
-      if (existingTemplate) {
-        const updatedTemplate: ResumeTemplate = {
-          ...existingTemplate,
-          templateName: values.templateName,
-          resume: {
-            full_name: values.full_name,
-            email: values.email,
-            github: values.github ?? undefined,
-            about_me: values.about_me,
-            residency: values.residency,
-            languages: values.languages,
-            frameworks: values.frameworks,
-            developer_tools: values.developer_tools,
-            projects: values.projects,
-            work_exp: values.work_exp,
-            education: values.education,
-          },
-          updatedAt: now,
-        };
-        updateTemplate(updatedTemplate);
-      }
-      setIsCreating(false);
-      setEditingTemplateId(null);
-      setFormInitial(null);
-      return;
+      if (!existingTemplate) return;
+
+      finalTemplate = {
+        ...existingTemplate,
+        templateName: values.templateName,
+        resume: {
+          full_name: values.full_name,
+          email: values.email,
+          github: values.github ?? undefined,
+          about_me: values.about_me,
+          residency: values.residency,
+          languages: values.languages,
+          frameworks: values.frameworks,
+          developer_tools: values.developer_tools,
+          projects: values.projects,
+          work_exp: values.work_exp,
+          education: values.education,
+        },
+        updatedAt: now,
+      };
+    } else {
+      const templateId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      finalTemplate = {
+        templateId,
+        templateName: values.templateName,
+        resume: {
+          full_name: values.full_name,
+          email: values.email,
+          github: values.github ?? undefined,
+          about_me: values.about_me,
+          residency: values.residency,
+          languages: values.languages,
+          frameworks: values.frameworks,
+          developer_tools: values.developer_tools,
+          projects: values.projects,
+          work_exp: values.work_exp,
+          education: values.education,
+        },
+        createdAt: now,
+        updatedAt: now,
+      };
     }
 
-    // create new template
-    const templateId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    const template: ResumeTemplate = {
-      templateId,
-      templateName: values.templateName,
-      resume: {
-        full_name: values.full_name,
-        email: values.email,
-        github: values.github ?? undefined,
-        about_me: values.about_me,
-        residency: values.residency,
-        languages: values.languages,
-        frameworks: values.frameworks,
-        developer_tools: values.developer_tools,
-        projects: values.projects,
-        work_exp: values.work_exp,
-        education: values.education,
-      },
-      createdAt: now,
-      updatedAt: now,
-    };
-    addTemplate(template);
+    if (canSync) {
+      syncMutation.mutate(finalTemplate, {
+        onSuccess: () => {
+          const syncedTemplate = { ...finalTemplate, isSynced: true };
+          if (editingTemplateId) {
+            updateTemplate(syncedTemplate);
+          } else {
+            addTemplate(syncedTemplate);
+          }
+        },
+        onError: () => {
+          const unsyncedTemplate = { ...finalTemplate, isSynced: false };
+          if (editingTemplateId) {
+            updateTemplate(unsyncedTemplate);
+          } else {
+            addTemplate(unsyncedTemplate);
+          }
+        },
+      });
+    } else {
+      if (editingTemplateId) {
+        updateTemplate(finalTemplate);
+      } else {
+        addTemplate(finalTemplate);
+      }
+    }
+
     setIsCreating(false);
     setEditingTemplateId(null);
     setFormInitial(null);
   };
 
-  // render list view
   if (!isCreating) {
     return (
-      <TemplatesList
-        templates={templatesArray}
-        onCreate={handleCreate}
-        onImport={handleCreateFromImport}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onDuplicate={handleDuplicate}
-      />
+      <div className="flex flex-col gap-4">
+        <TemplatesList
+          templates={templatesArray}
+          onCreate={handleCreate}
+          onImport={handleCreateFromImport}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onDuplicate={handleDuplicate}
+          cloudSyncEnabled={canSync}
+        />
+        {status.msg && <Status variant={status.variant} message={status.msg} />}
+      </div>
     );
   }
 
-  // render form view
   return (
-    <TemplateForm
-      initial={formInitial ?? undefined}
-      onCancel={handleCancel}
-      onSave={handleSave}
-      saveLabel={editingTemplateId ? "Update template" : "Save template"}
-    />
+    <div className="flex flex-col gap-4">
+      <TemplateForm
+        initial={formInitial ?? undefined}
+        onCancel={handleCancel}
+        onSave={handleSave}
+        saveLabel={editingTemplateId ? "update template" : "save template"}
+      />
+      {status.msg && <Status variant={status.variant} message={status.msg} />}
+    </div>
   );
 }

@@ -1,5 +1,6 @@
 import { Link, createRootRoute, Outlet } from "@tanstack/react-router";
-import { useSession, signOut } from "@/lib/auth-client";
+import { useSession, signOut, signIn } from "@/lib/auth-client";
+import { DevPanel } from "@/components/debug/DevPanel";
 
 const links = [
   {
@@ -21,7 +22,14 @@ const links = [
 ];
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Briefcase, CircleUser, LogOut } from "lucide-react";
+import {
+  Briefcase,
+  CircleUser,
+  LogOut,
+  Settings,
+  Shield,
+  User,
+} from "lucide-react";
 
 // Create QueryClient singleton to prevent hydration mismatch
 let queryClient: QueryClient | undefined;
@@ -56,6 +64,7 @@ function RootDocument() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <DevPanel />
       <div className="fixed top-0 right-0 mt-4 mr-4 z-50 flex items-center gap-4">
         {!isPending && !session && (
           <Link to="/account">

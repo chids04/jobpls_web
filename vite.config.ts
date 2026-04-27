@@ -19,7 +19,9 @@ const config = defineConfig({
     }),
     viteReact(),
     devtoolsJson(),
-    cloudflare(),
+    cloudflare({
+      persistState: { path: "./src/db/local" },
+    }),
   ],
   server: {
     allowedHosts: ["chx"],
