@@ -11,6 +11,7 @@ import { GeminiKeyConfig } from "@/components/accounts/GeminiKeyConfig";
 import { useTemplateStore } from "@/store/useStore";
 import { useMutation } from "@tanstack/react-query";
 import { Status, StatusVariant } from "@/components/ui/Status";
+import { FEATURES } from "@/lib/features";
 
 export const Route = createFileRoute("/account")({
   component: RouteComponent,
@@ -55,7 +56,7 @@ function RouteComponent() {
       }, 1500);
     },
     onError: (error: any) => {
-      console.error("Upgrade failed", error);
+      if (import.meta.env.DEV) console.error("Upgrade failed", error);
       setStatusMessage(
         error.response?.data?.message || "Failed to upgrade account",
         "error"
@@ -97,19 +98,25 @@ function RouteComponent() {
             </div>
 
             {userTier !== "pro" ? (
-              <div className="flex flex-col gap-3">
+              FEATURES.payments ? (
+                <div className="flex flex-col gap-3">
+                  <p className="text-zinc-400">
+                    upgrade to Pro to unlock higher-end models, cloud sync for
+                    your templates, and faster generation.
+                  </p>
+                  <Button
+                    className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold h-12"
+                    onClick={() => upgradeMutation.mutate()}
+                    disabled={upgradeMutation.isPending}
+                  >
+                    {upgradeMutation.isPending ? "Upgrading..." : "Upgrade to Pro - $10/mo"}
+                  </Button>
+                </div>
+              ) : (
                 <p className="text-zinc-400">
-                  upgrade to Pro to unlock higher-end models, cloud sync for
-                  your templates, and faster generation.
+                  Pro tier coming soon — you're on the free plan.
                 </p>
-                <Button
-                  className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold h-12"
-                  onClick={() => upgradeMutation.mutate()}
-                  disabled={upgradeMutation.isPending}
-                >
-                  {upgradeMutation.isPending ? "Upgrading..." : "Upgrade to Pro - $10/mo"}
-                </Button>
-              </div>
+              )
             ) : (
               <p className="text-green-400 font-medium">
                 thanks for being a Pro member! you have access to all features.

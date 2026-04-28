@@ -5,6 +5,10 @@ pages_build_output_dir="./dist/"
 compatibility_flags = [ "nodejs_compat" ]
 main = "workers/index.ts"
 
+[vars]
+FEATURE_PAYMENTS = "false"
+FEATURE_DEV_SEED = "false"
+
 [assets]
 directory = "./dist/"
 not_found_handling = "single-page-application"
@@ -15,3 +19,7 @@ database_name = "jobpls-db"
 database_id = "27dc0f08-d055-4d0a-b1a8-cabd1dc6a9bb"
 preview_database_id = "local-test-db"
 migrations_dir = "./src/db/migrations"
+
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "jobpls_events"

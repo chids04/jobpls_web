@@ -1,7 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createDb } from "@/db";
-import { z } from "zod";
 
 const createAuth = (d1?: D1Database) => {
   const db = d1 ? createDb(d1) : ({} as any);
@@ -21,9 +20,6 @@ const createAuth = (d1?: D1Database) => {
           required: false,
           defaultValue: "free",
           input: false,
-          validator: {
-            input: z.enum(["user", "admin"]),
-          },
         },
       },
     },

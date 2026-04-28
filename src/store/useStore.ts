@@ -138,15 +138,14 @@ export const useTemplateStore = create<AppState>()(
       onRehydrateStorage: (_state) => {
         return (rehydratedState, error) => {
           if (error) {
-            console.error("hydration failed", error);
+            if (import.meta.env.DEV) console.error("hydration failed", error);
           } else if (rehydratedState) {
             const result = AppStateDataSchema.safeParse(rehydratedState);
-            if (!result.success) {
+            if (!result.success && import.meta.env.DEV) {
               console.error(
                 "failed to parse saved state, possibly corrupted",
                 result.error,
               );
-            } else {
             }
           }
         };

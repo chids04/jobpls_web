@@ -93,19 +93,11 @@ function GeneratePage() {
       apiKey: string;
     }) => {
       if (userTier === "pro") {
-        const response = await axios.post(
-          "/api/generate",
-          {
-            prompt,
-            systemInstruction,
-            requestedModel,
-          },
-          {
-            headers: {
-              "x-user-id": "mock_user_123", // swap with clerk id later
-            },
-          },
-        );
+        const response = await axios.post("/api/generate", {
+          prompt,
+          systemInstruction,
+          requestedModel,
+        });
         return response.data;
       } else {
         return sendPrompt(apiKey ?? "", prompt, systemInstruction);
@@ -121,7 +113,7 @@ function GeneratePage() {
     },
 
     onError: (error) => {
-      console.log(error);
+      if (import.meta.env.DEV) console.error(error);
       setStatusMessage("Failed to generate documents", "error");
     },
   });
@@ -370,7 +362,7 @@ function GeneratePage() {
             {selectedTemplate ? (
               <>
                 <h1 className="text-xl text-center">
-                  {"selected about me - "}
+                  {"selected about me template - "}
                   <span className="font-bold">
                     {selectedTemplate.templateName}
                   </span>

@@ -3,6 +3,7 @@ import { createDb } from "@/db";
 import { templates } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { ResumeTemplate } from "@/lib/schemas";
+import { track } from "./analytics";
 
 export const handleTemplates = async (request: Request, env: Env) => {
   const auth = createAuth(env.DB);
@@ -47,11 +48,21 @@ export const handleTemplates = async (request: Request, env: Env) => {
     try {
       const template = await request.json<ResumeTemplate>();
 
-      console.log(template);
-
       if (!template || !template.templateName || !template.templateId) {
         return new Response(JSON.stringify({ error: "missing fields" }), {
           status: 400,
+        });
+      }
+
+      const existing = await db
+        .select({ userId: templates.userId })
+        .from(templates)
+        .where(eq(templates.id, template.templateId))
+        .limit(1);
+
+      if (existing.length > 0 && existing[0].userId !== userId) {
+        return new Response(JSON.stringify({ error: "forbidden" }), {
+          status: 403,
         });
       }
 
@@ -73,9 +84,11 @@ export const handleTemplates = async (request: Request, env: Env) => {
           },
         });
 
+      track(env, "template_saved", { userId });
       return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (e: any) {
-      console.log(e);
+      console.error(e);
+      track(env, "template_saved_error", { userId, tags: [e.message ?? ""] });
       return new Response(JSON.stringify({ error: e.message }), {
         status: 500,
       });
@@ -97,8 +110,11 @@ export const handleTemplates = async (request: Request, env: Env) => {
         .delete(templates)
         .where(and(eq(templates.id, id), eq(templates.userId, userId)));
 
+      track(env, "template_deleted", { userId });
       return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (e: any) {
+      console.error(e);
+      track(env, "template_deleted_error", { userId, tags: [e.message ?? ""] });
       return new Response(JSON.stringify({ error: e.message }), {
         status: 500,
       });

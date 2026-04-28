@@ -58,8 +58,6 @@ function RouteComponent() {
 
   useEffect(() => {
     if (data) {
-      console.log(data);
-
       setStatusMessage("", "success");
     } else if (isLoading) {
       setStatusMessage("Loading templates", "loading");
@@ -81,7 +79,7 @@ function RouteComponent() {
       setTimeout(() => setStatusMessage("", "default"), 3000);
     },
     onError: (error) => {
-      console.error("Cloud sync failed", error);
+      if (import.meta.env.DEV) console.error("Cloud sync failed", error);
       setStatusMessage("Cloud sync failed", "error");
     },
   });
@@ -100,7 +98,7 @@ function RouteComponent() {
       setTimeout(() => setStatusMessage("", "default"), 3000);
     },
     onError: (error) => {
-      console.error("Cloud delete failed", error);
+      if (import.meta.env.DEV) console.error("Cloud delete failed", error);
       setStatusMessage("Failed to delete from cloud", "error");
     },
   });
