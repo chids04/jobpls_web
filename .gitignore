@@ -13,4 +13,5 @@ todos.json
 
 # cloudflare prod stuff
 .dev.vars
-/docs
+docs/
+src/db/local/
