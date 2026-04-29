@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 
-import { Separator } from "@/components/ui/separator";
-
 import { usePDFStore, useTemplateStore } from "@/store/useStore";
 import { GenerationOutput, GenerationOutputSchema } from "@/lib/schemas";
 import { escapeFields, genCV, genCover } from "@/lib/pdf_gen";
@@ -287,11 +285,11 @@ function GeneratePage() {
   };
 
   return (
-    <div className="flex flex-col gap-5 items-center">
+    <>
       <MissingApi isOpen={openMissingDialog} setIsOpen={setMissingOpenDialog} />
-      <div className="flex flex-col md:flex-row gap-5 items-center justify-center w-full">
-        <div className="flex flex-col max-w-lg w-full gap-5 items-center justify-center">
-          <div className="flex flex-col gap-2 w-full max-w-md">
+      <div className="flex flex-col gap-5 items-center justify-center w-full">
+        <div className="flex flex-col w-full gap-5 items-center justify-center">
+          <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center justify-between">
               <label className="text-sm text-slate-400">
                 extra instructions to follow during generation
@@ -310,19 +308,19 @@ function GeneratePage() {
               )}
             </div>
             <Textarea
-              className={`max-w-md min-h-28 max-h-32 ${hasUnsavedChanges ? "border-yellow-500" : ""}`}
+              className={` min-h-28 max-h-32 ${hasUnsavedChanges ? "border-yellow-500" : ""}`}
               placeholder="special instructions"
               value={localSpecialInstr}
               onChange={(e) => setLocalSpecialInstr(e.target.value)}
             />
           </div>
 
-          <div className="flex flex-col gap-2 w-full max-w-md">
+          <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center justify-between">
               <label className="text-sm text-slate-400">job description</label>
             </div>
             <Textarea
-              className="max-w-md min-h-48 max-h-64"
+              className="min-h-48 max-h-64"
               placeholder="job description"
               value={localJobDesc}
               onChange={(e) => setLocalJobDesc(e.target.value)}
@@ -330,114 +328,109 @@ function GeneratePage() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center w-full gap-10">
-          <div className="flex flex-col items-center justify-center w-full border-b-accent border-2 p-2">
-            {selectedCV !== null || selectedCV != undefined ? (
-              <>
-                <h1 className="text-xl">
-                  {"selected cv - "}
-                  <span className="font-bold">{getCVName(selectedCV)}</span>
-                </h1>
-                <Link
-                  className="hover:text-blue-400 text-blue-300 hover:underline"
-                  to="/cv-template"
-                >
-                  click to change
-                </Link>
-              </>
-            ) : (
-              <div className="flex flex-col items-center bg-red-700/40 border-red-900 p-2 border-2 text-red-400 w-full">
-                <h3>no CV template selected</h3>
-                <Link
-                  className="text-blue-400 hover:underline"
-                  to="/cv-template"
-                >
-                  click to select a cv template
-                </Link>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col items-center justify-center w-full border-b-accent border-2 p-2">
-            {selectedTemplate ? (
-              <>
-                <h1 className="text-xl text-center">
-                  {"selected about me template - "}
-                  <span className="font-bold">
-                    {selectedTemplate.templateName}
-                  </span>
-                </h1>
-                <Link
-                  className="hover:text-blue-400 text-blue-300 hover:underline"
-                  to="/about-me"
-                >
-                  click to edit
-                </Link>
-              </>
-            ) : (
-              <div className="flex flex-col items-center bg-red-700/40 border-red-900 p-2 border-2 text-red-400 w-full">
-                <h3>no About Me template found</h3>
-                <Link className="text-blue-400 hover:underline" to="/about-me">
-                  click to create an about me
-                </Link>
-              </div>
-            )}
-          </div>
-
-          <DocGenOptions />
-
-          {userTier === "pro" && (
-            <div className="flex flex-col items-center gap-2 border-2 p-2 w-full">
-              <label className="text-sm font-bold">
-                Select Model (Pro Only)
-              </label>
-              <select
-                className="bg-zinc-800 border-2 p-1 rounded w-full"
-                value={requestedModel}
-                onChange={(e) => setRequestedModel(e.target.value)}
-              >
-                <option value="gemini-2.5-flash">
-                  Gemini 2.5 Flash (Fast)
-                </option>
-                <option value="gemini-2.0-pro">
-                  Gemini 2.0 Pro (Balanced)
-                </option>
-                <option value="gemini-2.0-ultra">
-                  Gemini 2.0 Ultra (Max Intelligence)
-                </option>
-                <option value="gemini-3.0-flash">
-                  Gemini 3.0 Flash (Next-Gen Fast)
-                </option>
-                <option value="gemini-3.0-pro">
-                  Gemini 3.0 Pro (Next-Gen Balanced)
-                </option>
-              </select>
+        <div className="flex flex-col md:flex-row gap-6 w-full justify-center items-center">
+          <div className="flex flex-col gap-2 items-center">
+            <div className="flex flex-row  gap-2">
+              {selectedCV !== null || selectedCV != undefined ? (
+                <>
+                  <h1 className="text-xl">
+                    {"cv template: "}
+                    <span className="font-bold">{getCVName(selectedCV)}</span>
+                  </h1>
+                  <Link
+                    className="hover:text-blue-400 text-blue-300 hover:underline"
+                    to="/cv-template"
+                  >
+                    change
+                  </Link>
+                </>
+              ) : (
+                <div className="flex flex-col items-center bg-red-700/40 border-red-900 p-2 border-2 text-red-400 w-full">
+                  <h3>no CV template selected</h3>
+                  <Link
+                    className="text-blue-400 hover:underline"
+                    to="/cv-template"
+                  >
+                    click to select a cv template
+                  </Link>
+                </div>
+              )}
             </div>
-          )}
 
-          <Button
-            onClick={handleGenerate}
-            className="w-fit hover:text-black"
-            disabled={
-              selectedCV === null ||
-              !selectedTemplate ||
-              geminiMutation.isPending
-            }
-          >
-            generate
-          </Button>
+            <div className="flex flex-row items-center gap-2">
+              {selectedTemplate ? (
+                <>
+                  <h1 className="text-xl text-center text-nowrap">
+                    {"about me template: "}
+                    <span className="font-bold">
+                      {selectedTemplate.templateName}
+                    </span>
+                  </h1>
+                  <Link
+                    className="hover:text-blue-400 text-blue-300 hover:underline"
+                    to="/about-me"
+                  >
+                    change
+                  </Link>
+                </>
+              ) : (
+                <div className="flex flex-col items-center bg-red-700/40 border-red-900 p-2 border-2 text-red-400 w-full">
+                  <h3>no About Me template found</h3>
+                  <Link
+                    className="text-blue-400 hover:underline"
+                    to="/about-me"
+                  >
+                    click to create an about me
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4">
+              <DocGenOptions />
+            </div>
+          </div>
+
+          <GeneratedDocs
+            cv={pdfUrls.cvUrl}
+            cover={pdfUrls.coverUrl}
+            documentRef={documentOutputRef}
+          />
         </div>
+
+        {userTier === "pro" && (
+          <div className="flex flex-col items-center gap-2 border-2 p-2 w-full">
+            <label className="text-sm font-bold">Select Model (Pro Only)</label>
+            <select
+              className="bg-zinc-800 border-2 p-1 rounded w-full"
+              value={requestedModel}
+              onChange={(e) => setRequestedModel(e.target.value)}
+            >
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash (Fast)</option>
+              <option value="gemini-2.0-pro">Gemini 2.0 Pro (Balanced)</option>
+              <option value="gemini-2.0-ultra">
+                Gemini 2.0 Ultra (Max Intelligence)
+              </option>
+              <option value="gemini-3.0-flash">
+                Gemini 3.0 Flash (Next-Gen Fast)
+              </option>
+              <option value="gemini-3.0-pro">
+                Gemini 3.0 Pro (Next-Gen Balanced)
+              </option>
+            </select>
+          </div>
+        )}
+        {status.msg && <Status variant={status.variant} message={status.msg} />}
+        <Button
+          onClick={handleGenerate}
+          className="w-fit hover:text-black"
+          disabled={
+            selectedCV === null || !selectedTemplate || geminiMutation.isPending
+          }
+        >
+          generate
+        </Button>
       </div>
-
-      <Separator />
-
-      {status.msg && <Status variant={status.variant} message={status.msg} />}
-
-      <GeneratedDocs
-        cv={pdfUrls.cvUrl}
-        cover={pdfUrls.coverUrl}
-        documentRef={documentOutputRef}
-      />
-    </div>
+    </>
   );
 }

@@ -38,7 +38,7 @@ export function GeneratedDocs({ cv, cover, documentRef }: GeneratedDocsProps) {
   return (
     <div
       ref={documentRef}
-      className="flex flex-col items-center gap-4 p-6 bg-green-700/20 border-green-900 border-2 rounded-lg"
+      className="flex flex-col items-center justify-center w-fit gap-4 p-6 bg-green-700/20 border-green-900 border-2 rounded-lg"
     >
       <h3 className="text-lg font-semibold text-green-400 text-center">
         {isFresh ? "generated documents" : "previously generated documents"}
