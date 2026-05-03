@@ -25,7 +25,7 @@ no copy-pasteing the LLM response into your cv for every job, instead your full 
   
 - documents are compiled into PDFs directly in browser using the [typst.ts](https://github.com/Myriad-Dreamin/typst.ts) wasm package
 
-- create multiple differents so you can switch depending on the type of job you are going for (templates for tech roles, retail roles, warehouse roles etc)
+- create multiple different templates so you can switch depending on the type of job you are going for (templates for tech roles, retail roles, warehouse roles etc)
 
 - all data is saved and processed on the client, with the only requests being made is to the LLM for personalising documents or importing templates form files
 
