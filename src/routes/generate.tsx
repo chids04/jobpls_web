@@ -7,7 +7,12 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 
 import { usePDFStore, useTemplateStore } from "@/store/useStore";
-import { GenerationOutput, GenerationOutputSchema } from "@/lib/schemas";
+import {
+  CoverData,
+  GenerationOutput,
+  GenerationOutputSchema,
+  Resume,
+} from "@/lib/schemas";
 import { escapeFields, genCV, genCover } from "@/lib/pdf_gen";
 
 import { GeneratedDocs } from "@/components/generate/GeneratedDocs";
@@ -16,6 +21,8 @@ import { MissingApi } from "@/components/ui/MissingApi";
 import { GenerateContentResponse } from "@google/genai";
 import { Status, StatusVariant } from "@/components/ui/Status";
 import { DocGenOptions } from "@/components/generate/DocGenOptions";
+import { CVEditDialog } from "@/components/generate/CVEditDialog";
+import { CoverEditDialog } from "@/components/generate/CoverEditDialog";
 
 import { z } from "zod";
 import mockResume from "@/mock/resume.json?raw";
@@ -55,6 +62,12 @@ function GeneratePage() {
     coverUrl: string | undefined;
   }>({ cvUrl: undefined, coverUrl: undefined });
 
+  // raw, unescaped LLM output retained for in-place edits between generations
+  const [rawResume, setRawResume] = useState<GenerationOutput | null>(null);
+  const [cvEditOpen, setCvEditOpen] = useState(false);
+  const [coverEditOpen, setCoverEditOpen] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
   const [status, setStatus] = useState<{
     variant: StatusVariant;
     msg: ReactNode;
@@ -78,6 +91,14 @@ function GeneratePage() {
       default:
         return "None";
     }
+  };
+
+  const clearJobDesc = () => {
+    setLocalJobDesc("");
+  };
+
+  const clearSpecialInstr = () => {
+    setLocalSpecialInstr("");
   };
 
   const geminiMutation = useMutation({
@@ -135,6 +156,7 @@ function GeneratePage() {
           "error",
         );
       } else {
+        setRawResume(resume.data);
         if (docGenOptions.hasCV) {
           await createPDF(resume.data, "cv");
         }
@@ -191,10 +213,14 @@ function GeneratePage() {
     try {
       let pdf;
 
+      // clone before passing — escapeFields/typstProject mutate input, so re-running
+      // generation on the same object would double-escape strings.
+      const cloned = structuredClone(llmResponse);
+
       if (docType == "cv") {
-        pdf = await genCV(llmResponse, selectedCV ?? CV_Type.TechCV);
+        pdf = await genCV(cloned, selectedCV ?? CV_Type.TechCV);
       } else {
-        pdf = await genCover(llmResponse);
+        pdf = await genCover(cloned);
       }
 
       if (!pdf) {
@@ -227,6 +253,45 @@ function GeneratePage() {
       setStatusMessage(`Error generating PDF, please try again later`, "error");
     }
   };
+
+  const handleCVRegenerate = async (edited: Resume) => {
+    if (!rawResume) return;
+    const merged: GenerationOutput = { ...rawResume, ...edited };
+    setIsRegenerating(true);
+    setStatusMessage("Regenerating CV PDF...", "loading");
+    try {
+      setRawResume(merged);
+      await createPDF(merged, "cv");
+      setStatusMessage("CV updated!", "success");
+      setCvEditOpen(false);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
+  const handleCoverRegenerate = async (edited: CoverData) => {
+    if (!rawResume) return;
+    const merged: GenerationOutput = { ...rawResume, ...edited };
+    setIsRegenerating(true);
+    setStatusMessage("Regenerating cover letter PDF...", "loading");
+    try {
+      setRawResume(merged);
+      await createPDF(merged, "cover");
+      setStatusMessage("Cover letter updated!", "success");
+      setCoverEditOpen(false);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
+  const coverInitial: CoverData | null = rawResume
+    ? {
+        hiring_manager: rawResume.hiring_manager,
+        company_name: rawResume.company_name,
+        salutation: rawResume.salutation,
+        paragraphs: rawResume.paragraphs,
+      }
+    : null;
 
   const handleGenerate = async () => {
     if (selectedCV === null || !selectedTemplate) {
@@ -294,18 +359,26 @@ function GeneratePage() {
               <label className="text-sm text-slate-400">
                 extra instructions to follow during generation
               </label>
-              {hasUnsavedChanges && (
+              <div className="flex gap-2 items-center">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={saveToStore}
-                  className="
-                  text-xs
-                  text-yellow-400 border-yellow-500 hover:bg-yellow-500 hover:text-black"
+                  onClick={clearSpecialInstr}
+                  className="text-xs text-slate-400 hover:text-black"
                 >
-                  💾 Save Changes
+                  clear
                 </Button>
-              )}
+                {hasUnsavedChanges && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={saveToStore}
+                    className="
+                    text-xs
+                    text-yellow-400 border-yellow-500 hover:bg-yellow-500 hover:text-black"
+                  >
+                    💾 Save Changes
+                  </Button>
+                )}
+              </div>
             </div>
             <Textarea
               className={` min-h-28 max-h-32 ${hasUnsavedChanges ? "border-yellow-500" : ""}`}
@@ -318,6 +391,12 @@ function GeneratePage() {
           <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center justify-between">
               <label className="text-sm text-slate-400">job description</label>
+              <Button
+                onClick={clearJobDesc}
+                className="text-xs text-slate-400 hover:text-black"
+              >
+                clear
+              </Button>
             </div>
             <Textarea
               className="min-h-48 max-h-64"
@@ -330,15 +409,15 @@ function GeneratePage() {
 
         <div className="flex flex-col md:flex-row gap-6 w-full justify-center items-center">
           <div className="flex flex-col gap-2 items-center">
-            <div className="flex flex-row  gap-2">
+            <div className="flex flex-row items-center gap-2 w-full max-w-xs">
               {selectedCV !== null || selectedCV != undefined ? (
                 <>
-                  <h1 className="text-xl">
-                    {"cv template: "}
-                    <span className="font-bold">{getCVName(selectedCV)}</span>
-                  </h1>
+                  <p className="text-sm text-zinc-300 min-w-0">
+                    <span className="text-zinc-500">cv: </span>
+                    <span className="font-bold truncate">{getCVName(selectedCV)}</span>
+                  </p>
                   <Link
-                    className="hover:text-blue-400 text-blue-300 hover:underline"
+                    className="shrink-0 text-sm hover:text-blue-400 text-blue-300 hover:underline"
                     to="/cv-template"
                   >
                     change
@@ -346,28 +425,26 @@ function GeneratePage() {
                 </>
               ) : (
                 <div className="flex flex-col items-center bg-red-700/40 border-red-900 p-2 border-2 text-red-400 w-full">
-                  <h3>no CV template selected</h3>
+                  <h3 className="text-sm">no CV template selected</h3>
                   <Link
-                    className="text-blue-400 hover:underline"
+                    className="text-sm text-blue-400 hover:underline"
                     to="/cv-template"
                   >
-                    click to select a cv template
+                    click to select
                   </Link>
                 </div>
               )}
             </div>
 
-            <div className="flex flex-row items-center gap-2">
+            <div className="flex flex-row items-center gap-2 w-full max-w-xs">
               {selectedTemplate ? (
                 <>
-                  <h1 className="text-xl text-center text-nowrap">
-                    {"about me template: "}
-                    <span className="font-bold">
-                      {selectedTemplate.templateName}
-                    </span>
-                  </h1>
+                  <p className="text-sm text-zinc-300 min-w-0 truncate">
+                    <span className="text-zinc-500">about me: </span>
+                    <span className="font-bold">{selectedTemplate.templateName}</span>
+                  </p>
                   <Link
-                    className="hover:text-blue-400 text-blue-300 hover:underline"
+                    className="shrink-0 text-sm hover:text-blue-400 text-blue-300 hover:underline"
                     to="/about-me"
                   >
                     change
@@ -375,12 +452,12 @@ function GeneratePage() {
                 </>
               ) : (
                 <div className="flex flex-col items-center bg-red-700/40 border-red-900 p-2 border-2 text-red-400 w-full">
-                  <h3>no About Me template found</h3>
+                  <h3 className="text-sm">no About Me template found</h3>
                   <Link
-                    className="text-blue-400 hover:underline"
+                    className="text-sm text-blue-400 hover:underline"
                     to="/about-me"
                   >
-                    click to create an about me
+                    click to create
                   </Link>
                 </div>
               )}
@@ -395,6 +472,12 @@ function GeneratePage() {
             cv={pdfUrls.cvUrl}
             cover={pdfUrls.coverUrl}
             documentRef={documentOutputRef}
+            canEditCV={!!rawResume && !!pdfUrls.cvUrl && !isRegenerating}
+            canEditCover={
+              !!rawResume && !!pdfUrls.coverUrl && !isRegenerating
+            }
+            onEditCV={() => setCvEditOpen(true)}
+            onEditCover={() => setCoverEditOpen(true)}
           />
         </div>
 
@@ -431,6 +514,22 @@ function GeneratePage() {
           generate
         </Button>
       </div>
+
+      <CVEditDialog
+        open={cvEditOpen}
+        initial={rawResume}
+        onCancel={() => setCvEditOpen(false)}
+        onRegenerate={handleCVRegenerate}
+        isGenerating={isRegenerating}
+      />
+
+      <CoverEditDialog
+        open={coverEditOpen}
+        initial={coverInitial}
+        onCancel={() => setCoverEditOpen(false)}
+        onRegenerate={handleCoverRegenerate}
+        isGenerating={isRegenerating}
+      />
     </>
   );
 }

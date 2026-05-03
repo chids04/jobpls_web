@@ -94,34 +94,57 @@ function RootDocument() {
   return (
     <div className="flex min-h-screen flex-col">
       {DEBUG_MENU && <DevPanel />}
-      <div className="fixed top-0 right-0 mt-4 mr-4 z-50 flex items-center gap-4">
-        {!isPending && !session && (
-          <Link to="/account">
-            <button className="bg-zinc-700 text-zinc-300 px-4 py-2 rounded-lg font-medium hover:bg-zinc-800 transition-colors border-2 border-zinc-600">
-              Sign In
-            </button>
-          </Link>
-        )}
-        {!isPending && session?.user && (
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-zinc-400 hidden sm:inline">
-              {session.user.email}
-            </span>
-            <button
-              onClick={() => signOut()}
-              className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
-              title="Sign Out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
+
+      <div className="w-full px-3 sm:px-6 md:px-8 sticky top-0 z-10">
+        <nav className="w-full rounded-xl bg-zinc-800/80 shadow-lg ring-1 ring-black/10 backdrop-blur px-4 sm:px-6 py-2">
+          <div className="flex items-center">
+            <div className="flex-1" />
+            <ul className="flex flex-wrap items-center justify-center gap-x-1 gap-y-3 text-sm sm:text-base font-medium">
+              {links.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    to={link.link}
+                    className="px-4 py-2 hover:text-white text-zinc-400 transition-all duration-200 rounded-lg"
+                    activeProps={{
+                      className: "text-white bg-zinc-700/50",
+                    }}
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <div className="flex-1 flex items-center justify-end gap-3">
+              {!isPending && !session && (
+                <Link to="/account">
+                  <button className="bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-zinc-600 transition-colors border border-zinc-600">
+                    Sign In
+                  </button>
+                </Link>
+              )}
+              {!isPending && session?.user && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-zinc-400 hidden sm:inline">
+                    {session.user.email}
+                  </span>
+                  <button
+                    onClick={() => signOut()}
+                    className="p-1.5 hover:bg-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <Link to="/account">
+                <CircleUser className="w-7 h-7 text-zinc-100" />
+              </Link>
+            </div>
           </div>
-        )}{" "}
-        <Link to={"/account"}>
-          <CircleUser className="w-10 h-10 text-zinc-100" />
-        </Link>
+        </nav>
       </div>
 
-      <header className="w-full pt-8 pb-4 flex justify-center">
+      <div className="w-full flex justify-center pt-6 pb-2">
         <div className="relative inline-block">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-zinc-100">
             jobpls
@@ -132,29 +155,8 @@ function RootDocument() {
             strokeWidth={2}
           />
         </div>
-      </header>
-
-      {/*nav bar*/}
-
-      <div className="w-full px-3 sm:px-6 md:px-8 sticky top-10 z-10">
-        <nav className="w-full rounded-xl bg-zinc-800/80 shadow-lg ring-1 ring-black/10 backdrop-blur px-4 sm:px-6 py-2">
-          <ul className="flex flex-wrap items-center justify-center gap-x-1 gap-y-3 text-sm sm:text-base font-medium">
-            {links.map((link, index) => (
-              <li key={index}>
-                <Link
-                  to={link.link}
-                  className="px-4 py-2 hover:text-white text-zinc-400 transition-all duration-200 rounded-lg"
-                  activeProps={{
-                    className: "text-white bg-zinc-700/50",
-                  }}
-                >
-                  {link.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
       </div>
+
       <main className="container mx-auto px-10 mt-5 text-zinc-100 mb-5">
         <Outlet />
       </main>

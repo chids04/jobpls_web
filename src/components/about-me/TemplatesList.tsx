@@ -4,7 +4,7 @@ import { ResumeTemplate } from "@/store/useStore";
 import { ImportDialog } from "./ImportDialog";
 import { Resume } from "@/lib/schemas";
 import { useState } from "react";
-import { Cloud, CloudOff } from "lucide-react";
+import { Cloud, CloudOff, CloudUpload } from "lucide-react";
 
 /* props for the templates list component */
 export type TemplatesListProps = {
@@ -14,6 +14,7 @@ export type TemplatesListProps = {
   onEdit: (template: ResumeTemplate) => void;
   onDelete: (id: string) => void;
   onDuplicate: (template: ResumeTemplate) => void;
+  onUpload?: (template: ResumeTemplate) => void;
   cloudSyncEnabled?: boolean;
 };
 
@@ -61,6 +62,7 @@ export function TemplatesList({
   onEdit,
   onDelete,
   onDuplicate,
+  onUpload,
   cloudSyncEnabled = false,
 }: TemplatesListProps) {
   const [openImportDialog, setOpenImportDialog] = useState(false);
@@ -118,6 +120,17 @@ export function TemplatesList({
                   )}
                 </div>
                 <div className="flex flex-wrap justify-center gap-2">
+                  {cloudSyncEnabled && !tpl.isSynced && onUpload && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onUpload(tpl)}
+                    >
+                      <CloudUpload className="size-4" />
+                      Upload
+                    </Button>
+                  )}
                   <Button
                     type="button"
                     size="sm"

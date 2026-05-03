@@ -24,6 +24,6 @@ export default {
       return handleTemplates(request, env);
     }
 
-    return new Response("Hello World!");
+    return env.ASSETS.fetch(request);
   },
 };

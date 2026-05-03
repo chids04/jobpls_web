@@ -1,13 +1,26 @@
 import { usePDFStore } from "@/store/useStore";
+import { Button } from "@/components/ui/button";
 import { Document } from "./Document";
 
 interface GeneratedDocsProps {
   cv?: string;
   cover?: string;
   documentRef: React.Ref<HTMLDivElement>;
+  canEditCV?: boolean;
+  canEditCover?: boolean;
+  onEditCV?: () => void;
+  onEditCover?: () => void;
 }
 
-export function GeneratedDocs({ cv, cover, documentRef }: GeneratedDocsProps) {
+export function GeneratedDocs({
+  cv,
+  cover,
+  documentRef,
+  canEditCV = false,
+  canEditCover = false,
+  onEditCV,
+  onEditCover,
+}: GeneratedDocsProps) {
   const pdfs = usePDFStore();
 
   const base64toUrl = (base64String: string) => {
@@ -44,8 +57,38 @@ export function GeneratedDocs({ cv, cover, documentRef }: GeneratedDocsProps) {
         {isFresh ? "generated documents" : "previously generated documents"}
       </h3>
 
-      {finalCv && <Document url={finalCv} name="CV" />}
-      {finalCover && <Document url={finalCover} name="Cover Letter" />}
+      {finalCv && (
+        <div className="flex flex-col gap-2 items-center">
+          <Document url={finalCv} name="CV" />
+          {onEditCV && (
+            <Button
+              type="button"
+              variant="outline"
+              className="text-black"
+              disabled={!canEditCV}
+              onClick={onEditCV}
+            >
+              edit cv
+            </Button>
+          )}
+        </div>
+      )}
+      {finalCover && (
+        <div className="flex flex-col gap-2 items-center">
+          <Document url={finalCover} name="Cover Letter" />
+          {onEditCover && (
+            <Button
+              type="button"
+              variant="outline"
+              className="text-black"
+              disabled={!canEditCover}
+              onClick={onEditCover}
+            >
+              edit cover letter
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -2,14 +2,16 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createDb } from "@/db";
 
-const createAuth = (d1?: D1Database) => {
-  const db = d1 ? createDb(d1) : ({} as any);
+const createAuth = (env?: Env) => {
+  const db = env?.DB ? createDb(env.DB) : ({} as any);
 
   return betterAuth({
     database: drizzleAdapter(db, {
       provider: "sqlite",
     }),
-    baseURL: process.env.VITE_BETTER_AUTH_URL,
+    baseURL: env?.BETTER_AUTH_URL,
+    trustedOrigins: ["https://jobpls.lol"],
+    secret: env?.BETTER_AUTH_SECRET,
     emailAndPassword: {
       enabled: true,
     },
@@ -17,7 +19,7 @@ const createAuth = (d1?: D1Database) => {
       additionalFields: {
         tier: {
           type: "string",
-          required: false,
+          required: true,
           defaultValue: "free",
           input: false,
         },

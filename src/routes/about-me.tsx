@@ -140,6 +140,17 @@ function RouteComponent() {
     deleteTemplate(id);
   };
 
+  const handleUpload = (template: ResumeTemplate) => {
+    if (!canSync) return;
+    syncMutation.mutate(template, {
+      onSuccess: () => {
+        updateTemplate({ ...template, isSynced: true });
+        setStatusMessage("Cloud sync successful", "success");
+        setTimeout(() => setStatusMessage("", "default"), 3000);
+      },
+    });
+  };
+
   const handleDuplicate = async (duplicate: ResumeTemplate) => {
     if (canSync) {
       syncMutation.mutate(duplicate, {
@@ -262,6 +273,7 @@ function RouteComponent() {
           onEdit={handleEdit}
           onDelete={handleDelete}
           onDuplicate={handleDuplicate}
+          onUpload={handleUpload}
           cloudSyncEnabled={canSync}
         />
         {status.msg && <Status variant={status.variant} message={status.msg} />}

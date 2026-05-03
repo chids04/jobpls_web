@@ -217,6 +217,8 @@ export const genCV = async (template: GenerationOutput, cv_type: CV_Type) => {
 };
 
 export const genCover = async (template: GenerationOutput) => {
+  escapeFields(template);
+
   const paragraph_str = template.paragraphs
     .map((p) => PARAGRAPH_TEMPLATE.replace("{PARA}", p))
     .join("\n");

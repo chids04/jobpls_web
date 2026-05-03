@@ -1,25 +1,49 @@
 "$schema" = "./node_modules/wrangler/config-schema.json"
 name = "jobpls"
 compatibility_date = "2026-02-09"
-pages_build_output_dir="./dist/"
 compatibility_flags = [ "nodejs_compat" ]
 main = "workers/index.ts"
 
+[assets]
+not_found_handling = "single-page-application"
+run_worker_first = [ "/api/*" ]
+
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+
 [vars]
 FEATURE_PAYMENTS = "false"
-FEATURE_DEV_SEED = "false"
-
-[assets]
-directory = "./dist/"
-not_found_handling = "single-page-application"
+FEATURE_DEV_SEED = "true"
+BETTER_AUTH_URL = "http://localhost:3000"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "jobpls-db"
 database_id = "27dc0f08-d055-4d0a-b1a8-cabd1dc6a9bb"
-preview_database_id = "local-test-db"
 migrations_dir = "./src/db/migrations"
 
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"
 dataset = "jobpls_events"
+
+[env.production]
+name="jobpls"
+routes = ["jobpls.lol/*"]
+
+  [env.production.vars]
+  FEATURE_PAYMENTS = "false"
+  FEATURE_DEV_SEED = "false"
+  BETTER_AUTH_URL = "https://jobpls.lol"
+
+  [[env.production.d1_databases]]
+  binding = "DB"
+  database_name = "jobpls-db"
+  database_id = "27dc0f08-d055-4d0a-b1a8-cabd1dc6a9bb"
+  migrations_dir = "./src/db/migrations"
+
+  [[env.production.analytics_engine_datasets]]
+  binding = "ANALYTICS"
+  dataset = "jobpls_events"
