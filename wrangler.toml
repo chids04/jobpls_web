@@ -29,6 +29,20 @@ migrations_dir = "./src/db/migrations"
 binding = "ANALYTICS"
 dataset = "jobpls_events"
 
+[env.development]
+name="jobpls"
+
+  [env.development.vars]
+  FEATURE_PAYMENTS = "false"
+  FEATURE_DEV_SEED = "true"
+  BETTER_AUTH_URL = "http://localhost:3000"
+
+  [[env.development.d1_databases]]
+  binding = "DB"
+  database_name = "jobpls-db"
+  database_id = "27dc0f08-d055-4d0a-b1a8-cabd1dc6a9bb"
+  migrations_dir = "./src/db/migrations"
+
 [env.production]
 name="jobpls"
 routes = ["jobpls.lol/*"]
@@ -37,6 +51,10 @@ routes = ["jobpls.lol/*"]
   FEATURE_PAYMENTS = "false"
   FEATURE_DEV_SEED = "false"
   BETTER_AUTH_URL = "https://jobpls.lol"
+
+  [env.production.observability]
+  enabled = true
+  head_sampling_rate = 1
 
   [[env.production.d1_databases]]
   binding = "DB"

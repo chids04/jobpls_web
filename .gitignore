@@ -16,3 +16,4 @@ todos.json
 .dev.vars
 docs/
 src/db/local/
+.wrangler/

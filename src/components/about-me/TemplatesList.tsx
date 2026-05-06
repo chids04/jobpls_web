@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { DUPLICATE_SUFFIX_BASE } from "@/lib/types";
 import { ResumeTemplate } from "@/store/useStore";
 import { ImportDialog } from "./ImportDialog";
-import { Resume } from "@/lib/schemas";
-import { useState } from "react";
+import { Resume, ResumeDataSchema, ResumeTemplateSchema } from "@/lib/schemas";
+import { useState, useRef } from "react";
 import { Cloud, CloudOff, CloudUpload } from "lucide-react";
 
 /* props for the templates list component */

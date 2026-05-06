@@ -6,7 +6,14 @@ import { ResumeTemplate } from "@/lib/schemas";
 import { track } from "./analytics";
 
 export const handleTemplates = async (request: Request, env: Env) => {
-  const auth = createAuth(env.DB);
+  if (!env.DB) {
+    console.log("Database not initalised");
+    return new Response(JSON.stringify({ message: "Internal Server Error" }), {
+      status: 500,
+    });
+  }
+
+  const auth = createAuth(env);
   const session = await auth.api.getSession({ headers: request.headers });
 
   if (!session) {
@@ -16,6 +23,7 @@ export const handleTemplates = async (request: Request, env: Env) => {
   }
 
   const userId = session.user.id;
+
   const db = createDb(env.DB);
   const url = new URL(request.url);
 
@@ -27,17 +35,23 @@ export const handleTemplates = async (request: Request, env: Env) => {
         .from(templates)
         .where(eq(templates.userId, userId));
 
+      const now = new Date();
       const results = userTemplates.map((row) => ({
         templateId: row.id,
         templateName: row.templateName,
-        resume: row.templateContent,
+        resume:
+          typeof row.templateContent === "string"
+            ? JSON.parse(row.templateContent)
+            : row.templateContent,
+        createdAt: row.createdAt ?? now,
+        updatedAt: row.updatedAt ?? now,
       }));
 
       return new Response(JSON.stringify(results), {
         headers: { "content-type": "application/json" },
       });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), {
+      return new Response(JSON.stringify({ message: e.message }), {
         status: 500,
       });
     }
@@ -45,6 +59,13 @@ export const handleTemplates = async (request: Request, env: Env) => {
 
   // handle post request: save or update a template
   if (request.method === "POST") {
+    if (session.user.tier == "free") {
+      return new Response(
+        JSON.stringify({ message: "Upgrade to Pro for cloud sync" }),
+        { status: 500 },
+      );
+    }
+
     try {
       const template = await request.json<ResumeTemplate>();
 
@@ -121,5 +142,5 @@ export const handleTemplates = async (request: Request, env: Env) => {
     }
   }
 
-  return new Response("method not allowed", { status: 405 });
+  return new Response("method not allowed", { status: 403 });
 };

@@ -135,20 +135,23 @@ export const useTemplateStore = create<AppState>()(
             ? localStorage.removeItem(name)
             : undefined,
       })),
-      onRehydrateStorage: (_state) => {
-        return (rehydratedState, error) => {
-          if (error) {
-            if (import.meta.env.DEV) console.error("hydration failed", error);
-          } else if (rehydratedState) {
-            const result = AppStateDataSchema.safeParse(rehydratedState);
-            if (!result.success && import.meta.env.DEV) {
-              console.error(
-                "failed to parse saved state, possibly corrupted",
-                result.error,
-              );
+      merge: (persistedState, currentState) => {
+        const persisted = (persistedState ?? {}) as Partial<AppStateData>;
+
+        if (persisted.templates && typeof persisted.templates === "object") {
+          const cleaned: Record<string, ResumeTemplate> = {};
+          for (const [key, template] of Object.entries(persisted.templates)) {
+            const result = ResumeTemplateSchema.safeParse(template);
+            if (result.success && key === result.data.templateId) {
+              cleaned[result.data.templateId] = result.data;
+            } else if (import.meta.env.DEV) {
+              console.warn(`Dropping invalid persisted template "${key}"`);
             }
           }
-        };
+          persisted.templates = cleaned;
+        }
+
+        return { ...currentState, ...persisted };
       },
     },
   ),

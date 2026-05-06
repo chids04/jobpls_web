@@ -3,7 +3,13 @@ import { useEffect, useState, ReactNode } from "react";
 import TemplatesList from "@/components/about-me/TemplatesList";
 import TemplateForm from "@/components/about-me/TemplateForm";
 import { useTemplateStore, ResumeTemplate } from "@/store/useStore";
-import { Education, Experience, Project, Resume } from "@/lib/schemas";
+import {
+  Education,
+  Experience,
+  Project,
+  Resume,
+  ResumeTemplateSchema,
+} from "@/lib/schemas";
 import axios from "axios";
 import { useSession } from "@/lib/auth-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -48,13 +54,34 @@ function RouteComponent() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["cloudTemplates"],
     queryFn: async () => {
-      setStatusMessage("", "success");
       if (!canSync) return [];
-      const response = await axios.get("/api/templates");
+      const response = await axios.get<ResumeTemplate[]>("/api/templates");
       return response.data;
     },
     enabled: canSync,
   });
+
+  useEffect(() => {
+    if (data && Array.isArray(data)) {
+      data.forEach((cloudTemplate: unknown) => {
+        const result = ResumeTemplateSchema.safeParse(cloudTemplate);
+        if (!result.success) {
+          if (import.meta.env.DEV) {
+            console.warn("skipping invalid cloud template", result.error);
+          }
+          return;
+        }
+        const parsed = result.data;
+        const existing = templates[parsed.templateId];
+        if (
+          !existing ||
+          new Date(parsed.updatedAt) > new Date(existing.updatedAt)
+        ) {
+          addTemplate({ ...parsed, isSynced: true });
+        }
+      });
+    }
+  }, [data]);
 
   useEffect(() => {
     if (data) {

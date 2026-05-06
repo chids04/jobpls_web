@@ -6,7 +6,8 @@ export const mockResumeFullStackDev: Resume = {
   email: `eleanor.vance@example.com`,
   github: "eleanorv-dev",
   residency: "San Francisco, CA",
-  about_me: "Full-stack developer with 5+ years of experience building scalable web applications using TypeScript, React, and Node.js. Passionate about clean code, robust architecture, and delivering exceptional user experiences.",
+  about_me:
+    "Full-stack developer with 5+ years of experience building scalable web applications using TypeScript, React, and Node.js. Passionate about clean code, robust architecture, and delivering exceptional user experiences.",
   languages: ["TypeScript", "JavaScript", "Python", "Go", "SQL", "Bash"],
   frameworks: [
     "React",
