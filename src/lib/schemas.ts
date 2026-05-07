@@ -58,6 +58,7 @@ export const ResumeTemplateSchema = z.object({
   resume: ResumeDataSchema,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
+  isSynced: z.boolean().default(false).optional(),
 });
 
 export const CoverDataSchema = z.object({
@@ -77,4 +78,5 @@ export type Education = z.infer<typeof EducationSchema>;
 export type Experience = z.infer<typeof ExperienceSchema>;
 export type Resume = z.infer<typeof ResumeDataSchema>;
 export type ResumeTemplate = z.infer<typeof ResumeTemplateSchema>;
+export type CoverData = z.infer<typeof CoverDataSchema>;
 export type GenerationOutput = z.infer<typeof GenerationOutputSchema>;

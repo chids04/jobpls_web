@@ -13,6 +13,8 @@ const AppStateDataSchema = z.object({
   specialInstr: z.string().catch(""),
   currentJob: z.any().nullable(),
   apiKey: z.string().nullable(),
+  userTier: z.enum(["free", "pro"]).default("free"),
+  cloudSync: z.boolean().default(true),
   docGenOptions: z.object({
     hasCV: z.boolean(),
     hasCover: z.boolean(),
@@ -31,6 +33,8 @@ type AppActions = {
   setSpecialInstr: (instr: string) => void;
   setCurrentJob: (job: CurrentJobState | null) => void;
   setApiKey: (key: string) => void;
+  setUserTier: (tier: "free" | "pro") => void;
+  setCloudSync: (sync: boolean) => void;
   setDocGenOptions: ({
     hasCV,
     hasCover,
@@ -87,6 +91,8 @@ export const useTemplateStore = create<AppState>()(
       specialInstr: "",
       currentJob: null,
       apiKey: null,
+      userTier: "free",
+      cloudSync: true,
       docGenOptions: {
         hasCV: true,
         hasCover: true,
@@ -111,6 +117,8 @@ export const useTemplateStore = create<AppState>()(
       setSpecialInstr: (instr) => set({ specialInstr: instr }),
       setCurrentJob: (job) => set({ currentJob: job }),
       setApiKey: (key) => set({ apiKey: key }),
+      setUserTier: (tier) => set({ userTier: tier }),
+      setCloudSync: (sync) => set({ cloudSync: sync }),
       setDocGenOptions: (options) => set({ docGenOptions: options }),
     }),
     {
@@ -127,21 +135,23 @@ export const useTemplateStore = create<AppState>()(
             ? localStorage.removeItem(name)
             : undefined,
       })),
-      onRehydrateStorage: (_state) => {
-        return (rehydratedState, error) => {
-          if (error) {
-            console.error("hydration failed", error);
-          } else if (rehydratedState) {
-            const result = AppStateDataSchema.safeParse(rehydratedState);
-            if (!result.success) {
-              console.error(
-                "failed to parse saved state, possibly corrupted",
-                result.error,
-              );
-            } else {
+      merge: (persistedState, currentState) => {
+        const persisted = (persistedState ?? {}) as Partial<AppStateData>;
+
+        if (persisted.templates && typeof persisted.templates === "object") {
+          const cleaned: Record<string, ResumeTemplate> = {};
+          for (const [key, template] of Object.entries(persisted.templates)) {
+            const result = ResumeTemplateSchema.safeParse(template);
+            if (result.success && key === result.data.templateId) {
+              cleaned[result.data.templateId] = result.data;
+            } else if (import.meta.env.DEV) {
+              console.warn(`Dropping invalid persisted template "${key}"`);
             }
           }
-        };
+          persisted.templates = cleaned;
+        }
+
+        return { ...currentState, ...persisted };
       },
     },
   ),

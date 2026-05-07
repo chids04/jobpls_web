@@ -4,6 +4,7 @@ import viteReact from "@vitejs/plugin-react";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import devtoolsJson from "vite-plugin-devtools-json";
+import { cloudflare } from "@cloudflare/vite-plugin";
 
 const config = defineConfig({
   plugins: [
@@ -18,14 +19,12 @@ const config = defineConfig({
     }),
     viteReact(),
     devtoolsJson(),
+    cloudflare({
+      persistState: { path: "./src/db/local" },
+    }),
   ],
   server: {
     allowedHosts: ["chx"],
-  },
-  test: {
-    globals: true,
-    environment: "jsdom",
-    setupFiles: "./src/setupTests.ts",
   },
 });
 

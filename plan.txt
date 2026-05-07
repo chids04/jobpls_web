@@ -1,9 +1,11 @@
-what we need to do
+what to do today to get auth working
 
-no auth for now, let it be free to use
-i  want to use this as an exercise of creating software that other people will be using.
+test creating a user, and storing it in the database
+use some database viewing tool too see what the database will look like
 
-what i need to do
+use this to then be able to mock a database creation for local development
+this script will run as part of the start of the dev script, used for local testing
 
-fix pdf gen, need to clean up the interface a bit
-set up google ai gen with an api key so that i can make some prompts
+also figure out a strategy that will be used to handle getting a user's tier, since this will be used across the application
+
+cloud save feature

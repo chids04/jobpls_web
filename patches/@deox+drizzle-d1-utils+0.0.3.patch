@@ -1,0 +1,26 @@
+diff --git a/node_modules/@deox/drizzle-d1-utils/dist/utils.cjs b/node_modules/@deox/drizzle-d1-utils/dist/utils.cjs
+index 3ee6e36..0d0f716 100644
+--- a/node_modules/@deox/drizzle-d1-utils/dist/utils.cjs
++++ b/node_modules/@deox/drizzle-d1-utils/dist/utils.cjs
+@@ -26,7 +26,7 @@ function getD1BindingInfo({ binding, environment, persistTo, configPath: wrangle
+ 	} else bindingConfig = d1_databases[0];
+ 	if (!bindingConfig.database_id && !bindingConfig.preview_database_id) throw new Error(`Neither 'database_id' nor 'preview_database_id' is set for D1 binding '${bindingConfig.binding}'`);
+ 	const wranglerConfigDir = configPath ? (0, node_path.dirname)(configPath) : void 0;
+-	const wranglerStateDir = persistTo !== null && persistTo !== void 0 ? persistTo : (0, node_path.relative)(".", (0, node_path.join)(wranglerConfigDir !== null && wranglerConfigDir !== void 0 ? wranglerConfigDir : "", ".wrangler/state/v3"));
++	const wranglerStateDir = persistTo !== null && persistTo !== void 0 ? (0, node_path.join)(persistTo, "v3") : (0, node_path.relative)(".", (0, node_path.join)(wranglerConfigDir !== null && wranglerConfigDir !== void 0 ? wranglerConfigDir : "", ".wrangler/state/v3"));
+ 	const [database, previewDatabase] = [bindingConfig.database_id, bindingConfig.preview_database_id].map((databaseId) => {
+ 		if (!databaseId) return null;
+ 		const uniqueKey = "miniflare-D1DatabaseObject";
+diff --git a/node_modules/@deox/drizzle-d1-utils/dist/utils.js b/node_modules/@deox/drizzle-d1-utils/dist/utils.js
+index 02d4add..31a4889 100644
+--- a/node_modules/@deox/drizzle-d1-utils/dist/utils.js
++++ b/node_modules/@deox/drizzle-d1-utils/dist/utils.js
+@@ -23,7 +23,7 @@ function getD1BindingInfo({ binding, environment, persistTo, configPath: wrangle
+ 	} else bindingConfig = d1_databases[0];
+ 	if (!bindingConfig.database_id && !bindingConfig.preview_database_id) throw new Error(`Neither 'database_id' nor 'preview_database_id' is set for D1 binding '${bindingConfig.binding}'`);
+ 	const wranglerConfigDir = configPath ? dirname(configPath) : void 0;
+-	const wranglerStateDir = persistTo !== null && persistTo !== void 0 ? persistTo : relative(".", join(wranglerConfigDir !== null && wranglerConfigDir !== void 0 ? wranglerConfigDir : "", ".wrangler/state/v3"));
++	const wranglerStateDir = persistTo !== null && persistTo !== void 0 ? join(persistTo, "v3") : relative(".", join(wranglerConfigDir !== null && wranglerConfigDir !== void 0 ? wranglerConfigDir : "", ".wrangler/state/v3"));
+ 	const [database, previewDatabase] = [bindingConfig.database_id, bindingConfig.preview_database_id].map((databaseId) => {
+ 		if (!databaseId) return null;
+ 		const uniqueKey = "miniflare-D1DatabaseObject";

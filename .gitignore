@@ -5,8 +5,15 @@ dist-ssr
 *.local
 count.txt
 .env
+.env.*
 .nitro
 .tanstack
 .output
 .vinxi
 todos.json
+
+# cloudflare prod stuff
+.dev.vars
+docs/
+src/db/local/
+.wrangler/
