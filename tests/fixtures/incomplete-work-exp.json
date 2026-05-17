@@ -1,0 +1,15 @@
+{
+  "full_name": "Work Tester",
+  "email": "work@example.com",
+  "work_exp": [
+    { "title": "Engineer" },
+    { "company": "Acme", "start_date": "" },
+    { "end_date": "Ongoing" },
+    {
+      "title": "Intern",
+      "company": "Beta",
+      "start_date": "06/2020",
+      "end_date": "99/9999"
+    }
+  ]
+}

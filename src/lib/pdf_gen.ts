@@ -122,10 +122,6 @@ export function escapeFields(template: GenerationOutput) {
 
 // prettier-ignore
 export const genCV = async (template: GenerationOutput, cv_type: CV_Type) => {
-  // need to save links and not escape them
-  // currently only projects contain links and the github contain links
-
-
   const proj_str =
     template.projects?.map((p) => typstProject(p)).join(PROJECT_SPACING) ??
     "";

@@ -67,6 +67,7 @@ export function ImportDialog({
       );
 
       if (generatedResume.error) {
+        console.log(generatedResume.error);
         setStatus({
           msg: "failed to import document, please try again later",
           variant: "error",
@@ -103,7 +104,10 @@ export function ImportDialog({
   useEffect(() => {
     if (!apiKey) {
       setShowMissingApi(true);
+      return;
     }
+
+    setStatus({ msg: "", variant: "default" });
   }, []);
 
   useEffect(() => {

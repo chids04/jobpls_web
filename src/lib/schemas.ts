@@ -16,37 +16,37 @@ export const DateFormSchema = z.object({
 });
 
 export const ProjectSchema = z.object({
-  title: z.string().trim().min(1, "Title is required").optional(),
-  b1: z.string().optional().default("").optional(),
-  b2: z.string().optional().default("").optional(),
-  languages: z.array(z.string()).optional().default([]).optional(),
-  url: z.string().optional(),
+  title: z.string().trim().default(""),
+  b1: z.string().trim().default(""),
+  b2: z.string().default(""),
+  languages: z.array(z.string().trim()).optional().default([]),
+  url: z.string().default(""),
 });
 
 export const EducationSchema = DateFormSchema.extend({
-  title: z.string().trim().min(1, "Title is required").optional(),
-  grade: z.string().trim().min(1, "Grade is required").optional(),
-  name: z.string().trim().min(1, "Institution name is required").optional(),
-  location: z.string().trim().min(1, "Location is required").optional(),
-  modules: z.array(z.string()).optional().default([]).optional(),
+  title: z.string().trim().default(""),
+  grade: z.string().trim().default(""),
+  name: z.string().trim().default(""),
+  location: z.string().trim().default(""),
+  modules: z.array(z.string()).optional().default([]),
 });
 
 export const ExperienceSchema = DateFormSchema.extend({
-  title: z.string().trim().min(1, "Job title is required").optional(),
-  company: z.string().trim().min(1, "Company is required").optional(),
-  b1: z.string().optional().default("").optional(),
-  b2: z.string().optional().default("").optional(),
+  title: z.string().trim().default(""),
+  company: z.string().trim().default(""),
+  b1: z.string().trim().default(""),
+  b2: z.string().trim().default(""),
 });
 
 export const ResumeDataSchema = z.object({
-  full_name: z.string().optional(),
-  email: z.string().optional(),
+  full_name: z.string().default(""),
+  email: z.string().default(""),
   github: z.string().optional(),
   languages: z.array(z.string()).optional(),
   frameworks: z.array(z.string()).optional(),
   developer_tools: z.array(z.string()).optional(),
   residency: z.string().optional(),
-  about_me: z.string().optional(),
+  about_me: z.string().default(""),
   education: z.array(EducationSchema).optional(),
   projects: z.array(ProjectSchema).optional(),
   work_exp: z.array(ExperienceSchema).optional(),

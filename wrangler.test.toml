@@ -1,0 +1,10 @@
+name = "jobpls-test"
+compatibility_date = "2026-02-09"
+compatibility_flags = [ "nodejs_compat" ]
+main = "workers/index.ts"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "jobpls-test-db"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "./src/db/migrations"

@@ -1,0 +1,15 @@
+{
+  "full_name": "Edu Tester",
+  "email": "edu@example.com",
+  "education": [
+    { "title": "BSc Maths" },
+    { "start_date": "13/2020", "end_date": "foo" },
+    {},
+    {
+      "title": "Diploma",
+      "name": "Some College",
+      "start_date": "not-a-date",
+      "end_date": "Ongoing"
+    }
+  ]
+}

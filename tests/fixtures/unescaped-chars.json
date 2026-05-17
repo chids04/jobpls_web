@@ -1,0 +1,36 @@
+{
+  "full_name": "O'Brien \"Bob\" Müller",
+  "email": "bob+test@example.com",
+  "about_me": "line1\nline2\twith tab\nPath: C:\\Users\\bob\n🚀 ✨ café résumé — naïve façade",
+  "residency": "São Paulo, Brasil",
+  "education": [
+    {
+      "title": "B.Sc. \"Computer\" Science",
+      "name": "Université d'Example",
+      "location": "Zürich",
+      "grade": "1st <best>",
+      "start_date": "09/2018",
+      "end_date": "06/2021",
+      "modules": ["A & B", "C/D", "<script>alert(1)</script>"]
+    }
+  ],
+  "projects": [
+    {
+      "title": "Path\\To\\Project",
+      "b1": "Uses regex like /\\d+/ and quotes: \"hi\"",
+      "b2": "Newline:\nhere",
+      "languages": ["C++", "C#"],
+      "url": "https://example.com/?q=a&b=c"
+    }
+  ],
+  "work_exp": [
+    {
+      "title": "R&D \"Lead\"",
+      "company": "Müller & Söhne",
+      "start_date": "01/2022",
+      "end_date": "Ongoing",
+      "b1": "Backslashes: \\\\ and quotes \"x\"",
+      "b2": "Emoji 🎉 and unicode ☃"
+    }
+  ]
+}

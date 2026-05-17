@@ -1,0 +1,64 @@
+{
+  "full_name": "Jane Doe",
+  "email": "jane@example.com",
+  "github": "github.com/janedoe",
+  "languages": ["TypeScript", "Python", "Go"],
+  "frameworks": ["React", "FastAPI"],
+  "developer_tools": ["Git", "Docker"],
+  "residency": "London, UK",
+  "about_me": "Full-stack engineer with 5 years of experience.",
+  "education": [
+    {
+      "title": "BSc Computer Science",
+      "grade": "First Class",
+      "name": "Example University",
+      "location": "London",
+      "start_date": "09/2018",
+      "end_date": "06/2021",
+      "modules": ["Algorithms", "Databases"]
+    },
+    {
+      "title": "MSc AI",
+      "grade": "Distinction",
+      "name": "Another University",
+      "location": "Edinburgh",
+      "start_date": "09/2021",
+      "end_date": "06/2022",
+      "modules": ["Deep Learning"]
+    }
+  ],
+  "projects": [
+    {
+      "title": "Resume Builder",
+      "b1": "Built a web app to generate resumes.",
+      "b2": "Used React and Zod.",
+      "languages": ["TypeScript"],
+      "url": "https://example.com/resume"
+    },
+    {
+      "title": "CLI Tool",
+      "b1": "Wrote a CLI for file conversion.",
+      "b2": "Published to npm.",
+      "languages": ["Go"],
+      "url": "https://example.com/cli"
+    }
+  ],
+  "work_exp": [
+    {
+      "title": "Software Engineer",
+      "company": "Acme Corp",
+      "start_date": "07/2022",
+      "end_date": "12/2023",
+      "b1": "Built backend services.",
+      "b2": "Improved latency by 30%."
+    },
+    {
+      "title": "Senior Software Engineer",
+      "company": "Beta Inc",
+      "start_date": "01/2024",
+      "end_date": "Ongoing",
+      "b1": "Leading the platform team.",
+      "b2": "Owning infra migration."
+    }
+  ]
+}
