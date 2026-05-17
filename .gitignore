@@ -5,12 +5,12 @@ dist-ssr
 *.local
 count.txt
 .env
+.env.production
 .env.*
 .nitro
 .tanstack
 .output
 .vinxi
-todos.json
 
 # cloudflare prod stuff
 .dev.vars
