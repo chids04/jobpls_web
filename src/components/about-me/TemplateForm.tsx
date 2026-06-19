@@ -83,12 +83,14 @@ export function TemplateForm({
 
   return (
     <div className="flex flex-col gap-5  px-4 max-w-4xl items-center py-6 border-2 mx-auto w-full">
+      {/* template name */}
+
       {DEBUG_MENU && (
-        <div className="absolute top-2 right-2">
+        <div className="">
           <Button onClick={importData}>import from json</Button>
         </div>
       )}
-      {/* template name */}
+
       <div className="flex flex-col items-center gap-2 mb-5">
         <h3>template name</h3>
         <Input

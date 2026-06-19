@@ -16,14 +16,8 @@ import {
 } from "./templates";
 import { CV_Type } from "./types";
 
-// i will download these binaries  myself in prod, and will server it statiically
 $typst.setCompilerInitOptions({
-  getModule: () =>
-    "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm",
-});
-$typst.setRendererInitOptions({
-  getModule: () =>
-    "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm",
+  getModule: () => "/wasm/typst_ts_web_compiler_bg.wasm",
 });
 
 // i think this we will eventually move to its own interface

@@ -286,11 +286,11 @@ function GeneratePage() {
 
   const coverInitial: CoverData | null = rawResume
     ? {
-        hiring_manager: rawResume.hiring_manager,
-        company_name: rawResume.company_name,
-        salutation: rawResume.salutation,
-        paragraphs: rawResume.paragraphs,
-      }
+      hiring_manager: rawResume.hiring_manager,
+      company_name: rawResume.company_name,
+      salutation: rawResume.salutation,
+      paragraphs: rawResume.paragraphs,
+    }
     : null;
 
   const handleGenerate = async () => {
