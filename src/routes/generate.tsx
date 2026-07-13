@@ -50,7 +50,7 @@ function GeneratePage() {
 
   const [requestedModel, setRequestedModel] = useState("gemini-2.5-flash");
 
-  const { setCV, setCover } = usePDFStore();
+  const { setCV, setCover, setPdfMeta } = usePDFStore();
 
   const [openMissingDialog, setMissingOpenDialog] = useState(false);
   const [localJobDesc, setLocalJobDesc] = useState("");
@@ -64,6 +64,8 @@ function GeneratePage() {
 
   // raw, unescaped LLM output retained for in-place edits between generations
   const [rawResume, setRawResume] = useState<GenerationOutput | null>(null);
+  // when the current docs were generated, used for the download filename
+  const [genCreatedAt, setGenCreatedAt] = useState<string | null>(null);
   const [cvEditOpen, setCvEditOpen] = useState(false);
   const [coverEditOpen, setCoverEditOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -157,6 +159,10 @@ function GeneratePage() {
         );
       } else {
         setRawResume(resume.data);
+        // stamp creation time and persist filename metadata for reloads
+        const createdAt = new Date().toISOString();
+        setGenCreatedAt(createdAt);
+        setPdfMeta(resume.data.company_name, createdAt);
         if (docGenOptions.hasCV) {
           await createPDF(resume.data, "cv");
         }
@@ -276,6 +282,8 @@ function GeneratePage() {
     setStatusMessage("Regenerating cover letter PDF...", "loading");
     try {
       setRawResume(merged);
+      // company may have been edited; refresh persisted meta, keep original date
+      setPdfMeta(merged.company_name, genCreatedAt ?? new Date().toISOString());
       await createPDF(merged, "cover");
       setStatusMessage("Cover letter updated!", "success");
       setCoverEditOpen(false);
@@ -478,6 +486,8 @@ function GeneratePage() {
             }
             onEditCV={() => setCvEditOpen(true)}
             onEditCover={() => setCoverEditOpen(true)}
+            company={rawResume?.company_name}
+            createdAt={genCreatedAt ?? undefined}
           />
         </div>
 

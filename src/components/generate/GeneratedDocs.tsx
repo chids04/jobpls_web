@@ -1,5 +1,6 @@
 import { usePDFStore } from "@/store/useStore";
 import { Button } from "@/components/ui/button";
+import { buildPdfFileName } from "@/lib/pdf_gen";
 import { Document } from "./Document";
 
 interface GeneratedDocsProps {
@@ -10,6 +11,9 @@ interface GeneratedDocsProps {
   canEditCover?: boolean;
   onEditCV?: () => void;
   onEditCover?: () => void;
+  // company + creation time for the fresh path; persisted path falls back to the store
+  company?: string;
+  createdAt?: string | number;
 }
 
 export function GeneratedDocs({
@@ -20,6 +24,8 @@ export function GeneratedDocs({
   canEditCover = false,
   onEditCV,
   onEditCover,
+  company,
+  createdAt,
 }: GeneratedDocsProps) {
   const pdfs = usePDFStore();
 
@@ -53,6 +59,13 @@ export function GeneratedDocs({
 
   if (!finalCv && !finalCover) return null;
 
+  // fresh generation supplies company/date via props; persisted docs read from the store
+  const fileCompany = isFresh ? company : pdfs.company;
+  const fileCreatedAt = isFresh ? createdAt : pdfs.createdAt;
+  const fileDate = fileCreatedAt ? new Date(fileCreatedAt) : new Date();
+  const cvFileName = buildPdfFileName(fileCompany, "CV", fileDate);
+  const coverFileName = buildPdfFileName(fileCompany, "Cover Letter", fileDate);
+
   return (
     <div
       ref={documentRef}
@@ -64,7 +77,7 @@ export function GeneratedDocs({
 
       {finalCv && (
         <div className="flex flex-col gap-2 items-center">
-          <Document url={finalCv} name="CV" />
+          <Document url={finalCv} name="CV" fileName={cvFileName} />
           {onEditCV && (
             <Button
               type="button"
@@ -80,7 +93,11 @@ export function GeneratedDocs({
       )}
       {finalCover && (
         <div className="flex flex-col gap-2 items-center">
-          <Document url={finalCover} name="Cover Letter" />
+          <Document
+            url={finalCover}
+            name="Cover Letter"
+            fileName={coverFileName}
+          />
           {onEditCover && (
             <Button
               type="button"

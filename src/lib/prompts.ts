@@ -107,6 +107,9 @@ Generate a JSON object for a CV and Cover Letter. Analyse BASE_CV_DATA and JOB_D
 - **Summary**: 2-3 sentences linking experience to job requirements (Max 60 words).
 - **Conciseness**: Must fit on a single A4 page.
 
+## Company Name
+- Set 'company_name' to the hiring company's name extracted from the JOB_DESCRIPTION. Always fill this even if no cover letter is wanted. If no company can be identified, use "the Company".
+
 ## Cover Letter Guidelines
 - **Company-Specific**: Explain WHY this specific company and role.
 - **Complementary**: Add personality/context to achievements; do not just repeat the CV.
@@ -145,6 +148,9 @@ Ensure that the data returned will go well in a CV and will stand out amongst ot
 - **Modules**: For education, select max 5 most relevant modules.
 - **Bullets**: Start with strong verbs (Built, Implemented, Designed). Max 2 bullets per entry (≤ 20 words each). Mention the role being applied for in both the CV and cover letter
 - **Quantify**: Mention concrete tools and results (e.g., "Improved load time by 40%").
+
+## Company Name
+- Set 'company_name' to the hiring company's name extracted from the JOB_DESCRIPTION. Always fill this even if no cover letter is wanted. If no company can be identified, use "the Company".
 
 ## Cover Letter Guidelines
 - **Authenticity**: Maintain a formal yet human tone. Sound like a confident graduate

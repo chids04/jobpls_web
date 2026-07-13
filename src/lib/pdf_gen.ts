@@ -258,6 +258,27 @@ function coverDateFormat(date: Date) {
   return `${dayName} ${dayOfMonth}${ordinalSuffix} ${monthName}`;
 }
 
+// builds a human-readable download name like "Acme Corp - CV - 19 June 2026"
+// (.pdf is appended by the Document component)
+export const buildPdfFileName = (
+  company: string | undefined,
+  docType: "CV" | "Cover Letter",
+  date: Date,
+) => {
+  const safeCompany =
+    (company ?? "")
+      .replace(/[\/\\:*?"<>|]/g, "") // strip filesystem-illegal chars
+      .replace(/\s+/g, " ")
+      .trim() || "Company"; // fallback when company is blank
+  const dateStr = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date); // e.g. "19 June 2026"
+
+  return `${safeCompany} - ${docType} - ${dateStr}`;
+};
+
 const typstEducation = (e: Education) => {
   return EDU_TEMPLATE.replace("{EDU_TITLE}", e.title ?? "")
     .replace("{EDU_GRADE}", e.grade ?? "")

@@ -51,8 +51,12 @@ export type { ResumeTemplate };
 type PdfStore = {
   cv: string | undefined;
   cover: string | undefined;
+  // filename metadata so reloaded docs keep correct download names
+  company: string | undefined;
+  createdAt: string | undefined;
   setCV: (cv: string | undefined) => void;
   setCover: (cover: string | undefined) => void;
+  setPdfMeta: (company: string | undefined, createdAt: string) => void;
   clearPDFs: () => void;
 };
 
@@ -61,10 +65,19 @@ export const usePDFStore = create<PdfStore>()(
     (set) => ({
       cv: undefined,
       cover: undefined,
+      company: undefined,
+      createdAt: undefined,
 
       setCV: (cv) => set({ cv }),
       setCover: (cover) => set({ cover }),
-      clearPDFs: () => set({ cv: undefined, cover: undefined }),
+      setPdfMeta: (company, createdAt) => set({ company, createdAt }),
+      clearPDFs: () =>
+        set({
+          cv: undefined,
+          cover: undefined,
+          company: undefined,
+          createdAt: undefined,
+        }),
     }),
     {
       name: "jobpls-pdfs",

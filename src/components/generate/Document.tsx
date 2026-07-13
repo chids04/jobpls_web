@@ -4,9 +4,11 @@ import { ExternalLinkIcon, DownloadIcon } from "lucide-react";
 interface DocumentProps {
   url: string;
   name: string;
+  // full download name (without extension); falls back to the display name
+  fileName?: string;
 }
 
-export function Document({ url: blob_url, name }: DocumentProps) {
+export function Document({ url: blob_url, name, fileName }: DocumentProps) {
   const openPDF = (url: string, filename: string) => {
     const link = document.createElement("a");
     link.href = url;
@@ -21,7 +23,7 @@ export function Document({ url: blob_url, name }: DocumentProps) {
   const downloadPDF = (url: string, name: string) => {
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${name}.pdf`;
+    link.download = `${fileName ?? name}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
