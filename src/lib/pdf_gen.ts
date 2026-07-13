@@ -17,7 +17,8 @@ import {
 import { CV_Type } from "./types";
 
 $typst.setCompilerInitOptions({
-  getModule: () => "/wasm/typst_ts_web_compiler_bg.wasm",
+  getModule: () =>
+    "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler@0.7.0/pkg/typst_ts_web_compiler_bg.wasm",
 });
 
 // i think this we will eventually move to its own interface
