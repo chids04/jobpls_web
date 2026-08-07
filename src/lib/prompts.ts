@@ -55,6 +55,58 @@ export const sendPrompt = async (
   return response;
 };
 
+export type QAMessage = {
+  role: "user" | "assistant";
+  text: string;
+};
+
+export const sendQuestion = async (
+  apiKey: string,
+  prompt: string,
+  systemInstruction: string,
+) => {
+  const ai = new GoogleGenAI({ apiKey });
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: prompt,
+    config: { systemInstruction },
+  });
+
+  return response;
+};
+
+const ASK_ASSISTANT_SYS_INSTR = String.raw`
+You are a friendly job-application assistant. A candidate is completing a job application and needs quick, accurate answers to application or interview questions.
+Base your answers on the JOB DESCRIPTION and, when provided, the candidate's GENERATED DOCUMENTS (their CV and cover letter as JSON).
+Rules:
+- Answer concisely and directly, in a few short paragraphs at most.
+- Ground every claim in the provided context. Never invent facts about the candidate or the company that are not present.
+- If the context is insufficient to answer well, say what is missing and suggest a safe, generic phrasing the candidate could use.
+- Keep the candidate's tone professional and aligned with the role.
+Return plain text only, no markdown headers.
+`;
+
+export const buildQuestionPrompt = (
+  jobDesc: string,
+  docsJson: string | null,
+  history: QAMessage[],
+  question: string,
+): [string, string] => {
+  const historyBlock =
+    history.length === 0
+      ? "none"
+      : history.map((m) => `${m.role}: ${m.text}`).join("\n\n");
+
+  const docsBlock = docsJson
+    ? `\n\n## GENERATED DOCUMENTS (candidate's CV / cover letter as JSON):\n${docsJson}`
+    : "";
+
+  const prompt = `## JOB DESCRIPTION:\n${jobDesc}${docsBlock}\n\n## CONVERSATION SO FAR:\n${historyBlock}\n\n## QUESTION:\n${question}`;
+
+  return [prompt, ASK_ASSISTANT_SYS_INSTR];
+};
+
 export async function formatPDF(
   apiKey: string,
   data: ArrayBuffer,

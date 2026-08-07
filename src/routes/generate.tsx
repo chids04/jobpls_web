@@ -23,6 +23,8 @@ import { Status, StatusVariant } from "@/components/ui/Status";
 import { DocGenOptions } from "@/components/generate/DocGenOptions";
 import { CVEditDialog } from "@/components/generate/CVEditDialog";
 import { CoverEditDialog } from "@/components/generate/CoverEditDialog";
+import { AskAssistant } from "@/components/generate/AskAssistant";
+import { MessageSquareIcon } from "lucide-react";
 
 import { z } from "zod";
 import mockResume from "@/mock/resume.json?raw";
@@ -69,6 +71,7 @@ function GeneratePage() {
   const [cvEditOpen, setCvEditOpen] = useState(false);
   const [coverEditOpen, setCoverEditOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [askOpen, setAskOpen] = useState(false);
 
   const [status, setStatus] = useState<{
     variant: StatusVariant;
@@ -525,6 +528,20 @@ function GeneratePage() {
         </Button>
       </div>
 
+      <button
+        onClick={() => setAskOpen(true)}
+        disabled={!localJobDesc.trim()}
+        title={
+          localJobDesc.trim()
+            ? "ask the assistant a question about this job"
+            : "add a job description to use the assistant"
+        }
+        className="fixed right-4 bottom-4 z-40 mb-[env(safe-area-inset-bottom)] flex items-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-lg transition-colors hover:bg-blue-500 hover:text-white disabled:pointer-events-none disabled:opacity-50"
+      >
+        <MessageSquareIcon className="size-5" />
+        <span className="hidden sm:inline">ask assistant</span>
+      </button>
+
       <CVEditDialog
         open={cvEditOpen}
         initial={rawResume}
@@ -539,6 +556,14 @@ function GeneratePage() {
         onCancel={() => setCoverEditOpen(false)}
         onRegenerate={handleCoverRegenerate}
         isGenerating={isRegenerating}
+      />
+
+      <AskAssistant
+        open={askOpen}
+        onClose={() => setAskOpen(false)}
+        jobDesc={localJobDesc}
+        docs={rawResume ? JSON.stringify(rawResume) : null}
+        apiKey={apiKey ?? ""}
       />
     </>
   );

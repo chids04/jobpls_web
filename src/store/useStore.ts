@@ -19,6 +19,7 @@ const AppStateDataSchema = z.object({
     hasCV: z.boolean(),
     hasCover: z.boolean(),
   }),
+  useDocsForQA: z.boolean().default(true),
 });
 
 type AppStateData = z.infer<typeof AppStateDataSchema>;
@@ -42,6 +43,7 @@ type AppActions = {
     hasCV: boolean;
     hasCover: boolean;
   }) => void;
+  setUseDocsForQA: (useDocs: boolean) => void;
 };
 
 type AppState = AppStateData & AppActions;
@@ -110,6 +112,7 @@ export const useTemplateStore = create<AppState>()(
         hasCV: true,
         hasCover: true,
       },
+      useDocsForQA: true,
 
       addTemplate: (template) =>
         set((state) => ({
@@ -133,6 +136,7 @@ export const useTemplateStore = create<AppState>()(
       setUserTier: (tier) => set({ userTier: tier }),
       setCloudSync: (sync) => set({ cloudSync: sync }),
       setDocGenOptions: (options) => set({ docGenOptions: options }),
+      setUseDocsForQA: (useDocs) => set({ useDocsForQA: useDocs }),
     }),
     {
       name: "jobpls-storage",
